@@ -1,0 +1,4 @@
+repository "Singularity-Terminate Protocol/Singularity-Terminate Protocol@10171169274802@cloud"
+  path "/"
+    br "/main"
+    co "/main"
