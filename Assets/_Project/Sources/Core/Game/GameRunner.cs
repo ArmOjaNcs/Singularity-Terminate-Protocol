@@ -1,5 +1,9 @@
+using ECS.CommonComponents;
 using ECS.CommonSystems;
 using ECS.PlayerSystems;
+using Gameplay;
+using Gameplay.CameraScripts;
+using Gameplay.Common;
 using Gameplay.Player;
 using PlayerConfigs;
 using Scellecs.Morpeh;
@@ -11,6 +15,8 @@ namespace Core.Game
     {
         [SerializeField] private PlayerConfig _playerConfig;
         [SerializeField] private Vector3 _playerSpawnPoint;
+        [SerializeField] private CameraFollow _camera;
+        [SerializeField] private ArenaBounds _arenaBounds;
 
         private World _world;
         private SystemsGroup _gameplaySystems;
@@ -53,14 +59,38 @@ namespace Core.Game
 
         private void CreatePlayer()
         {
-            Vector3 spawnPosition = _playerSpawnPoint != null
-                ? _playerSpawnPoint
-                : Vector3.zero;
+            Vector3 spawnPosition = _playerSpawnPoint;
 
-            _playerFactory.Create(
+            Entity playerEntity = _playerFactory.Create(
                 _playerConfig,
-                spawnPosition
-            );
+                spawnPosition);
+
+            if (playerEntity == default)
+                return;
+
+            Stash<ViewComponent> viewStash =
+                _world.GetStash<ViewComponent>();
+
+            if (!viewStash.Has(playerEntity))
+            {
+                Debug.LogError(
+                    "Created player does not contain ViewComponent.");
+
+                return;
+            }
+
+            EntityView playerView = viewStash.Get(playerEntity).View;
+
+            if (playerView == null)
+            {
+                Debug.LogError(
+                    "Created player does not contain PlayerView.");
+
+                return;
+            }
+
+            _camera.SetTarget(playerView.transform);
+            _camera.SetBounds(_arenaBounds);
         }
     }
 }
