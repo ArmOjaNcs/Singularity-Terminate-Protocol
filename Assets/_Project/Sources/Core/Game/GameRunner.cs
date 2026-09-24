@@ -1,3 +1,4 @@
+using ECS.CommonSystems;
 using ECS.PlayerSystems;
 using Gameplay.Player;
 using PlayerConfigs;
@@ -39,6 +40,8 @@ namespace Core.Game
 
             _gameplaySystems.AddSystem(new PlayerInputSystem());
             _gameplaySystems.AddSystem(new PlayerMovementSystem());
+            _gameplaySystems.AddSystem(new ViewPositionSystem());
+            _gameplaySystems.AddSystem(new PlayerAnimationSystem());
 
             _world.AddSystemsGroup(0, _gameplaySystems);
         }

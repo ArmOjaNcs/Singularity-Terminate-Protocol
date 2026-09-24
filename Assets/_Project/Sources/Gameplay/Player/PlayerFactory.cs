@@ -68,11 +68,8 @@ namespace Gameplay.Player
                 Position = position
             });
 
-            GameObject playerObject = Object.Instantiate(
-                config.Prefab,
-                position,
-                Quaternion.identity
-            );
+            GameObject playerObject = Object.Instantiate(config.Prefab);
+            playerObject.transform.position = position;
 
             PlayerView view = playerObject.GetComponent<PlayerView>();
 

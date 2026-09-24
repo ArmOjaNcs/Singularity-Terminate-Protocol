@@ -22,7 +22,7 @@ MonoBehaviour:
       Damage: 5
       Luck: 5
       Defence: 0
-      Speed: 0
+      Speed: 2
     MaxWeapons: 0
     EvasionChance: 0
     GatheringRadius: 5
