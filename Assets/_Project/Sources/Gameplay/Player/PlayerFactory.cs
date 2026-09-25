@@ -14,6 +14,7 @@ namespace Gameplay.Player
         private readonly Stash<PlayerStatsComponent> _playerStatsStash;
         private readonly Stash<HealthComponent> _healthStash;
         private readonly Stash<MovementComponent> _movementStash;
+        private readonly Stash<PlayerInputComponent> _inputStash;
         private readonly Stash<PositionComponent> _positionStash;
         private readonly Stash<ViewComponent> _viewStash;
 
@@ -25,6 +26,7 @@ namespace Gameplay.Player
             _playerStatsStash = world.GetStash<PlayerStatsComponent>();
             _healthStash = world.GetStash<HealthComponent>();
             _movementStash = world.GetStash<MovementComponent>();
+            _inputStash = world.GetStash<PlayerInputComponent>();
             _positionStash = world.GetStash<PositionComponent>();
             _viewStash = world.GetStash<ViewComponent>();
         }
@@ -61,6 +63,12 @@ namespace Gameplay.Player
             _movementStash.Set(entity, new MovementComponent
             {
                 Direction = Vector3.zero
+            });
+
+            _inputStash.Set(entity, new PlayerInputComponent
+            {
+                VictoryPressed = false,
+                DeathPressed = false
             });
 
             _positionStash.Set(entity, new PositionComponent

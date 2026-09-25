@@ -7,7 +7,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SimonWalk
+  m_Name: GenryWalk
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -21,7 +21,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: a69124cb714e62349ac8a0e917cac39d, type: 2}
+  m_Motion: {fileID: 7400000, guid: 389acf7689873ef46b2d74f928e4e915, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -34,7 +34,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SimonDeath
+  m_Name: GenryDeath
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -48,7 +48,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: b4cf8e8eb39462840a22a406ee23c055, type: 2}
+  m_Motion: {fileID: 7400000, guid: c26dd5f65ba6f26498a4f833e27bc62e, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -86,7 +86,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SimonVictory
+  m_Name: GentyVictory
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -100,7 +100,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: 257cc80fb8bd85d4ea86c2a4e236a121, type: 2}
+  m_Motion: {fileID: 7400000, guid: 7d44e420c7bd7d641a74dcce729db041, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -160,7 +160,7 @@ AnimatorState:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SimonIdle
+  m_Name: GenryIdle
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
@@ -174,7 +174,7 @@ AnimatorState:
   m_MirrorParameterActive: 0
   m_CycleOffsetParameterActive: 0
   m_TimeParameterActive: 0
-  m_Motion: {fileID: 7400000, guid: bc308d99aa474b84cbbbb5cdaee5a8ef, type: 2}
+  m_Motion: {fileID: 7400000, guid: 9b50d198ccfbf6c429ef254ce8370481, type: 2}
   m_Tag: 
   m_SpeedParameter: 
   m_MirrorParameter: 
@@ -186,7 +186,7 @@ AnimatorController:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: SimonController
+  m_Name: GenryController
   serializedVersion: 5
   m_AnimatorParameters:
   - m_Name: IsMoving
@@ -234,7 +234,7 @@ AnimatorStateMachine:
     m_Position: {x: 30, y: 220, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -2636255858964303654}
-    m_Position: {x: 340, y: 100, z: 0}
+    m_Position: {x: 340, y: 80, z: 0}
   - serializedVersion: 1
     m_State: {fileID: -439927637138324104}
     m_Position: {x: 340, y: 10, z: 0}

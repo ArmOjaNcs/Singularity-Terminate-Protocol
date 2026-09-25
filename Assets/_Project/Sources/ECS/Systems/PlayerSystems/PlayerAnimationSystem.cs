@@ -12,17 +12,20 @@ namespace ECS.PlayerSystems
         private Filter _filter;
 
         private Stash<MovementComponent> _movementStash;
-        private Stash<ViewComponent> _viewStash;
+        private Stash<PlayerInputComponent> _inputStash;
+        private Stash<ViewComponent> _viewStash;        
 
         public void OnAwake()
         {
             _filter = World.Filter
                 .With<PlayerTag>()
                 .With<MovementComponent>()
+                .With<PlayerInputComponent>()
                 .With<ViewComponent>()
                 .Build();
 
             _movementStash = World.GetStash<MovementComponent>();
+            _inputStash = World.GetStash<PlayerInputComponent>();
             _viewStash = World.GetStash<ViewComponent>();
         }
 
@@ -31,6 +34,7 @@ namespace ECS.PlayerSystems
             foreach (var entity in _filter)
             {
                 ref var movement = ref _movementStash.Get(entity);
+                ref var input = ref _inputStash.Get(entity);
                 ref var viewComponent = ref _viewStash.Get(entity);
 
                 PlayerView view = (PlayerView)viewComponent.View;
@@ -43,6 +47,12 @@ namespace ECS.PlayerSystems
                     view.SetFacingLeft(false);
                 else if (movement.Direction.x < 0f)
                     view.SetFacingLeft(true);
+
+                if (input.VictoryPressed)
+                    view.SetWin();
+
+                if (input.DeathPressed)
+                    view.SetDeath();
             }
         }
 

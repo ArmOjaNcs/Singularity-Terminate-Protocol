@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 951adce678c91324396c3327daa789a9, type: 3}
+  m_Name: GenryConfig
+  m_EditorClassIdentifier: 
+  Id: 2
+  DisplayName: Genry
+  Prefab: {fileID: 2348114277284310274, guid: d08dfdf244a19194483ec53f74204c4d, type: 3}
+  Stats:
+    BaseStats:
+      MaxHealth: 25
+      HealthRegeneration: 1
+      Damage: 5
+      Luck: 5
+      Defence: 0
+      Speed: 2
+    MaxWeapons: 0
+    EvasionChance: 0
+    GatheringRadius: 5
