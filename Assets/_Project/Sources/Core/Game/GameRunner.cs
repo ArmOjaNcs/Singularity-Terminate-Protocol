@@ -4,7 +4,9 @@ using ECS.PlayerSystems;
 using Gameplay;
 using Gameplay.CameraScripts;
 using Gameplay.Common;
+using Gameplay.Navigation;
 using Gameplay.Player;
+using Gameplay.Spatial;
 using PlayerConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
@@ -17,15 +19,20 @@ namespace Core.Game
         [SerializeField] private Vector3 _playerSpawnPoint;
         [SerializeField] private CameraFollow _camera;
         [SerializeField] private ArenaBounds _arenaBounds;
+        [SerializeField]
+        private NavigationGrid _navigationGrid;
 
         private World _world;
         private SystemsGroup _gameplaySystems;
+
+        private SpatialGrid _spatialGrid;
 
         private PlayerFactory _playerFactory;
 
         private void Awake()
         {
             CreateWorld();
+            CreateSpatialGrid();
             CreateSystems();
             CreateFactories();
         }
@@ -40,16 +47,32 @@ namespace Core.Game
             _world = World.Default;
         }
 
+        private void CreateSpatialGrid()
+        {
+            _spatialGrid = new SpatialGrid(2f);
+        }
+
         private void CreateSystems()
         {
-            _gameplaySystems = _world.CreateSystemsGroup();
+            _gameplaySystems =
+            _world.CreateSystemsGroup();
 
-            _gameplaySystems.AddSystem(new PlayerInputSystem());
-            _gameplaySystems.AddSystem(new PlayerMovementSystem());
-            _gameplaySystems.AddSystem(new ViewPositionSystem());
-            _gameplaySystems.AddSystem(new PlayerAnimationSystem());
+            _gameplaySystems.AddSystem(
+                new PlayerInputSystem());
 
-            _world.AddSystemsGroup(0, _gameplaySystems);
+            _gameplaySystems.AddSystem(
+                new PlayerMovementSystem(
+                    _navigationGrid));
+
+            _gameplaySystems.AddSystem(
+                new ViewPositionSystem());
+
+            _gameplaySystems.AddSystem(
+                new PlayerAnimationSystem());
+
+            _world.AddSystemsGroup(
+                0,
+                _gameplaySystems);
         }
 
         private void CreateFactories()

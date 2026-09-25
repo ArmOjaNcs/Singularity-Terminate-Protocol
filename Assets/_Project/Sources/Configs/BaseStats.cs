@@ -9,5 +9,6 @@ namespace Configs
         public float Luck;
         public float Defence;
         public float Speed;
+        public float NavigationRadius;
     }
 }

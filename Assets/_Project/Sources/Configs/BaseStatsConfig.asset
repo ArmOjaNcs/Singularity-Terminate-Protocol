@@ -18,4 +18,5 @@ MonoBehaviour:
     Damage: 0
     Luck: 0
     Defence: 0
-    Speed: 1
+    Speed: 5
+    NavigationRadius: 0.5

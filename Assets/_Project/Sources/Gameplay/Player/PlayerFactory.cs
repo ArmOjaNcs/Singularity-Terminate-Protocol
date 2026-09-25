@@ -15,6 +15,7 @@ namespace Gameplay.Player
         private readonly Stash<HealthComponent> _healthStash;
         private readonly Stash<MovementComponent> _movementStash;
         private readonly Stash<PositionComponent> _positionStash;
+        private readonly Stash<NavigationRadiusComponent> _navigationRadiusStash;
         private readonly Stash<ViewComponent> _viewStash;
 
         public PlayerFactory(World world)
@@ -26,12 +27,14 @@ namespace Gameplay.Player
             _healthStash = world.GetStash<HealthComponent>();
             _movementStash = world.GetStash<MovementComponent>();
             _positionStash = world.GetStash<PositionComponent>();
+            _navigationRadiusStash = world.GetStash<NavigationRadiusComponent>();
             _viewStash = world.GetStash<ViewComponent>();
         }
 
         public Entity Create(PlayerConfig config, Vector3 position)
         {
             Entity entity = _world.CreateEntity();
+            Entity entity2 = _world.CreateEntity();
 
             StatsComponent stats = new StatsComponent
             {
@@ -56,6 +59,11 @@ namespace Gameplay.Player
             _healthStash.Set(entity, new HealthComponent
             {
                 Current = stats.MaxHealth
+            }); 
+            
+            _healthStash.Set(entity2, new HealthComponent
+            {
+                Current = stats.MaxHealth
             });
 
             _movementStash.Set(entity, new MovementComponent
@@ -66,6 +74,11 @@ namespace Gameplay.Player
             _positionStash.Set(entity, new PositionComponent
             {
                 Position = position
+            });
+
+            _navigationRadiusStash.Set(entity, new NavigationRadiusComponent
+            {
+                Radius = config.Stats.BaseStats.NavigationRadius
             });
 
             GameObject playerObject = Object.Instantiate(config.Prefab);
