@@ -55,7 +55,7 @@ namespace Core.Game
         private void CreateSystems()
         {
             _gameplaySystems =
-            _world.CreateSystemsGroup();
+         _world.CreateSystemsGroup();
 
             _gameplaySystems.AddSystem(
                 new PlayerInputSystem());
@@ -66,6 +66,17 @@ namespace Core.Game
 
             _gameplaySystems.AddSystem(
                 new ViewPositionSystem());
+
+            _gameplaySystems.AddSystem(
+                new SpatialGridSystem(
+                    _spatialGrid));
+
+            _gameplaySystems.AddSystem(
+                new TargetSelectionSystem(
+                    _spatialGrid));
+
+            _gameplaySystems.AddSystem(
+                new AttackSystem());
 
             _gameplaySystems.AddSystem(
                 new PlayerAnimationSystem());
@@ -102,7 +113,8 @@ namespace Core.Game
                 return;
             }
 
-            EntityView playerView = viewStash.Get(playerEntity).View;
+            EntityView playerView =
+                viewStash.Get(playerEntity).View;
 
             if (playerView == null)
             {

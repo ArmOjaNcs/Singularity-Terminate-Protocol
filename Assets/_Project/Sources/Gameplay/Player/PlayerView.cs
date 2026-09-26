@@ -7,7 +7,6 @@ namespace Gameplay.Player
     public sealed class PlayerView : EntityView
     {
         [SerializeField] private Animator _animator;
-        [SerializeField] private SpriteRenderer _spriteRenderer;
 
         public void SetMoving(bool value)
         {
@@ -22,11 +21,6 @@ namespace Gameplay.Player
         public void SetWin()
         {
             _animator.SetTrigger("Win");
-        }
-
-        public void SetFacingLeft(bool value)
-        {
-            _spriteRenderer.flipX = value;
         }
     }
 }
