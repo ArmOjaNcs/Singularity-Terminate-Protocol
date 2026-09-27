@@ -36,7 +36,6 @@ namespace Gameplay.Player
         public Entity Create(PlayerConfig config, Vector3 position)
         {
             Entity entity = _world.CreateEntity();
-            Entity entity2 = _world.CreateEntity();
 
             StatsComponent stats = new StatsComponent
             {
@@ -59,11 +58,6 @@ namespace Gameplay.Player
             });
 
             _healthStash.Set(entity, new HealthComponent
-            {
-                Current = stats.MaxHealth
-            }); 
-            
-            _healthStash.Set(entity2, new HealthComponent
             {
                 Current = stats.MaxHealth
             });
