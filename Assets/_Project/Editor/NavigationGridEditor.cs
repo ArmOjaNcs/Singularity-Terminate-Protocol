@@ -36,10 +36,14 @@ namespace Gameplay.Navigation
 
             DrawDefaultInspector();
             serializedObject.ApplyModifiedProperties();
+
             EditorGUILayout.Space(10);
             EditorGUILayout.LabelField("Navigation Editor", EditorStyles.boldLabel);
+
             _editMode = EditorGUILayout.Toggle("Edit Mode", _editMode);
+
             EditorGUILayout.Space(5);
+
             _showGrid = EditorGUILayout.Toggle("Show Grid", _showGrid);
             _showBlockedCells = EditorGUILayout.Toggle("Show Blocked Cells", _showBlockedCells);
 
@@ -50,10 +54,14 @@ namespace Gameplay.Navigation
             }
 
             EditorGUILayout.Space(5);
+
             _blockMode = EditorGUILayout.Toggle("Block Cells", _blockMode);
             _brushSize = EditorGUILayout.IntSlider("Brush Size", _brushSize, 1, 20);
+
             EditorGUILayout.Space(5);
-            EditorGUILayout.HelpBox("Left Mouse Button: paint cells\n" + 
+
+            EditorGUILayout.HelpBox(
+                "Left Mouse Button: paint cells\n" +
                 "Shift + Left Mouse Button: erase cells\n" +
                 "Mouse Wheel: change brush size",
                 MessageType.Info);
@@ -63,7 +71,6 @@ namespace Gameplay.Navigation
             if (GUILayout.Button("Clear All"))
             {
                 ClearGrid();
-
                 GUIUtility.ExitGUI();
             }
 
@@ -78,76 +85,76 @@ namespace Gameplay.Navigation
             if (!_editMode)
                 return;
 
+            HandleInput();
+
             if (_showGrid)
                 DrawGrid();
 
             if (_showBlockedCells)
                 DrawBlockedCells();
 
-            HandleInput();
-
             sceneView.Repaint();
         }
 
         private void DrawGrid()
         {
-            Handles.zTest = CompareFunction.LessEqual;
+            Handles.zTest = CompareFunction.Always;
             Handles.color = new Color(1f, 1f, 1f, 0.18f);
 
             for (int x = 0; x <= _grid.CellsX; x++)
             {
                 Vector3 start = GetGridPoint(x, 0);
-
-                Vector3 end = GetGridPoint(x, _grid.CellsZ);
+                Vector3 end = GetGridPoint(x, _grid.CellsY);
 
                 Handles.DrawLine(start, end);
             }
 
-            for (int z = 0; z <= _grid.CellsZ; z++)
+            for (int y = 0; y <= _grid.CellsY; y++)
             {
-                Vector3 start = GetGridPoint(0, z);
-                Vector3 end = GetGridPoint(_grid.CellsX, z);
+                Vector3 start = GetGridPoint(0, y);
+                Vector3 end = GetGridPoint(_grid.CellsX, y);
+
                 Handles.DrawLine(start, end);
             }
         }
 
         private void DrawBlockedCells()
         {
-            Handles.zTest = CompareFunction.LessEqual;
+            Handles.zTest = CompareFunction.Always;
 
             for (int x = 0; x < _grid.CellsX; x++)
             {
-                for (int z = 0; z < _grid.CellsZ; z++)
+                for (int y = 0; y < _grid.CellsY; y++)
                 {
-                    if (!_grid.IsBlocked(x, z))
+                    if (!_grid.IsBlocked(x, y))
                         continue;
 
-                    DrawBlockedCell(x, z);
+                    DrawBlockedCell(x, y);
                 }
             }
         }
 
-        private void DrawBlockedCell(int x, int z)
+        private void DrawBlockedCell(int x, int y)
         {
             float half = _grid.CellSize * 0.5f;
+            Vector3 gridPosition = _grid.transform.position;
 
-            Vector3 localCenter = new Vector3(
-                    (x + 0.5f) * _grid.CellSize -
-                        _grid.CellsX * _grid.CellSize * 0.5f,
-                    0f,
-                    (z + 0.5f) * _grid.CellSize -
-                        _grid.CellsZ * _grid.CellSize * 0.5f);
+            Vector3 center = new Vector3(
+                gridPosition.x + (x + 0.5f - _grid.CellsX * 0.5f) * _grid.CellSize,
+                gridPosition.y + (y + 0.5f - _grid.CellsY * 0.5f) * _grid.CellSize,
+                gridPosition.z);
 
             Vector3[] points =
             {
-                _grid.transform.TransformPoint(localCenter + new Vector3(-half, 0f, -half)),
-                _grid.transform.TransformPoint(localCenter + new Vector3(-half, 0f, half)),
-                _grid.transform.TransformPoint(localCenter + new Vector3(half, 0f, half)),
-                _grid.transform.TransformPoint(localCenter + new Vector3(half, 0f, -half))
+                center + new Vector3(-half, -half, 0f),
+                center + new Vector3(-half, half, 0f),
+                center + new Vector3(half, half, 0f),
+                center + new Vector3(half, -half, 0f)
             };
 
             Color fillColor = new Color(1f, 0.15f, 0.15f, 1f);
             Color outlineColor = new Color(1f, 0.15f, 0.15f, 0.8f);
+
             Handles.DrawSolidRectangleWithOutline(points, fillColor, outlineColor);
         }
 
@@ -159,26 +166,30 @@ namespace Gameplay.Navigation
             {
                 _brushSize += currentEvent.delta.y > 0 ? -1 : 1;
                 _brushSize = Mathf.Clamp(_brushSize, 1, 20);
+
                 currentEvent.Use();
+
+                SceneView.RepaintAll();
 
                 return;
             }
 
-            if (currentEvent.type != EventType.MouseDown && currentEvent.type != EventType.MouseDrag)
+            if (currentEvent.type != EventType.MouseDown &&
+                currentEvent.type != EventType.MouseDrag)
                 return;
 
             if (currentEvent.button != 0)
                 return;
 
             Ray ray = HandleUtility.GUIPointToWorldRay(currentEvent.mousePosition);
-            Plane plane = new Plane(_grid.transform.up, _grid.transform.position);
+            Plane plane = new Plane(Vector3.forward, _grid.transform.position);
 
             if (!plane.Raycast(ray, out float distance))
                 return;
 
             Vector3 worldPosition = ray.GetPoint(distance);
 
-            if (!_grid.TryGetCell(worldPosition, out int cellX, out int cellZ))
+            if (!_grid.TryGetCell(worldPosition, out int cellX, out int cellY))
                 return;
 
             bool blocked = _blockMode;
@@ -186,22 +197,27 @@ namespace Gameplay.Navigation
             if (currentEvent.shift)
                 blocked = false;
 
-            Paint(cellX, cellZ, blocked);
+            Paint(cellX, cellY, blocked);
+
             currentEvent.Use();
+
             EditorUtility.SetDirty(_grid);
+            SceneView.RepaintAll();
         }
 
-        private void Paint(int centerX, int centerZ, bool blocked)
+        private void Paint(int centerX, int centerY, bool blocked)
         {
-            Undo.RecordObject( _grid, blocked ? "Block Navigation Cells" : "Unblock Navigation Cells");
+            Undo.RecordObject(
+                _grid,
+                blocked ? "Block Navigation Cells" : "Unblock Navigation Cells");
 
             int radius = _brushSize / 2;
 
             for (int x = -radius; x <= radius; x++)
             {
-                for (int z = -radius; z <= radius; z++)
+                for (int y = -radius; y <= radius; y++)
                 {
-                    _grid.SetBlocked(centerX + x, centerZ + z, blocked);
+                    _grid.SetBlocked(centerX + x, centerY + y, blocked);
                 }
             }
         }
@@ -212,9 +228,9 @@ namespace Gameplay.Navigation
 
             for (int x = 0; x < _grid.CellsX; x++)
             {
-                for (int z = 0; z < _grid.CellsZ; z++)
+                for (int y = 0; y < _grid.CellsY; y++)
                 {
-                    _grid.SetBlocked(x, z, false);
+                    _grid.SetBlocked(x, y, false);
                 }
             }
 
@@ -222,17 +238,14 @@ namespace Gameplay.Navigation
             SceneView.RepaintAll();
         }
 
-        private Vector3 GetGridPoint(int x, int z)
+        private Vector3 GetGridPoint(int x, int y)
         {
-            Vector3 localPosition =
-                new Vector3(
-                    x * _grid.CellSize -
-                        _grid.CellsX * _grid.CellSize * 0.5f,
-                    0f,
-                    z * _grid.CellSize -
-                        _grid.CellsZ * _grid.CellSize * 0.5f);
+            Vector3 gridPosition = _grid.transform.position;
 
-            return _grid.transform.TransformPoint(localPosition);
+            return new Vector3(
+                gridPosition.x + (x - _grid.CellsX * 0.5f) * _grid.CellSize,
+                gridPosition.y + (y - _grid.CellsY * 0.5f) * _grid.CellSize,
+                gridPosition.z);
         }
     }
 }
