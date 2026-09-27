@@ -1,6 +1,6 @@
 using ECS.CommonComponents;
 using ECS.PlayerComponents;
-using Gameplay.Player;
+using Gameplay.Common;
 using Scellecs.Morpeh;
 
 namespace ECS.PlayerSystems
@@ -13,7 +13,7 @@ namespace ECS.PlayerSystems
 
         private Stash<MovementComponent> _movementStash;
         private Stash<PlayerInputComponent> _inputStash;
-        private Stash<ViewComponent> _viewStash;        
+        private Stash<ViewComponent> _viewStash;
 
         public void OnAwake()
         {
@@ -31,16 +31,16 @@ namespace ECS.PlayerSystems
 
         public void OnUpdate(float deltaTime)
         {
-            foreach (var entity in _filter)
+            foreach (Entity entity in _filter)
             {
-                ref var movement = ref _movementStash.Get(entity);
-                ref var input = ref _inputStash.Get(entity);
-                ref var viewComponent = ref _viewStash.Get(entity);
+                ref MovementComponent movement = ref _movementStash.Get(entity);
+                ref PlayerInputComponent input = ref _inputStash.Get(entity);
+                ref ViewComponent viewComponent = ref _viewStash.Get(entity);
 
-                PlayerView view = (PlayerView)viewComponent.View;
+                if (viewComponent.View is not AnimatedCreature view)
+                    continue;
 
                 bool isMoving = movement.Direction != UnityEngine.Vector3.zero;
-
                 view.SetMoving(isMoving);
 
                 if (movement.Direction.x > 0f)
@@ -50,9 +50,6 @@ namespace ECS.PlayerSystems
 
                 if (input.VictoryPressed)
                     view.SetWin();
-
-                if (input.DeathPressed)
-                    view.SetDeath();
             }
         }
 

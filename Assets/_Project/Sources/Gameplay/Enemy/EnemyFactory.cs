@@ -29,16 +29,13 @@ namespace Gameplay.Enemy
             _healthStash = world.GetStash<HealthComponent>();
             _movementStash = world.GetStash<MovementComponent>();
             _positionStash = world.GetStash<PositionComponent>();
-            _navigationRadiusStash =
-                world.GetStash<NavigationRadiusComponent>();
+            _navigationRadiusStash = world.GetStash<NavigationRadiusComponent>();
             _attackStash = world.GetStash<AttackComponent>();
             _targetStash = world.GetStash<TargetComponent>();
             _viewStash = world.GetStash<ViewComponent>();
         }
 
-        public Entity Create(
-            EnemyConfig config,
-            Vector3 position)
+        public Entity Create(EnemyConfig config, Vector3 position)
         {
             Entity entity = _world.CreateEntity();
 
@@ -52,44 +49,14 @@ namespace Gameplay.Enemy
                 Speed = config.Stats.Speed
             };
 
-            _enemyTagStash.Set(
-                entity,
-                new EnemyTag());
-
-            _statsStash.Set(
-                entity,
-                stats);
-
-            _healthStash.Set(
-                entity,
-                new HealthComponent
-                {
-                    Current = stats.MaxHealth
-                });
-
-            _movementStash.Set(
-                entity,
-                new MovementComponent
-                {
-                    Direction = Vector3.zero
-                });
-
-            _positionStash.Set(
-                entity,
-                new PositionComponent
-                {
-                    Position = position
-                });
-
-            _navigationRadiusStash.Set(
-                entity,
-                new NavigationRadiusComponent
-                {
-                    Radius = config.Stats.NavigationRadius
-                });
-
-            _attackStash.Set(
-                entity,
+            _enemyTagStash.Set(entity, new EnemyTag());
+            _statsStash.Set(entity,stats);
+            _healthStash.Set(entity, new HealthComponent {Current = stats.MaxHealth});
+            _movementStash.Set(entity, new MovementComponent{Direction = Vector3.zero});
+            _positionStash.Set(entity, new PositionComponent{Position = position});
+            _navigationRadiusStash.Set(entity, 
+                new NavigationRadiusComponent{Radius = config.Stats.NavigationRadius});
+            _attackStash.Set(entity,
                 new AttackComponent
                 {
                     Damage = config.Stats.Damage,
@@ -98,37 +65,23 @@ namespace Gameplay.Enemy
                     CurrentCooldown = 0f,
                     TargetType = AttackTargetType.Player
                 });
+            _targetStash.Set(entity, new TargetComponent());
 
-            _targetStash.Set(
-                entity,
-                new TargetComponent());
-
-            GameObject enemyObject =
-                Object.Instantiate(config.Prefab);
-
+            GameObject enemyObject = Object.Instantiate(config.Prefab);
             enemyObject.transform.position = position;
-
-            EnemyView view =
-                enemyObject.GetComponent<EnemyView>();
+            EnemyView view = enemyObject.GetComponent<EnemyView>();
 
             if (view == null)
             {
-                Debug.LogError(
-                    $"Enemy prefab '{config.name}' does not contain EnemyView."
-                );
-
+                Debug.LogError($"Enemy prefab '{config.name}' does not contain EnemyView.");
                 Object.Destroy(enemyObject);
                 _world.RemoveEntity(entity);
 
                 return default;
             }
 
-            _viewStash.Set(
-                entity,
-                new ViewComponent
-                {
-                    View = view
-                });
+            view.SetEntity(entity);
+            _viewStash.Set(entity, new ViewComponent{View = view});
 
             return entity;
         }

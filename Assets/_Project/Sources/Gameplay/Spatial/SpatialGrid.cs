@@ -9,8 +9,7 @@ namespace Gameplay.Spatial
         private readonly float _cellSize;
         private readonly float _inverseCellSize;
 
-        private readonly Dictionary<int, List<Entity>> _cells =
-            new Dictionary<int, List<Entity>>();
+        private readonly Dictionary<int, List<Entity>> _cells = new Dictionary<int, List<Entity>>();
 
         public SpatialGrid(float cellSize)
         {
@@ -42,10 +41,7 @@ namespace Gameplay.Spatial
             entities.Add(entity);
         }
 
-        public void Query(
-            Vector3 center,
-            float radius,
-            List<Entity> results)
+        public void Query(Vector3 center, float radius, List<Entity> results)
         {
             results.Clear();
 

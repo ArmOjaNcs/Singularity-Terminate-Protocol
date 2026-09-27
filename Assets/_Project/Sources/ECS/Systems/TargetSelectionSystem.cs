@@ -44,45 +44,26 @@ namespace ECS.CommonSystems
                 .With<PlayerTag>()
                 .Build();
 
-            _positionStash =
-                World.GetStash<PositionComponent>();
-
-            _targetStash =
-                World.GetStash<TargetComponent>();
-
-            _attackStash =
-                World.GetStash<AttackComponent>();
+            _positionStash = World.GetStash<PositionComponent>();
+            _targetStash = World.GetStash<TargetComponent>();
+            _attackStash = World.GetStash<AttackComponent>();
         }
 
         public void OnUpdate(float deltaTime)
         {
             foreach (Entity entity in _filter)
             {
-                ref PositionComponent position =
-                    ref _positionStash.Get(entity);
+                ref PositionComponent position = ref _positionStash.Get(entity);
+                ref AttackComponent attack = ref _attackStash.Get(entity);
+                ref TargetComponent target = ref _targetStash.Get(entity);
 
-                ref AttackComponent attack =
-                    ref _attackStash.Get(entity);
-
-                ref TargetComponent target =
-                    ref _targetStash.Get(entity);
-
-                FindTarget(
-                    position.Position,
-                    attack,
-                    ref target);
+                FindTarget(position.Position, attack, ref target);
             }
         }
 
-        private void FindTarget(
-            Vector3 position,
-            AttackComponent attack,
-            ref TargetComponent target)
+        private void FindTarget(Vector3 position, AttackComponent attack, ref TargetComponent target)
         {
-            _grid.Query(
-                position,
-                attack.AttackRadius,
-                _candidates);
+            _grid.Query(position, attack.AttackRadius, _candidates);
 
             Entity closestEntity = default;
             float closestDistance = float.MaxValue;
@@ -94,11 +75,8 @@ namespace ECS.CommonSystems
                 if (!IsValidTarget(candidate, attack.TargetType))
                     continue;
 
-                ref PositionComponent candidatePosition =
-                    ref _positionStash.Get(candidate);
-
-                float distance =
-                    (candidatePosition.Position - position).sqrMagnitude;
+                ref PositionComponent candidatePosition = ref _positionStash.Get(candidate);
+                float distance = (candidatePosition.Position - position).sqrMagnitude;
 
                 if (distance >= closestDistance)
                     continue;
@@ -110,18 +88,12 @@ namespace ECS.CommonSystems
             target.Target = closestEntity;
         }
 
-        private bool IsValidTarget(
-            Entity entity,
-            AttackTargetType targetType)
+        private bool IsValidTarget(Entity entity, AttackTargetType targetType)
         {
             return targetType switch
             {
-                AttackTargetType.Enemy =>
-                    _enemyFilter.Has(entity),
-
-                AttackTargetType.Player =>
-                    _playerFilter.Has(entity),
-
+                AttackTargetType.Enemy => _enemyFilter.Has(entity),
+                AttackTargetType.Player => _playerFilter.Has(entity),
                 _ => false
             };
         }

@@ -37,16 +37,11 @@ namespace Gameplay.Navigation
 
         public bool IsWalkable(Vector3 worldPosition, float radius)
         {
-            Vector3 localPosition =
-                transform.InverseTransformPoint(worldPosition);
+            Vector3 localPosition = transform.InverseTransformPoint(worldPosition);
 
             float localRadius = GetLocalRadius(radius);
-
-            float halfWidth =
-                _cellsX * _cellSize * 0.5f;
-
-            float halfHeight =
-                _cellsZ * _cellSize * 0.5f;
+            float halfWidth = _cellsX * _cellSize * 0.5f;
+            float halfHeight = _cellsZ * _cellSize * 0.5f;
 
             if (localPosition.x - localRadius < -halfWidth ||
                 localPosition.x + localRadius > halfWidth ||
@@ -103,11 +98,9 @@ namespace Gameplay.Navigation
 
         public bool TryGetCell(Vector3 worldPosition, out int x, out int z)
         {
-            Vector3 localPosition =
-                transform.InverseTransformPoint(worldPosition);
+            Vector3 localPosition = transform.InverseTransformPoint(worldPosition);
 
             x = Mathf.FloorToInt(localPosition.x / _cellSize + _cellsX * 0.5f);
-
             z = Mathf.FloorToInt(localPosition.z / _cellSize + _cellsZ * 0.5f);
 
             return IsInside(x, z);
@@ -131,59 +124,29 @@ namespace Gameplay.Navigation
             return new Vector3(_cellsX * _cellSize, 0f, _cellsZ * _cellSize);
         }
 
-        private bool IsCircleOverlappingCell(
-                Vector3 worldPosition,
-                float worldRadius,
-                int x,
-                int z)
+        private bool IsCircleOverlappingCell(Vector3 worldPosition, float worldRadius, int x, int z)
         {
-            Vector3 localPosition =
-                transform.InverseTransformPoint(worldPosition);
+            Vector3 localPosition = transform.InverseTransformPoint(worldPosition);
 
-            float localRadius =
-                GetLocalRadius(worldRadius);
+            float localRadius = GetLocalRadius(worldRadius);
+            float minX = (x - _cellsX * 0.5f) * _cellSize;
+            float maxX = minX + _cellSize;
+            float minZ = (z - _cellsZ * 0.5f) * _cellSize;
+            float maxZ = minZ + _cellSize;
+            float closestX = Mathf.Clamp(localPosition.x, minX, maxX);
+            float closestZ = Mathf.Clamp(localPosition.z, minZ, maxZ);
+            float dx = localPosition.x - closestX;
+            float dz = localPosition.z - closestZ;
 
-            float minX =
-                (x - _cellsX * 0.5f) * _cellSize;
-
-            float maxX =
-                minX + _cellSize;
-
-            float minZ =
-                (z - _cellsZ * 0.5f) * _cellSize;
-
-            float maxZ =
-                minZ + _cellSize;
-
-            float closestX =
-                Mathf.Clamp(localPosition.x, minX, maxX);
-
-            float closestZ =
-                Mathf.Clamp(localPosition.z, minZ, maxZ);
-
-            float dx =
-                localPosition.x - closestX;
-
-            float dz =
-                localPosition.z - closestZ;
-
-            return dx * dx + dz * dz <=
-                   localRadius * localRadius;
+            return dx * dx + dz * dz <= localRadius * localRadius;
         }
 
         private float GetLocalRadius(float worldRadius)
         {
-            Vector3 scale =
-                transform.lossyScale;
-
-            float scaleX =
-                Mathf.Abs(scale.x);
-
-            float scaleZ =
-                Mathf.Abs(scale.z);
-
-            float minimumScale =
-                Mathf.Min(scaleX, scaleZ);
+            Vector3 scale = transform.lossyScale;
+            float scaleX = Mathf.Abs(scale.x);
+            float scaleZ = Mathf.Abs(scale.z);
+            float minimumScale = Mathf.Min(scaleX, scaleZ);
 
             if (minimumScale <= Mathf.Epsilon)
                 return 0f;
@@ -193,10 +156,7 @@ namespace Gameplay.Navigation
 
         private bool IsInside(int x, int z)
         {
-            return x >= 0 &&
-                   x < _cellsX &&
-                   z >= 0 &&
-                   z < _cellsZ;
+            return x >= 0 && x < _cellsX && z >= 0 && z < _cellsZ;
         }
 
         private int GetIndex(int x, int z)
@@ -219,7 +179,6 @@ namespace Gameplay.Navigation
                 return;
 
             int copyLength = Mathf.Min(oldData.Length, _blockedCells.Length);
-
             Array.Copy(oldData, _blockedCells, copyLength);
         }
     }

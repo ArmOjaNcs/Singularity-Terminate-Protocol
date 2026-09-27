@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8388212605961247850}
   - component: {fileID: 3892776303999042448}
-  - component: {fileID: 8681233138890433949}
+  - component: {fileID: 1315676622121405075}
   m_Layer: 0
   m_Name: Abomination
   m_TagString: Untagged
@@ -85,7 +85,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &8681233138890433949
+--- !u!114 &1315676622121405075
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -98,3 +98,4 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Renderer: {fileID: 3892776303999042448}
+  Animator: {fileID: 0}

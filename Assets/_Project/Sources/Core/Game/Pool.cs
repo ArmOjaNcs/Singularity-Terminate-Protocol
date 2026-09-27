@@ -13,6 +13,7 @@ namespace Core.Game
         {
             _prefab = prefab;
             Container = container;
+
             CreatePool(maxCapacity);
         }
 
@@ -22,7 +23,7 @@ namespace Core.Game
         {
             foreach (T freeElement in _pool)
             {
-                if (freeElement.gameObject.activeInHierarchy == false)
+                if (!freeElement.gameObject.activeInHierarchy)
                 {
                     element = freeElement;
                     return true;
@@ -41,9 +42,17 @@ namespace Core.Game
             return CreateObject();
         }
 
+        public void Release(T element)
+        {
+            if (element == null)
+                return;
+
+            element.gameObject.SetActive(false);
+        }
+
         private T CreateObject()
         {
-            var createdObject = GameObject.Instantiate(_prefab);
+            T createdObject = Object.Instantiate(_prefab, Container);
             _pool.Add(createdObject);
             createdObject.gameObject.SetActive(false);
 
@@ -52,7 +61,7 @@ namespace Core.Game
 
         private void CreatePool(int maxCapacity)
         {
-            _pool = new List<T>();
+            _pool = new List<T>(maxCapacity);
 
             for (int i = 0; i < maxCapacity; i++)
                 CreateObject();

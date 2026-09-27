@@ -2,7 +2,6 @@ using ECS.CommonComponents;
 using ECS.CommonSystems;
 using ECS.PlayerSystems;
 using Gameplay;
-using Gameplay.CameraScripts;
 using Gameplay.Common;
 using Gameplay.Navigation;
 using Gameplay.Player;
@@ -17,16 +16,13 @@ namespace Core.Game
     {
         [SerializeField] private PlayerConfig _playerConfig;
         [SerializeField] private Vector3 _playerSpawnPoint;
-        [SerializeField] private CameraFollow _camera;
         [SerializeField] private ArenaBounds _arenaBounds;
         [SerializeField]
         private NavigationGrid _navigationGrid;
 
         private World _world;
         private SystemsGroup _gameplaySystems;
-
         private SpatialGrid _spatialGrid;
-
         private PlayerFactory _playerFactory;
 
         private void Awake()
@@ -54,36 +50,20 @@ namespace Core.Game
 
         private void CreateSystems()
         {
-            _gameplaySystems =
-         _world.CreateSystemsGroup();
+            _gameplaySystems = _world.CreateSystemsGroup();
 
-            _gameplaySystems.AddSystem(
-                new PlayerInputSystem());
+            _gameplaySystems.AddSystem(new PlayerInputSystem());
+            _gameplaySystems.AddSystem(new PlayerMovementSystem(_navigationGrid));
+            _gameplaySystems.AddSystem(new ViewPositionSystem());
+            _gameplaySystems.AddSystem(new SpatialGridSystem(_spatialGrid));
+            _gameplaySystems.AddSystem(new TargetSelectionSystem(_spatialGrid));
+            _gameplaySystems.AddSystem(new AttackSystem());
+            _gameplaySystems.AddSystem(new DamageSystem());
+            _gameplaySystems.AddSystem(new PlayerAnimationSystem());
+            _gameplaySystems.AddSystem(new DeathAnimationSystem());
+            _gameplaySystems.AddSystem(new DeathSystem());
 
-            _gameplaySystems.AddSystem(
-                new PlayerMovementSystem(
-                    _navigationGrid));
-
-            _gameplaySystems.AddSystem(
-                new ViewPositionSystem());
-
-            _gameplaySystems.AddSystem(
-                new SpatialGridSystem(
-                    _spatialGrid));
-
-            _gameplaySystems.AddSystem(
-                new TargetSelectionSystem(
-                    _spatialGrid));
-
-            _gameplaySystems.AddSystem(
-                new AttackSystem());
-
-            _gameplaySystems.AddSystem(
-                new PlayerAnimationSystem());
-
-            _world.AddSystemsGroup(
-                0,
-                _gameplaySystems);
+            _world.AddSystemsGroup(0,_gameplaySystems);
         }
 
         private void CreateFactories()
@@ -95,37 +75,28 @@ namespace Core.Game
         {
             Vector3 spawnPosition = _playerSpawnPoint;
 
-            Entity playerEntity = _playerFactory.Create(
-                _playerConfig,
-                spawnPosition);
+            Entity playerEntity = _playerFactory.Create(_playerConfig, spawnPosition);
 
             if (playerEntity == default)
                 return;
 
-            Stash<ViewComponent> viewStash =
-                _world.GetStash<ViewComponent>();
+            Stash<ViewComponent> viewStash = _world.GetStash<ViewComponent>();
 
             if (!viewStash.Has(playerEntity))
             {
-                Debug.LogError(
-                    "Created player does not contain ViewComponent.");
+                Debug.LogError("Created player does not contain ViewComponent.");
 
                 return;
             }
 
-            EntityView playerView =
-                viewStash.Get(playerEntity).View;
+            EntityView playerView = viewStash.Get(playerEntity).View;
 
             if (playerView == null)
             {
-                Debug.LogError(
-                    "Created player does not contain PlayerView.");
+                Debug.LogError("Created player does not contain PlayerView.");
 
                 return;
             }
-
-            _camera.SetTarget(playerView.transform);
-            _camera.SetBounds(_arenaBounds);
         }
     }
 }

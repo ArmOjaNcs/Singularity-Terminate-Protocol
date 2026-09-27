@@ -18,9 +18,9 @@ namespace ECS.PlayerSystems
         private Stash<PositionComponent> _positionStash;
         private Stash<PlayerStatsComponent> _statsStash;
         private Stash<NavigationRadiusComponent> _radiusStash;
+        private Stash<DeathComponent> _deathStash;
 
-        public PlayerMovementSystem(
-            NavigationGrid navigationGrid)
+        public PlayerMovementSystem(NavigationGrid navigationGrid)
         {
             _navigationGrid = navigationGrid;
         }
@@ -35,91 +35,53 @@ namespace ECS.PlayerSystems
                 .With<NavigationRadiusComponent>()
                 .Build();
 
-            _movementStash =
-                World.GetStash<MovementComponent>();
-
-            _positionStash =
-                World.GetStash<PositionComponent>();
-
-            _statsStash =
-                World.GetStash<PlayerStatsComponent>();
-
-            _radiusStash =
-                World.GetStash<NavigationRadiusComponent>();
+            _movementStash = World.GetStash<MovementComponent>();
+            _positionStash = World.GetStash<PositionComponent>();
+            _statsStash = World.GetStash<PlayerStatsComponent>();
+            _radiusStash = World.GetStash<NavigationRadiusComponent>();
+            _deathStash = World.GetStash<DeathComponent>();
         }
 
         public void OnUpdate(float deltaTime)
         {
             foreach (var entity in _filter)
             {
-                ref var movement =
-                    ref _movementStash.Get(entity);
+                if (_deathStash.Has(entity))
+                    continue;
 
-                ref var position =
-                    ref _positionStash.Get(entity);
+                ref var movement = ref _movementStash.Get(entity);
+                ref var position = ref _positionStash.Get(entity);
+                ref var stats = ref _statsStash.Get(entity);
+                ref var radius = ref _radiusStash.Get(entity);
 
-                ref var stats =
-                    ref _statsStash.Get(entity);
-
-                ref var radius =
-                    ref _radiusStash.Get(entity);
-
-                Vector3 delta =
-                    movement.Direction *
-                    stats.Stats.Speed *
-                    deltaTime;
+                Vector3 delta = movement.Direction * stats.Stats.Speed * deltaTime;
 
                 if (delta.sqrMagnitude <= 0f)
                     continue;
 
-                TryMove(
-                    ref position.Position,
-                    delta,
-                    radius.Radius
-                );
+                TryMove(ref position.Position, delta, radius.Radius);
             }
         }
 
-        private void TryMove(
-            ref Vector3 position,
-            Vector3 delta,
-            float radius)
+        private void TryMove(ref Vector3 position, Vector3 delta, float radius)
         {
             Vector3 target = position + delta;
 
-            if (_navigationGrid.IsWalkable(
-                target,
-                radius))
+            if (_navigationGrid.IsWalkable(target, radius))
             {
                 position = target;
                 return;
             }
 
-            Vector3 xTarget = new Vector3(
-                target.x,
-                position.y,
-                position.z
-            );
+            Vector3 xTarget = new Vector3(target.x, position.y, position.z);
 
-            if (_navigationGrid.IsWalkable(
-                xTarget,
-                radius))
-            {
+            if (_navigationGrid.IsWalkable(xTarget,radius))
                 position = xTarget;
-            }
 
-            Vector3 zTarget = new Vector3(
-                position.x,
-                position.y,
-                target.z
-            );
+            Vector3 zTarget = new Vector3(position.x, position.y, target.z);
 
-            if (_navigationGrid.IsWalkable(
-                zTarget,
-                radius))
-            {
+            if (_navigationGrid.IsWalkable(zTarget, radius))
                 position = zTarget;
-            }
         }
 
         public void Dispose()
