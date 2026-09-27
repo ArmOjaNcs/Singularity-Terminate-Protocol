@@ -29,8 +29,8 @@ namespace ECS.PlayerSystems
         {
             Vector3 direction = new Vector3(
                 Input.GetAxisRaw("Horizontal"),
-                0f,
-                Input.GetAxisRaw("Vertical")
+                Input.GetAxisRaw("Vertical"),
+                0f
             );
 
             bool death = Input.GetButtonDown("Fire1");

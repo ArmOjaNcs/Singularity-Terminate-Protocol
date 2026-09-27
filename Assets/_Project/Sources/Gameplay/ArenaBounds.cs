@@ -2,23 +2,15 @@ using UnityEngine;
 
 namespace Gameplay
 {
+    [RequireComponent(typeof(PolygonCollider2D))]
     public sealed class ArenaBounds : MonoBehaviour
     {
-        [SerializeField] private BoxCollider _boundsCollider;
-
+        private PolygonCollider2D _boundsCollider;
         public Bounds WorldBounds => _boundsCollider.bounds;
-
-        private void Reset()
-        {
-            _boundsCollider = GetComponent<BoxCollider>();
-        }
 
         private void Awake()
         {
-            if (_boundsCollider == null)
-            {
-                _boundsCollider = GetComponent<BoxCollider>();
-            }
+            _boundsCollider = GetComponent<PolygonCollider2D>();
         }
     }
 }

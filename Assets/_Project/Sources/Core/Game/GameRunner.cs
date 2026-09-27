@@ -1,14 +1,15 @@
+using Cinemachine;
 using ECS.CommonComponents;
 using ECS.CommonSystems;
 using ECS.PlayerSystems;
 using Gameplay;
-using Gameplay.CameraScripts;
 using Gameplay.Common;
 using Gameplay.Navigation;
 using Gameplay.Player;
 using Gameplay.Spatial;
 using PlayerConfigs;
 using Scellecs.Morpeh;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Core.Game
@@ -17,10 +18,9 @@ namespace Core.Game
     {
         [SerializeField] private PlayerConfig _playerConfig;
         [SerializeField] private Vector3 _playerSpawnPoint;
-        [SerializeField] private CameraFollow _camera;
+        [SerializeField] private CinemachineVirtualCamera _camera;
         [SerializeField] private ArenaBounds _arenaBounds;
-        [SerializeField]
-        private NavigationGrid _navigationGrid;
+        [SerializeField] private NavigationGrid _navigationGrid;
 
         private World _world;
         private SystemsGroup _gameplaySystems;
@@ -112,8 +112,21 @@ namespace Core.Game
                 return;
             }
 
-            _camera.SetTarget(playerView.transform);
-            _camera.SetBounds(_arenaBounds);
+            SetCamera(playerView);
+        }
+
+        private void SetCamera(EntityView playerView)
+        {
+            _camera.Follow = playerView.transform;
+            _camera.LookAt = playerView.transform;
+
+            CinemachineConfiner2D confiner = _camera.GetComponent<CinemachineConfiner2D>();
+
+            if (confiner != null && _arenaBounds != null)
+            {
+                confiner.m_BoundingShape2D = _arenaBounds.GetComponent<Collider2D>();
+                confiner.InvalidateCache();
+            }
         }
     }
 }
