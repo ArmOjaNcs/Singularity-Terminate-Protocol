@@ -1,6 +1,5 @@
 using ECS.CommonComponents;
 using Scellecs.Morpeh;
-using UnityEngine;
 
 namespace ECS.CommonSystems
 {
@@ -23,25 +22,17 @@ namespace ECS.CommonSystems
                 .With<PositionComponent>()
                 .Build();
 
-            _attackStash =
-                World.GetStash<AttackComponent>();
-
-            _targetStash =
-                World.GetStash<TargetComponent>();
-
-            _positionStash =
-                World.GetStash<PositionComponent>();
-
-            _healthStash =
-                World.GetStash<HealthComponent>();
+            _attackStash = World.GetStash<AttackComponent>();
+            _targetStash = World.GetStash<TargetComponent>();
+            _positionStash = World.GetStash<PositionComponent>();
+            _healthStash = World.GetStash<HealthComponent>();
         }
 
         public void OnUpdate(float deltaTime)
         {
             foreach (Entity entity in _filter)
             {
-                ref AttackComponent attack =
-                    ref _attackStash.Get(entity);
+                ref AttackComponent attack = ref _attackStash.Get(entity);
 
                 if (attack.CurrentCooldown > 0f)
                 {
@@ -49,8 +40,7 @@ namespace ECS.CommonSystems
                     continue;
                 }
 
-                ref TargetComponent target =
-                    ref _targetStash.Get(entity);
+                ref TargetComponent target = ref _targetStash.Get(entity);
 
                 if (target.Target == default)
                     continue;
@@ -58,35 +48,31 @@ namespace ECS.CommonSystems
                 if (!_healthStash.Has(target.Target))
                     continue;
 
-                ref PositionComponent position =
-                    ref _positionStash.Get(entity);
-
-                ref PositionComponent targetPosition =
-                    ref _positionStash.Get(target.Target);
-
-                float distance =
-                    (targetPosition.Position - position.Position)
-                    .sqrMagnitude;
-
-                float attackRadiusSqr =
-                    attack.AttackRadius * attack.AttackRadius;
+                ref PositionComponent position = ref _positionStash.Get(entity);
+                ref PositionComponent targetPosition = ref _positionStash.Get(target.Target);
+                float distance = (targetPosition.Position - position.Position).sqrMagnitude;
+                float attackRadiusSqr = attack.AttackRadius * attack.AttackRadius;
 
                 if (distance > attackRadiusSqr)
                     continue;
 
-                ref HealthComponent health =
-                    ref _healthStash.Get(target.Target);
-
-                health.Current -= attack.Damage;
-
-                attack.CurrentCooldown =
-                    attack.AttackCooldown;
-
-                Debug.Log(
-                    $"{entity} attacked {target.Target} " +
-                    $"for {attack.Damage} damage. " +
-                    $"Target HP: {health.Current}");
+                CreateDamageRequest(entity, target.Target, attack.Damage);
+                attack.CurrentCooldown = attack.AttackCooldown;
             }
+        }
+
+        private void CreateDamageRequest(Entity source, Entity target, float damage)
+        {
+            Entity requestEntity = World.CreateEntity();
+
+            World.GetStash<DamageRequest>().Set(
+                requestEntity,
+                new DamageRequest
+                {
+                    Source = source,
+                    Target = target,
+                    Damage = damage
+                });
         }
 
         public void Dispose()

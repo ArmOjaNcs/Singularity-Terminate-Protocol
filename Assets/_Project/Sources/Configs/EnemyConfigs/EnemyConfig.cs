@@ -3,10 +3,7 @@ using UnityEngine;
 
 namespace EnemyConfigs
 {
-    [CreateAssetMenu(
-        fileName = "EnemyConfig",
-        menuName = "Game/Enemy/Enemy Config"
-    )]
+    [CreateAssetMenu(fileName = "EnemyConfig", menuName = "Game/Enemy/Enemy Config")]
     public class EnemyConfig : ScriptableObject
     {
         public string Id;

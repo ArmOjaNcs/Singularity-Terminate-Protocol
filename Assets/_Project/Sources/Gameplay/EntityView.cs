@@ -1,3 +1,4 @@
+using Scellecs.Morpeh;
 using UnityEngine;
 
 namespace Gameplay.Common
@@ -5,6 +6,10 @@ namespace Gameplay.Common
     public class EntityView : MonoBehaviour
     {
         [SerializeField] protected SpriteRenderer Renderer;
+
+        public Entity Entity { get; private set; }
+
+        public void SetEntity(Entity entity) => Entity = entity;
 
         public void SetActive(bool value)
         {

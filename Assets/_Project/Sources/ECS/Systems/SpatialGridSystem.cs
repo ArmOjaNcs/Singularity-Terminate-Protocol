@@ -24,8 +24,7 @@ namespace ECS.CommonSystems
                 .With<PositionComponent>()
                 .Build();
 
-            _positionStash =
-                World.GetStash<PositionComponent>();
+            _positionStash = World.GetStash<PositionComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -34,12 +33,8 @@ namespace ECS.CommonSystems
 
             foreach (Entity entity in _filter)
             {
-                ref PositionComponent position =
-                    ref _positionStash.Get(entity);
-
-                _grid.Add(
-                    entity,
-                    position.Position);
+                ref PositionComponent position = ref _positionStash.Get(entity);
+                _grid.Add(entity, position.Position);
             }
         }
 

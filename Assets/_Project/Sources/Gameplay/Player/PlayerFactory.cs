@@ -1,5 +1,6 @@
 using ECS.CommonComponents;
 using ECS.PlayerComponents;
+using Gameplay.Common;
 using PlayerConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
@@ -86,24 +87,19 @@ namespace Gameplay.Player
             GameObject playerObject = Object.Instantiate(config.Prefab);
             playerObject.transform.position = position;
 
-            PlayerView view = playerObject.GetComponent<PlayerView>();
+            AnimatedCreature view = playerObject.GetComponent<AnimatedCreature>();
 
             if (view == null)
             {
-                Debug.LogError(
-                    $"Player prefab '{config.name}' does not contain PlayerView."
-                );
-
+                Debug.LogError($"Player prefab '{config.name}' does not contain PlayerView.");
                 Object.Destroy(playerObject);
                 _world.RemoveEntity(entity);
 
                 return default;
             }
 
-            _viewStash.Set(entity, new ViewComponent
-            {
-                View = view
-            });
+            view.SetEntity(entity);
+            _viewStash.Set(entity, new ViewComponent { View = view });
 
             return entity;
         }

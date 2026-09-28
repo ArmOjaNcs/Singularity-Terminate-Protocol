@@ -8,14 +8,14 @@ namespace Gameplay.Navigation
         [Header("Grid")]
         [SerializeField, Min(0.1f)] private float _cellSize = 1f;
         [SerializeField, Min(1)] private int _cellsX = 50;
-        [SerializeField, Min(1)] private int _cellsZ = 50;
+        [SerializeField, Min(1)] private int _cellsY = 50;
 
         [Header("Blocked Cells")]
         [SerializeField] private bool[] _blockedCells;
 
         public float CellSize => _cellSize;
         public int CellsX => _cellsX;
-        public int CellsZ => _cellsZ;
+        public int CellsY => _cellsY;
 
         private void OnValidate()
         {
@@ -29,184 +29,128 @@ namespace Gameplay.Navigation
 
         public bool IsWalkable(Vector3 worldPosition)
         {
-            if (!TryGetCell(worldPosition, out int x, out int z))
+            if (!TryGetCell(worldPosition, out int x, out int y))
                 return false;
 
-            return IsWalkable(x, z);
+            return IsWalkable(x, y);
         }
 
         public bool IsWalkable(Vector3 worldPosition, float radius)
         {
-            Vector3 localPosition =
-                transform.InverseTransformPoint(worldPosition);
+            Vector3 gridPosition = transform.position;
 
-            float localRadius = GetLocalRadius(radius);
+            float halfWidth = _cellsX * _cellSize * 0.5f;
+            float halfHeight = _cellsY * _cellSize * 0.5f;
 
-            float halfWidth =
-                _cellsX * _cellSize * 0.5f;
-
-            float halfHeight =
-                _cellsZ * _cellSize * 0.5f;
-
-            if (localPosition.x - localRadius < -halfWidth ||
-                localPosition.x + localRadius > halfWidth ||
-                localPosition.z - localRadius < -halfHeight ||
-                localPosition.z + localRadius > halfHeight)
+            if (worldPosition.x - radius < gridPosition.x - halfWidth ||
+                worldPosition.x + radius > gridPosition.x + halfWidth ||
+                worldPosition.y - radius < gridPosition.y - halfHeight ||
+                worldPosition.y + radius > gridPosition.y + halfHeight)
                 return false;
 
-            if (!TryGetCell(worldPosition, out int centerX, out int centerZ))
+            if (!TryGetCell(worldPosition, out int centerX, out int centerY))
                 return false;
 
-            int cellRadius = Mathf.CeilToInt(localRadius / _cellSize);
+            int cellRadius = Mathf.CeilToInt(radius / _cellSize);
 
             for (int x = centerX - cellRadius; x <= centerX + cellRadius; x++)
             {
-                for (int z = centerZ - cellRadius; z <= centerZ + cellRadius; z++)
+                for (int y = centerY - cellRadius; y <= centerY + cellRadius; y++)
                 {
-                    if (!IsInside(x, z))
+                    if (!IsInside(x, y))
                         return false;
 
-                    if (!IsWalkable(x, z))
-                    {
-                        if (IsCircleOverlappingCell(worldPosition, radius, x, z))
-                            return false;
-                    }
+                    if (!IsWalkable(x, y) && IsCircleOverlappingCell(worldPosition, radius, x, y))
+                        return false;
                 }
             }
 
             return true;
         }
 
-        public bool IsWalkable(int x, int z)
+        public bool IsWalkable(int x, int y)
         {
-            if (!IsInside(x, z))
+            if (!IsInside(x, y))
                 return false;
 
-            return !_blockedCells[GetIndex(x, z)];
+            return !_blockedCells[GetIndex(x, y)];
         }
 
-        public bool IsBlocked(int x, int z)
+        public bool IsBlocked(int x, int y)
         {
-            if (!IsInside(x, z))
+            if (!IsInside(x, y))
                 return true;
 
-            return _blockedCells[GetIndex(x, z)];
+            return _blockedCells[GetIndex(x, y)];
         }
 
-        public void SetBlocked(int x, int z, bool blocked)
+        public void SetBlocked(int x, int y, bool blocked)
         {
-            if (!IsInside(x, z))
+            if (!IsInside(x, y))
                 return;
 
-            _blockedCells[GetIndex(x, z)] = blocked;
+            _blockedCells[GetIndex(x, y)] = blocked;
         }
 
-        public bool TryGetCell(Vector3 worldPosition, out int x, out int z)
+        public bool TryGetCell(Vector3 worldPosition, out int x, out int y)
         {
-            Vector3 localPosition =
-                transform.InverseTransformPoint(worldPosition);
+            Vector3 gridPosition = transform.position;
 
-            x = Mathf.FloorToInt(localPosition.x / _cellSize + _cellsX * 0.5f);
+            x = Mathf.FloorToInt((worldPosition.x - gridPosition.x) / _cellSize + _cellsX * 0.5f);
+            y = Mathf.FloorToInt((worldPosition.y - gridPosition.y) / _cellSize + _cellsY * 0.5f);
 
-            z = Mathf.FloorToInt(localPosition.z / _cellSize + _cellsZ * 0.5f);
-
-            return IsInside(x, z);
+            return IsInside(x, y);
         }
 
-        public Vector3 GetCellCenter(int x, int z)
+        public Vector3 GetCellCenter(int x, int y)
         {
-            if (!IsInside(x, z))
+            if (!IsInside(x, y))
                 throw new ArgumentOutOfRangeException();
 
-            Vector3 localPosition = new Vector3(
-                (x + 0.5f - _cellsX * 0.5f) * _cellSize,
-                0f,
-                (z + 0.5f - _cellsZ * 0.5f) * _cellSize);
+            Vector3 gridPosition = transform.position;
 
-            return transform.TransformPoint(localPosition);
+            return new Vector3(
+                gridPosition.x + (x + 0.5f - _cellsX * 0.5f) * _cellSize,
+                gridPosition.y + (y + 0.5f - _cellsY * 0.5f) * _cellSize,
+                gridPosition.z);
         }
 
         public Vector3 GetGridSize()
         {
-            return new Vector3(_cellsX * _cellSize, 0f, _cellsZ * _cellSize);
+            return new Vector3(_cellsX * _cellSize, _cellsY * _cellSize, 0f);
         }
 
-        private bool IsCircleOverlappingCell(
-                Vector3 worldPosition,
-                float worldRadius,
-                int x,
-                int z)
+        private bool IsCircleOverlappingCell(Vector3 worldPosition, float radius, int x, int y)
         {
-            Vector3 localPosition =
-                transform.InverseTransformPoint(worldPosition);
+            Vector3 gridPosition = transform.position;
 
-            float localRadius =
-                GetLocalRadius(worldRadius);
+            float minX = gridPosition.x + (x - _cellsX * 0.5f) * _cellSize;
+            float maxX = minX + _cellSize;
+            float minY = gridPosition.y + (y - _cellsY * 0.5f) * _cellSize;
+            float maxY = minY + _cellSize;
 
-            float minX =
-                (x - _cellsX * 0.5f) * _cellSize;
+            float closestX = Mathf.Clamp(worldPosition.x, minX, maxX);
+            float closestY = Mathf.Clamp(worldPosition.y, minY, maxY);
 
-            float maxX =
-                minX + _cellSize;
+            float dx = worldPosition.x - closestX;
+            float dy = worldPosition.y - closestY;
 
-            float minZ =
-                (z - _cellsZ * 0.5f) * _cellSize;
-
-            float maxZ =
-                minZ + _cellSize;
-
-            float closestX =
-                Mathf.Clamp(localPosition.x, minX, maxX);
-
-            float closestZ =
-                Mathf.Clamp(localPosition.z, minZ, maxZ);
-
-            float dx =
-                localPosition.x - closestX;
-
-            float dz =
-                localPosition.z - closestZ;
-
-            return dx * dx + dz * dz <=
-                   localRadius * localRadius;
+            return dx * dx + dy * dy <= radius * radius;
         }
 
-        private float GetLocalRadius(float worldRadius)
+        private bool IsInside(int x, int y)
         {
-            Vector3 scale =
-                transform.lossyScale;
-
-            float scaleX =
-                Mathf.Abs(scale.x);
-
-            float scaleZ =
-                Mathf.Abs(scale.z);
-
-            float minimumScale =
-                Mathf.Min(scaleX, scaleZ);
-
-            if (minimumScale <= Mathf.Epsilon)
-                return 0f;
-
-            return worldRadius / minimumScale;
+            return x >= 0 && x < _cellsX && y >= 0 && y < _cellsY;
         }
 
-        private bool IsInside(int x, int z)
+        private int GetIndex(int x, int y)
         {
-            return x >= 0 &&
-                   x < _cellsX &&
-                   z >= 0 &&
-                   z < _cellsZ;
-        }
-
-        private int GetIndex(int x, int z)
-        {
-            return z * _cellsX + x;
+            return y * _cellsX + x;
         }
 
         private void EnsureDataSize()
         {
-            int requiredSize = _cellsX * _cellsZ;
+            int requiredSize = _cellsX * _cellsY;
 
             if (_blockedCells != null && _blockedCells.Length == requiredSize)
                 return;
@@ -219,7 +163,6 @@ namespace Gameplay.Navigation
                 return;
 
             int copyLength = Mathf.Min(oldData.Length, _blockedCells.Length);
-
             Array.Copy(oldData, _blockedCells, copyLength);
         }
     }

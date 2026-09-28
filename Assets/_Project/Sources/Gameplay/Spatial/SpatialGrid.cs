@@ -9,8 +9,7 @@ namespace Gameplay.Spatial
         private readonly float _cellSize;
         private readonly float _inverseCellSize;
 
-        private readonly Dictionary<int, List<Entity>> _cells =
-            new Dictionary<int, List<Entity>>();
+        private readonly Dictionary<int, List<Entity>> _cells = new Dictionary<int, List<Entity>>();
 
         public SpatialGrid(float cellSize)
         {
@@ -42,10 +41,7 @@ namespace Gameplay.Spatial
             entities.Add(entity);
         }
 
-        public void Query(
-            Vector3 center,
-            float radius,
-            List<Entity> results)
+        public void Query(Vector3 center, float radius, List<Entity> results)
         {
             results.Clear();
 
@@ -55,14 +51,14 @@ namespace Gameplay.Spatial
             int minX = GetCellCoordinate(center.x - radius);
             int maxX = GetCellCoordinate(center.x + radius);
 
-            int minZ = GetCellCoordinate(center.z - radius);
-            int maxZ = GetCellCoordinate(center.z + radius);
+            int minY = GetCellCoordinate(center.y - radius);
+            int maxY = GetCellCoordinate(center.y + radius);
 
             for (int x = minX; x <= maxX; x++)
             {
-                for (int z = minZ; z <= maxZ; z++)
+                for (int y = minY; y <= maxY; y++)
                 {
-                    int key = GetCellKey(x, z);
+                    int key = GetCellKey(x, y);
 
                     if (!_cells.TryGetValue(
                             key,
@@ -83,16 +79,16 @@ namespace Gameplay.Spatial
         private int GetCellKey(Vector3 position)
         {
             int x = GetCellCoordinate(position.x);
-            int z = GetCellCoordinate(position.z);
+            int y = GetCellCoordinate(position.y);
 
-            return GetCellKey(x, z);
+            return GetCellKey(x, y);
         }
 
-        private int GetCellKey(int x, int z)
+        private int GetCellKey(int x, int y)
         {
             unchecked
             {
-                return (x * 73856093) ^ (z * 19349663);
+                return (x * 73856093) ^ (y * 19349663);
             }
         }
     }
