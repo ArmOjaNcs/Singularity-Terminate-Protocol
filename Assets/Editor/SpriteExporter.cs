@@ -23,9 +23,19 @@ public class SpriteExporter
                 ti.SaveAndReimport();
             }
 
-            Rect rect = sprite.textureRect;
-            Texture2D newTex = new Texture2D((int)rect.width, (int)rect.height);
-            Color[] pixels = texture.GetPixels((int)rect.x, (int)rect.y, (int)rect.width, (int)rect.height);
+            Rect fullRect = sprite.rect;
+            int width = Mathf.RoundToInt(fullRect.width);
+            int height = Mathf.RoundToInt(fullRect.height);
+
+            Texture2D newTex = new Texture2D(width, height);
+            Color[] clearPixels = new Color[width * height];
+
+            newTex.SetPixels(clearPixels);
+
+            int sourceX = Mathf.RoundToInt(fullRect.x);
+            int sourceY = Mathf.RoundToInt(fullRect.y);
+
+            Color[] pixels = texture.GetPixels(sourceX, sourceY, width, height);
 
             newTex.SetPixels(pixels);
             newTex.Apply();
