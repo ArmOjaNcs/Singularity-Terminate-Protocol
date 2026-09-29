@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 98468977cdcbb8543ab365653bec96f6, type: 3}
   m_Name: EnemyConfig
   m_EditorClassIdentifier: 
-  Id: 
+  Id: Enemy
   DisplayName: Abomination
   Prefab: {fileID: 3914983768660671423, guid: 4bd2ad3e8dff0f14195702ab25b3af2c, type: 3}
   Stats:
@@ -23,3 +23,4 @@ MonoBehaviour:
     Defence: 0
     Speed: 2
     NavigationRadius: 0.5
+  ProjectileConfig: {fileID: 11400000, guid: c2b57a3710e16614198182c2f4879507, type: 2}
