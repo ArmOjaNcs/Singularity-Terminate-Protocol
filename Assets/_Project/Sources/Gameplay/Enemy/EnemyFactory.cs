@@ -1,5 +1,7 @@
+using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.EnemyComponents;
+using ECS.ViewComponents;
 using EnemyConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
@@ -18,7 +20,10 @@ namespace Gameplay.Enemy
         private readonly Stash<NavigationRadiusComponent> _navigationRadiusStash;
         private readonly Stash<AttackComponent> _attackStash;
         private readonly Stash<TargetComponent> _targetStash;
+
         private readonly Stash<ViewComponent> _viewStash;
+        private readonly Stash<AnimatedCreatureComponent> _animatedCreatureStash;
+        private readonly Stash<EnemyViewComponent> _enemyViewStash;
 
         public EnemyFactory(World world)
         {
@@ -32,7 +37,10 @@ namespace Gameplay.Enemy
             _navigationRadiusStash = world.GetStash<NavigationRadiusComponent>();
             _attackStash = world.GetStash<AttackComponent>();
             _targetStash = world.GetStash<TargetComponent>();
+
             _viewStash = world.GetStash<ViewComponent>();
+            _animatedCreatureStash = world.GetStash<AnimatedCreatureComponent>();
+            _enemyViewStash = world.GetStash<EnemyViewComponent>();
         }
 
         public Entity Create(EnemyConfig config, Vector3 position)
@@ -50,25 +58,38 @@ namespace Gameplay.Enemy
             };
 
             _enemyTagStash.Set(entity, new EnemyTag());
-            _statsStash.Set(entity,stats);
-            _healthStash.Set(entity, new HealthComponent {Current = stats.MaxHealth});
-            _movementStash.Set(entity, new MovementComponent{Direction = Vector3.zero});
-            _positionStash.Set(entity, new PositionComponent{Position = position});
-            _navigationRadiusStash.Set(entity, 
-                new NavigationRadiusComponent{Radius = config.Stats.NavigationRadius});
-            _attackStash.Set(entity,
+            _statsStash.Set(entity, stats);
+            _healthStash.Set(entity, new HealthComponent { Current = stats.MaxHealth });
+            _movementStash.Set(entity, new MovementComponent { Direction = Vector3.zero });
+            _positionStash.Set(entity, new PositionComponent { Position = position });
+
+            _navigationRadiusStash.Set(
+                entity,
+                new NavigationRadiusComponent
+                {
+                    Radius = config.Stats.NavigationRadius
+                });
+
+            _attackStash.Set(
+                entity,
                 new AttackComponent
                 {
                     Damage = config.Stats.Damage,
-                    AttackRadius = 1.5f,
+                    AttackRadius = 25f,
                     AttackCooldown = 1f,
                     CurrentCooldown = 0f,
-                    TargetType = AttackTargetType.Player
+                    TargetType = AttackTargetType.Player,
+                    SourceId = string.IsNullOrEmpty(config.Id)
+                        ? config.name
+                        : config.Id,
+                    ProjectileConfig = config.ProjectileConfig
                 });
+
             _targetStash.Set(entity, new TargetComponent());
 
             GameObject enemyObject = Object.Instantiate(config.Prefab);
             enemyObject.transform.position = position;
+
             EnemyView view = enemyObject.GetComponent<EnemyView>();
 
             if (view == null)
@@ -81,7 +102,27 @@ namespace Gameplay.Enemy
             }
 
             view.SetEntity(entity);
-            _viewStash.Set(entity, new ViewComponent{View = view});
+
+            _viewStash.Set(
+                entity,
+                new ViewComponent
+                {
+                    View = view
+                });
+
+            _animatedCreatureStash.Set(
+                entity,
+                new AnimatedCreatureComponent
+                {
+                    View = view
+                });
+
+            _enemyViewStash.Set(
+                entity,
+                new EnemyViewComponent
+                {
+                    View = view
+                });
 
             return entity;
         }

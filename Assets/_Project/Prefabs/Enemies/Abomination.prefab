@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8388212605961247850}
   - component: {fileID: 3892776303999042448}
   - component: {fileID: 1315676622121405075}
+  - component: {fileID: 862259748851408849}
   m_Layer: 0
   m_Name: Abomination
   m_TagString: Untagged
@@ -98,4 +99,25 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Renderer: {fileID: 3892776303999042448}
-  Animator: {fileID: 0}
+  Animator: {fileID: 862259748851408849}
+--- !u!95 &862259748851408849
+Animator:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3914983768660671423}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 2abe14f5e0e97c94aa65b3aa8c396bd3, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
