@@ -1,6 +1,6 @@
 using ECS.CommonComponents;
 using ECS.PlayerComponents;
-using Gameplay.Common;
+using Gameplay.View;
 using Scellecs.Morpeh;
 
 namespace ECS.PlayerSystems
@@ -13,7 +13,7 @@ namespace ECS.PlayerSystems
 
         private Stash<MovementComponent> _movementStash;
         private Stash<PlayerInputComponent> _inputStash;
-        private Stash<ViewComponent> _viewStash;
+        private Stash<PlayerViewComponent> _playerViewStash;
 
         public void OnAwake()
         {
@@ -21,26 +21,29 @@ namespace ECS.PlayerSystems
                 .With<PlayerTag>()
                 .With<MovementComponent>()
                 .With<PlayerInputComponent>()
-                .With<ViewComponent>()
+                .With<PlayerViewComponent>()
                 .Build();
 
             _movementStash = World.GetStash<MovementComponent>();
             _inputStash = World.GetStash<PlayerInputComponent>();
-            _viewStash = World.GetStash<ViewComponent>();
+            _playerViewStash = World.GetStash<PlayerViewComponent>();
         }
 
         public void OnUpdate(float deltaTime)
         {
             foreach (Entity entity in _filter)
             {
-                ref MovementComponent movement = ref _movementStash.Get(entity);
-                ref PlayerInputComponent input = ref _inputStash.Get(entity);
-                ref ViewComponent viewComponent = ref _viewStash.Get(entity);
+                ref MovementComponent movement =
+                    ref _movementStash.Get(entity);
 
-                if (viewComponent.View is not AnimatedCreature view)
-                    continue;
+                ref PlayerInputComponent input =
+                    ref _inputStash.Get(entity);
 
-                bool isMoving = movement.Direction != UnityEngine.Vector3.zero;
+                AnimatedCreature view = _playerViewStash.Get(entity).View;
+
+                bool isMoving =
+                    movement.Direction != UnityEngine.Vector3.zero;
+
                 view.SetMoving(isMoving);
 
                 if (movement.Direction.x > 0f)

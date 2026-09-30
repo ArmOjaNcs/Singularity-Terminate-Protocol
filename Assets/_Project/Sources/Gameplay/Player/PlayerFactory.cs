@@ -1,6 +1,7 @@
 using ECS.CommonComponents;
 using ECS.PlayerComponents;
-using Gameplay.Common;
+using ECS.ViewComponents;
+using Gameplay.View;
 using PlayerConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
@@ -18,7 +19,10 @@ namespace Gameplay.Player
         private readonly Stash<PlayerInputComponent> _inputStash;
         private readonly Stash<PositionComponent> _positionStash;
         private readonly Stash<NavigationRadiusComponent> _navigationRadiusStash;
+
         private readonly Stash<ViewComponent> _viewStash;
+        private readonly Stash<AnimatedCreatureComponent> _animatedCreatureStash;
+        private readonly Stash<PlayerViewComponent> _playerViewStash;
 
         public PlayerFactory(World world)
         {
@@ -31,10 +35,13 @@ namespace Gameplay.Player
             _inputStash = world.GetStash<PlayerInputComponent>();
             _positionStash = world.GetStash<PositionComponent>();
             _navigationRadiusStash = world.GetStash<NavigationRadiusComponent>();
+
             _viewStash = world.GetStash<ViewComponent>();
+            _animatedCreatureStash = world.GetStash<AnimatedCreatureComponent>();
+            _playerViewStash = world.GetStash<PlayerViewComponent>();
         }
 
-        public Entity Create(PlayerConfig config, Vector3 position)
+        public GameObject Create(PlayerConfig config, Vector3 position)
         {
             Entity entity = _world.CreateEntity();
 
@@ -50,39 +57,36 @@ namespace Gameplay.Player
 
             _playerTagStash.Set(entity, new PlayerTag());
 
-            _playerStatsStash.Set(entity, new PlayerStatsComponent
-            {
-                Stats = stats,
-                MaxWeapons = config.Stats.MaxWeapons,
-                GatheringRadius = config.Stats.GatheringRadius,
-                EvasionChance = config.Stats.EvasionChance
-            });
+            _playerStatsStash.Set(
+                entity,
+                new PlayerStatsComponent
+                {
+                    Stats = stats,
+                    MaxWeapons = config.Stats.MaxWeapons,
+                    GatheringRadius = config.Stats.GatheringRadius,
+                    EvasionChance = config.Stats.EvasionChance
+                });
 
-            _healthStash.Set(entity, new HealthComponent
-            {
-                Current = stats.MaxHealth
-            });
+            _healthStash.Set(entity, new HealthComponent { Current = stats.MaxHealth });
 
-            _movementStash.Set(entity, new MovementComponent
-            {
-                Direction = Vector3.zero
-            });
+            _movementStash.Set(entity, new MovementComponent { Direction = Vector3.zero });
 
-            _inputStash.Set(entity, new PlayerInputComponent
-            {
-                VictoryPressed = false,
-                DeathPressed = false
-            });
+            _inputStash.Set(
+                entity,
+                new PlayerInputComponent
+                {
+                    VictoryPressed = false,
+                    DeathPressed = false
+                });
 
-            _positionStash.Set(entity, new PositionComponent
-            {
-                Position = position
-            });
+            _positionStash.Set(entity, new PositionComponent { Position = position });
 
-            _navigationRadiusStash.Set(entity, new NavigationRadiusComponent
-            {
-                Radius = config.Stats.BaseStats.NavigationRadius
-            });
+            _navigationRadiusStash.Set(
+                entity,
+                new NavigationRadiusComponent
+                {
+                    Radius = config.Stats.BaseStats.NavigationRadius
+                });
 
             GameObject playerObject = Object.Instantiate(config.Prefab);
             playerObject.transform.position = position;
@@ -99,9 +103,14 @@ namespace Gameplay.Player
             }
 
             view.SetEntity(entity);
+
             _viewStash.Set(entity, new ViewComponent { View = view });
 
-            return entity;
+            _animatedCreatureStash.Set(entity, new AnimatedCreatureComponent { View = view });
+
+            _playerViewStash.Set(entity, new PlayerViewComponent { View = view });
+
+            return playerObject;
         }
     }
 }

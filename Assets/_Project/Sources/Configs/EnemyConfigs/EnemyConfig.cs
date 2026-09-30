@@ -10,5 +10,6 @@ namespace EnemyConfigs
         public string DisplayName;
         public GameObject Prefab;
         public BaseStats Stats;
+        public ProjectileConfig ProjectileConfig;
     }
 }
