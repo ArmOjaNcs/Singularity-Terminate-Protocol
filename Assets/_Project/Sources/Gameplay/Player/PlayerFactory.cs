@@ -41,7 +41,7 @@ namespace Gameplay.Player
             _playerViewStash = world.GetStash<PlayerViewComponent>();
         }
 
-        public Entity Create(PlayerConfig config, Vector3 position)
+        public GameObject Create(PlayerConfig config, Vector3 position)
         {
             Entity entity = _world.CreateEntity();
 
@@ -110,7 +110,7 @@ namespace Gameplay.Player
 
             _playerViewStash.Set(entity, new PlayerViewComponent { View = view });
 
-            return entity;
+            return playerObject;
         }
     }
 }

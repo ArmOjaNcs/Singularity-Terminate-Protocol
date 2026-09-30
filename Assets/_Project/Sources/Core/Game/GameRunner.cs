@@ -24,7 +24,7 @@ namespace Core.Game
         private PlayerFactory _playerFactory;
         private ViewPauseSystem _viewPauseSystem;
         private PlayerDeathSystem _playerDeathSystem;
-        private Entity _playerEntity;
+        private GameObject _playerGameObject;
         private bool _isPaused;
 
         private void Awake()
@@ -100,13 +100,10 @@ namespace Core.Game
         {
             Vector3 spawnPosition = _playerSpawnPoint;
 
-            _playerEntity =
+            _playerGameObject =
                 _playerFactory.Create(
                     _playerConfig,
                     spawnPosition);
-
-            if (_playerEntity == default)
-                return;
         }
 
         private void SetPause(bool value)
