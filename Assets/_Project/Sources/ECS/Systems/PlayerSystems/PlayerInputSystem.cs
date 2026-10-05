@@ -30,8 +30,7 @@ namespace ECS.PlayerSystems
             Vector3 direction = new Vector3(
                 Input.GetAxisRaw("Horizontal"),
                 Input.GetAxisRaw("Vertical"),
-                0f
-            );
+                0f);
 
             bool death = Input.GetButtonDown("Fire1");
             bool victory = Input.GetButtonDown("Fire2");
@@ -43,7 +42,7 @@ namespace ECS.PlayerSystems
             {
                 ref var movement = ref _movementStash.Get(entity);
                 ref var input = ref _inputStash.Get(entity);
-                
+
                 movement.Direction = direction;
                 input.VictoryPressed = victory;
                 input.DeathPressed = death;

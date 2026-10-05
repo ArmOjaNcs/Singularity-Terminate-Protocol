@@ -1,9 +1,11 @@
 using ECS.CommonComponents;
 using ECS.PlayerComponents;
+using ECS.PlayerSystems;
 using ECS.ViewComponents;
 using Gameplay.View;
 using PlayerConfigs;
 using Scellecs.Morpeh;
+using UniRx;
 using UnityEngine;
 
 namespace Gameplay.Player
@@ -19,6 +21,11 @@ namespace Gameplay.Player
         private readonly Stash<PlayerInputComponent> _inputStash;
         private readonly Stash<PositionComponent> _positionStash;
         private readonly Stash<NavigationRadiusComponent> _navigationRadiusStash;
+
+        private readonly Stash<PlayerExperienceComponent> _xpStash;
+        private readonly Stash<AddExperienceEvent> _addXpStash;
+
+        private readonly Stash<LooterComponent> _looterStash;
 
         private readonly Stash<ViewComponent> _viewStash;
         private readonly Stash<AnimatedCreatureComponent> _animatedCreatureStash;
@@ -39,6 +46,11 @@ namespace Gameplay.Player
             _viewStash = world.GetStash<ViewComponent>();
             _animatedCreatureStash = world.GetStash<AnimatedCreatureComponent>();
             _playerViewStash = world.GetStash<PlayerViewComponent>();
+
+            _xpStash = world.GetStash<PlayerExperienceComponent>();
+            _addXpStash = world.GetStash<AddExperienceEvent>();
+
+            _looterStash = world.GetStash<LooterComponent>();
         }
 
         public GameObject Create(PlayerConfig config, Vector3 position)
@@ -52,10 +64,10 @@ namespace Gameplay.Player
                 Damage = config.Stats.BaseStats.Damage,
                 Luck = config.Stats.BaseStats.Luck,
                 Defence = config.Stats.BaseStats.Defence,
-                Speed = config.Stats.BaseStats.Speed
+                Speed = config.Stats.BaseStats.Speed,
             };
 
-            _playerTagStash.Set(entity, new PlayerTag());
+            _playerTagStash.Set(entity, default(PlayerTag));
 
             _playerStatsStash.Set(
                 entity,
@@ -63,8 +75,7 @@ namespace Gameplay.Player
                 {
                     Stats = stats,
                     MaxWeapons = config.Stats.MaxWeapons,
-                    GatheringRadius = config.Stats.GatheringRadius,
-                    EvasionChance = config.Stats.EvasionChance
+                    EvasionChance = config.Stats.EvasionChance,
                 });
 
             _healthStash.Set(entity, new HealthComponent { Current = stats.MaxHealth });
@@ -76,7 +87,7 @@ namespace Gameplay.Player
                 new PlayerInputComponent
                 {
                     VictoryPressed = false,
-                    DeathPressed = false
+                    DeathPressed = false,
                 });
 
             _positionStash.Set(entity, new PositionComponent { Position = position });
@@ -85,8 +96,18 @@ namespace Gameplay.Player
                 entity,
                 new NavigationRadiusComponent
                 {
-                    Radius = config.Stats.BaseStats.NavigationRadius
+                    Radius = config.Stats.BaseStats.NavigationRadius,
                 });
+
+            _xpStash.Set(entity, new PlayerExperienceComponent
+            {
+                CurrentXP = new ReactiveProperty<int>(0),
+                NextLevelXP = 100,
+                CurrentLevel = 1,
+            });
+            _addXpStash.Set(entity, new AddExperienceEvent { Amount = 0 });
+
+            _looterStash.Set(entity, new LooterComponent { PickupRadius = config.Stats.GatheringRadius });
 
             GameObject playerObject = Object.Instantiate(config.Prefab);
             playerObject.transform.position = position;

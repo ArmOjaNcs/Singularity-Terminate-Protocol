@@ -26,4 +26,4 @@ MonoBehaviour:
       NavigationRadius: 0.5
     MaxWeapons: 0
     EvasionChance: 0
-    GatheringRadius: 5
+    GatheringRadius: 2

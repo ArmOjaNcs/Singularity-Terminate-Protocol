@@ -1,3 +1,5 @@
+using System;
+using Cinemachine;
 using ECS.CommonSystems;
 using ECS.EnemySystems;
 using ECS.PlayerSystems;
@@ -17,6 +19,8 @@ namespace Core.Game
         [SerializeField] private Vector3 _playerSpawnPoint;
         [SerializeField] private NavigationGrid _navigationGrid;
         [SerializeField] private Transform _projectileContainer;
+        [SerializeField] private CinemachineVirtualCamera _camera;
+        [SerializeField] private PolygonCollider2D _cameraBounds;
 
         private World _world;
         private SystemsGroup _gameplaySystems;
@@ -104,6 +108,25 @@ namespace Core.Game
                 _playerFactory.Create(
                     _playerConfig,
                     spawnPosition);
+
+            SetCamera(_playerGameObject.transform);
+        }
+
+        private void SetCamera(Transform playerTransform)
+        {
+            if (_camera == null)
+                throw new ArgumentNullException(nameof(_camera));
+
+            _camera.LookAt = playerTransform;
+            _camera.Follow = playerTransform;
+
+            CinemachineConfiner2D confiner = _camera.GetComponent<CinemachineConfiner2D>();
+
+            if (confiner != null && _cameraBounds != null)
+            {
+                confiner.m_BoundingShape2D = _cameraBounds.GetComponent<Collider2D>();
+                confiner.InvalidateCache();
+            }
         }
 
         private void SetPause(bool value)
