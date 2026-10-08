@@ -14,7 +14,6 @@ public sealed class PlayerExperienceSystem : ISystem
     public void OnAwake()
     {
         _filter = World.Filter
-            .With<PlayerExperienceComponent>()
             .With<AddExperienceEvent>()
             .Build();
 
@@ -27,22 +26,36 @@ public sealed class PlayerExperienceSystem : ISystem
     {
         foreach (var entity in _filter)
         {
-            ref var xpComp = ref _experienceStash.Get(entity);
-            ref var eventComp = ref _addExperienceStash.Get(entity);
+            ref var addExperienceEvent = ref _addExperienceStash.Get(entity);
 
-            xpComp.CurrentXP.Value += eventComp.Amount;
+            int addXp = addExperienceEvent.Amount;
+            Entity looter = addExperienceEvent.LooterEntity;
 
-            if (xpComp.CurrentXP.Value >= xpComp.NextLevelXP)
+            if (World.IsDisposed(looter))
+                continue;
+
+            if (_experienceStash.Has(looter))
             {
-                xpComp.CurrentXP.Value -= xpComp.NextLevelXP;
-                xpComp.CurrentLevel++;
+                ref var xpComp = ref _experienceStash.Get(looter);
 
-                xpComp.NextLevelXP = Mathf.RoundToInt(xpComp.NextLevelXP * 1.2f);
+                xpComp.CurrentXP.Value += addXp;
 
-                _levelUpStash.Set(entity, new LevelUpEvent { NewLevel = xpComp.CurrentLevel });
+                if (xpComp.CurrentXP.Value >= xpComp.NextLevelXP.Value)
+                {
+                    while (xpComp.NextLevelXP.Value <= xpComp.CurrentXP.Value)
+                    {
+                        xpComp.CurrentXP.Value -= xpComp.NextLevelXP.Value;
+                        xpComp.NextLevelXP.Value = Mathf.RoundToInt(xpComp.NextLevelXP.Value * 1.2f);
+                        xpComp.CurrentLevel.Value++;
+
+                        Entity levelUpEntity = World.CreateEntity();
+
+                        _levelUpStash.Set(levelUpEntity, new LevelUpEvent { NewLevel = xpComp.CurrentLevel.Value });
+                    }
+                }
+
+                _addExperienceStash.Remove(entity);
             }
-
-            _addExperienceStash.Remove(entity);
         }
     }
 

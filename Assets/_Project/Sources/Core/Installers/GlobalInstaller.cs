@@ -7,7 +7,6 @@ namespace Core.Installers
     public class GlobalInstaller : MonoInstaller
     {
         [SerializeField] private AudioService _audioService;
-        [SerializeField] private UIService _uiService;
 
         public override void InstallBindings()
         {
@@ -16,13 +15,6 @@ namespace Core.Installers
                 .UnderTransformGroup("GlobalServices")
                 .AsSingle()
                 .NonLazy();
-
-            Container.BindInterfacesAndSelfTo<UIService>()
-                .FromComponentInNewPrefab(_uiService)
-                .UnderTransformGroup("GlobalServices")
-                .AsSingle()
-                .NonLazy();
         }
     }
 }
-

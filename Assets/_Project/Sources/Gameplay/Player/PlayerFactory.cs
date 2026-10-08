@@ -12,6 +12,8 @@ namespace Gameplay.Player
 {
     public sealed class PlayerFactory
     {
+        private const int InitialFirstLevelUpXP = 100;
+
         private readonly World _world;
 
         private readonly Stash<PlayerTag> _playerTagStash;
@@ -56,7 +58,6 @@ namespace Gameplay.Player
         public GameObject Create(PlayerConfig config, Vector3 position)
         {
             Entity entity = _world.CreateEntity();
-
             StatsComponent stats = new StatsComponent
             {
                 MaxHealth = config.Stats.BaseStats.MaxHealth,
@@ -68,7 +69,6 @@ namespace Gameplay.Player
             };
 
             _playerTagStash.Set(entity, default(PlayerTag));
-
             _playerStatsStash.Set(
                 entity,
                 new PlayerStatsComponent
@@ -77,11 +77,8 @@ namespace Gameplay.Player
                     MaxWeapons = config.Stats.MaxWeapons,
                     EvasionChance = config.Stats.EvasionChance,
                 });
-
             _healthStash.Set(entity, new HealthComponent { Current = stats.MaxHealth });
-
             _movementStash.Set(entity, new MovementComponent { Direction = Vector3.zero });
-
             _inputStash.Set(
                 entity,
                 new PlayerInputComponent
@@ -89,9 +86,7 @@ namespace Gameplay.Player
                     VictoryPressed = false,
                     DeathPressed = false,
                 });
-
             _positionStash.Set(entity, new PositionComponent { Position = position });
-
             _navigationRadiusStash.Set(
                 entity,
                 new NavigationRadiusComponent
@@ -102,16 +97,13 @@ namespace Gameplay.Player
             _xpStash.Set(entity, new PlayerExperienceComponent
             {
                 CurrentXP = new ReactiveProperty<int>(0),
-                NextLevelXP = 100,
-                CurrentLevel = 1,
+                NextLevelXP = new ReactiveProperty<int>(InitialFirstLevelUpXP),
+                CurrentLevel = new ReactiveProperty<int>(1),
             });
             _addXpStash.Set(entity, new AddExperienceEvent { Amount = 0 });
-
             _looterStash.Set(entity, new LooterComponent { PickupRadius = config.Stats.GatheringRadius });
 
-            GameObject playerObject = Object.Instantiate(config.Prefab);
-            playerObject.transform.position = position;
-
+            GameObject playerObject = Object.Instantiate(config.Prefab, position, Quaternion.identity);
             AnimatedCreature view = playerObject.GetComponent<AnimatedCreature>();
 
             if (view == null)
@@ -126,9 +118,7 @@ namespace Gameplay.Player
             view.SetEntity(entity);
 
             _viewStash.Set(entity, new ViewComponent { View = view });
-
             _animatedCreatureStash.Set(entity, new AnimatedCreatureComponent { View = view });
-
             _playerViewStash.Set(entity, new PlayerViewComponent { View = view });
 
             return playerObject;

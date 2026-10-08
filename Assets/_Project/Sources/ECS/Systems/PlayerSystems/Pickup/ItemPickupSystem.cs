@@ -14,7 +14,7 @@ public sealed class ItemPickupSystem : ISystem
     private Stash<ItemViewComponent> _itemViewStash;
     private Stash<PlayerViewComponent> _playerViewStash;
 
-    private Stash<PlayerExperienceComponent> _xpStash;
+    private Stash<AddExperienceEvent> _addXpStash;
 
     public World World { get; set; }
 
@@ -22,7 +22,7 @@ public sealed class ItemPickupSystem : ISystem
     {
         _itemPickupStash = World.GetStash<ItemPickupComponent>();
         _pickupEventStash = World.GetStash<ItemPickupEvent>();
-        _xpStash = World.GetStash<PlayerExperienceComponent>();
+        _addXpStash = World.GetStash<AddExperienceEvent>();
         _playerViewStash = World.GetStash<PlayerViewComponent>();
         _itemViewStash = World.GetStash<ItemViewComponent>();
 
@@ -49,14 +49,8 @@ public sealed class ItemPickupSystem : ISystem
 
             item.IsPickedUp = true;
 
-            if (_xpStash.Has(looter) && item.Type == ItemTypes.ExperienceGem)
-            {
-                ref var xp = ref _xpStash.Get(looter);
-
-                xp.CurrentXP.Value += item.AddExpAmount;
-
-                Debug.Log($"Игроку добавлено {item.AddExpAmount} опыта. Теперь всего: {xp.CurrentXP.Value}");
-            }
+            if (_addXpStash.Has(itemEntity))
+                _addXpStash.Get(itemEntity).LooterEntity = looter;
 
             AnimatePickup(itemEntity, looter);
 

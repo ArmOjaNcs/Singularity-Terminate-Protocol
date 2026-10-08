@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8513211765702965618}
   - component: {fileID: 2912275271694848390}
-  - component: {fileID: 6873396632460890647}
+  - component: {fileID: 5377188590313036343}
   m_Layer: 0
   m_Name: ProjectContext
   m_TagString: Untagged
@@ -47,7 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _scriptableObjectInstallers: []
   _monoInstallers:
-  - {fileID: 6873396632460890647}
+  - {fileID: 5377188590313036343}
   _installerPrefabs: []
   _parentNewObjectsUnderContext: 1
   _editorReflectionBakingCoverageMode: 0
@@ -62,7 +62,7 @@ MonoBehaviour:
       _missingHandlerDefaultResponse: 2
       _requireStrictUnsubscribe: 0
       _defaultAsyncTickPriority: 1
---- !u!114 &6873396632460890647
+--- !u!114 &5377188590313036343
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -75,4 +75,3 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _audioService: {fileID: 2282444016067818632, guid: 3c815c6697fb7f148819bb31e7ba84dc, type: 3}
-  _uiService: {fileID: 7766092851413348641, guid: f2b2074a7ebe9a345814ef70c63b6236, type: 3}

@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using Cinemachine;
 using Configs;
+using Core.Services;
 using ECS.CommonSystems;
 using ECS.EnemySystems;
 using ECS.PlayerSystems;
 using ECS.ProjectileSystems;
-using Gameplay;
 using Gameplay.Items;
 using Gameplay.Navigation;
 using Gameplay.Player;
@@ -39,6 +39,7 @@ namespace Core.Game
         private GameObject _playerGameObject;
 
         private LevelBar _levelBar;
+        private UIService _uiService;
 
         [Inject]
         public void Construct(
@@ -46,10 +47,11 @@ namespace Core.Game
             List<GemExpConfig> itemConfigs,
             Vector3 spawnPoint,
             NavigationGrid navigationGrid,
-            Transform projectileContainer,
+            [Inject(Id = "ProjectileContainer")] Transform projectileContainer,
             CinemachineVirtualCamera camera,
             PolygonCollider2D cameraBounds,
-            LevelBar levelBar)
+            LevelBar levelBar,
+            UIService uiService)
         {
             _playerConfig = playerConfig;
             _itemConfigs = itemConfigs;
@@ -59,6 +61,7 @@ namespace Core.Game
             _camera = camera;
             _cameraBounds = cameraBounds;
             _levelBar = levelBar;
+            _uiService = uiService;
 
             Initialize();
         }
@@ -113,12 +116,11 @@ namespace Core.Game
             _gameplaySystems.AddSystem(new EnemyDeathAnimationSystem());
             _gameplaySystems.AddSystem(new DeathSystem());
 
-            _gameplaySystems.AddSystem(new PlayerExperienceSystem());
-            _gameplaySystems.AddSystem(new LevelUpSystem());
-            _gameplaySystems.AddSystem(new PlayerExperienceSystem());
-
             _gameplaySystems.AddSystem(new ItemScanSystem());
             _gameplaySystems.AddSystem(new ItemPickupSystem());
+
+            _gameplaySystems.AddSystem(new PlayerExperienceSystem());
+            _gameplaySystems.AddSystem(new LevelUpSystem(_uiService));
 
             _world.AddSystemsGroup(0, _gameplaySystems);
         }
