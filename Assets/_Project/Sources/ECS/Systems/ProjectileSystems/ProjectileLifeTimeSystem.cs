@@ -1,3 +1,4 @@
+using ECS.CommonComponents;
 using ECS.ProjectileComponents;
 using Gameplay.View;
 using Scellecs.Morpeh;
@@ -12,6 +13,7 @@ namespace ECS.ProjectileSystems
 
         private Stash<ProjectileComponent> _projectileStash;
         private Stash<ProjectileViewComponent> _projectileViewStash;
+        private Stash<CleanupRequest> _cleanupRequestStash;
 
         public void OnAwake()
         {
@@ -19,29 +21,36 @@ namespace ECS.ProjectileSystems
                 .With<ProjectileComponent>()
                 .Build();
 
-            _projectileStash =
-                World.GetStash<ProjectileComponent>();
-
-            _projectileViewStash =
-                World.GetStash<ProjectileViewComponent>();
+            _projectileStash = World.GetStash<ProjectileComponent>();
+            _projectileViewStash = World.GetStash<ProjectileViewComponent>();
+            _cleanupRequestStash = World.GetStash<CleanupRequest>();
         }
 
         public void OnUpdate(float deltaTime)
         {
             foreach (Entity entity in _filter)
             {
-                ref ProjectileComponent projectile =
-                    ref _projectileStash.Get(entity);
+                ref ProjectileComponent projectile = ref _projectileStash.Get(entity);
 
+                if (projectile.CleanupRequested)
+                    continue;
+                
                 projectile.CurrentLifetime += deltaTime;
 
                 if (projectile.Lifetime <= 0f ||
                     projectile.CurrentLifetime < projectile.Lifetime)
                     continue;
+                
+                projectile.CleanupRequested = true;
 
                 DisableView(entity);
 
-                World.RemoveEntity(entity);
+                Entity request = World.CreateEntity();
+
+                _cleanupRequestStash.Set(request, new CleanupRequest
+                {
+                    Candidate = entity
+                });
             }
         }
 
@@ -49,15 +58,13 @@ namespace ECS.ProjectileSystems
         {
             if (!_projectileViewStash.Has(entity))
                 return;
-
+   
             AnimatedView view = _projectileViewStash.Get(entity).View;
 
             if (view != null)
                 view.SetActive(false);
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

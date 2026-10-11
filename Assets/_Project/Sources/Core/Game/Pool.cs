@@ -3,16 +3,19 @@ using UnityEngine;
 
 namespace Core.Game
 {
-    public class ObjectPool<T>
-        where T : MonoBehaviour
+    public class ObjectPool<T> where T : MonoBehaviour
     {
-        private List<T> _pool;
-        private T _prefab;
+        private readonly List<T> _pool;
+        private readonly T _prefab;
 
         public ObjectPool(T prefab, int maxCapacity, Transform container)
         {
             _prefab = prefab;
             Container = container;
+
+            maxCapacity = Mathf.Max(maxCapacity, CombatSettings.MinPoolCapacity);
+
+            _pool = new List<T>(maxCapacity);
 
             CreatePool(maxCapacity);
         }
@@ -21,11 +24,16 @@ namespace Core.Game
 
         public bool TryGetFreeElement(out T element)
         {
-            foreach (T freeElement in _pool)
+            for (int i = 0; i < _pool.Count; i++)
             {
-                if (!freeElement.gameObject.activeInHierarchy)
+                T poolElement = _pool[i];
+
+                if (poolElement == null)
+                    continue;
+
+                if (!poolElement.gameObject.activeInHierarchy)
                 {
-                    element = freeElement;
+                    element = poolElement;
                     return true;
                 }
             }
@@ -36,6 +44,9 @@ namespace Core.Game
 
         public T GetElement()
         {
+            if (_prefab == null)
+                return null;
+
             if (TryGetFreeElement(out T element))
                 return element;
 
@@ -52,7 +63,12 @@ namespace Core.Game
 
         private T CreateObject()
         {
-            T createdObject = Object.Instantiate(_prefab, Container);
+            if (_prefab == null)
+                return null;
+
+            T createdObject =
+                Object.Instantiate(_prefab, Container);
+
             _pool.Add(createdObject);
             createdObject.gameObject.SetActive(false);
 
@@ -61,8 +77,6 @@ namespace Core.Game
 
         private void CreatePool(int maxCapacity)
         {
-            _pool = new List<T>(maxCapacity);
-
             for (int i = 0; i < maxCapacity; i++)
                 CreateObject();
         }

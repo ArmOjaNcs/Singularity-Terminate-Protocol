@@ -5,6 +5,7 @@ namespace ECS.CommonComponents
     [System.Serializable]
     public struct StatsComponent : IComponent
     {
+        public CreatureType CreatureType;
         public float MaxHealth;
         public float HealthRegeneration;
         public float Damage;
