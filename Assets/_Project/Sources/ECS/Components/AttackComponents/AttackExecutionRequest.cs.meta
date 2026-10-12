@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 <<<<<<<< HEAD:Assets/_Project/Sources/ECS/Components/AttackComponents/AttackRequest.cs.meta
-guid: 7acf440a2d042ef42b97011bb5326987
+guid: 6b1a3fe96e224f049a33ffc25713dfac
 ========
 guid: 3dc63ab1a987b224fb6f98ec1e0cfdab
 >>>>>>>> remotes/origin/WeaponDev:Assets/_Project/Sources/ECS/Components/AttackComponents/AttackExecutionRequest.cs.meta
