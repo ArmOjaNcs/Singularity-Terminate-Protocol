@@ -6,7 +6,6 @@ namespace ECS.PlayerComponents
     public struct PlayerStatsComponent : IComponent
     {
         public int MaxWeapons;
-        public float GatheringRadius;
         public float EvasionChance;
     }
 }

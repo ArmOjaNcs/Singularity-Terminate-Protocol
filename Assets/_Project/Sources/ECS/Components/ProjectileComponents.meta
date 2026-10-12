@@ -1,5 +1,9 @@
 fileFormatVersion: 2
+<<<<<<<< HEAD:Assets/Plugins.meta
+guid: 29f50d352408cf04ea8780d9c7b9bd05
+========
 guid: 696e90152e995d64aba3416a5d6dbd10
+>>>>>>>> 23d222cc71b26ddb586347cda57a260156de97b8:Assets/_Project/Sources/ECS/Components/ProjectileComponents.meta
 folderAsset: yes
 DefaultImporter:
   externalObjects: {}

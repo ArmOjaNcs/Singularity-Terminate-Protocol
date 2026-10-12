@@ -4,6 +4,5 @@ namespace ECS.PlayerComponents
 {
     public struct PlayerTag : IComponent
     {
-
     }
 }
