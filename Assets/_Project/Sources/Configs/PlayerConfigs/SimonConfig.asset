@@ -32,4 +32,4 @@ MonoBehaviour:
     CapsuleOrientation: 1
   MaxWeapons: 2
   EvasionChance: 5
-  GatheringRadius: 5
+  GatheringRadius: 2
