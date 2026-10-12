@@ -29,9 +29,13 @@ namespace Core.Services
 
         public void ShowLevelUpScreen()
         {
-            GameObject levelUp = GetOrCreateWindow(_levelUpScreenPrefab, _levelUpContainer);
+            if (_levelUpScreen == null)
+            {
+                GameObject levelUp = GetOrCreateWindow(_levelUpScreenPrefab, _levelUpContainer);
 
-            _levelUpScreen = levelUp.GetComponent<LevelUpScreen>();
+                _levelUpScreen = levelUp.GetComponent<LevelUpScreen>();
+            }
+
             _levelUpScreen.Setup();
 
             IsLevelUpScreenOpen = true;
