@@ -6,11 +6,6 @@ using ECS.PlayerComponents;
 using Gameplay.Spatial;
 using Scellecs.Morpeh;
 using UnityEngine;
-<<<<<<<< HEAD:Assets/_Project/Sources/ECS/Systems/Common/TargetSelectionSystem.cs
-using Gameplay.Spatial;
-using ECS.AttackComponents;
-========
->>>>>>>> remotes/origin/WeaponDev:Assets/_Project/Sources/ECS/Systems/CommonSystems/TargetSelectionSystem.cs
 
 namespace ECS.CommonSystems
 {

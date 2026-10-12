@@ -7,5 +7,6 @@ namespace ECS.PlayerComponents
     {
         public int MaxWeapons;
         public float EvasionChance;
+        public float GatheringRadius;
     }
 }

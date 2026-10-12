@@ -1,6 +1,3 @@
-using ECS.EnemyComponents;
-using ECS.PlayerComponents;
-using ECS.ProjectileComponents;
 using ECS.ViewComponents;
 using Scellecs.Morpeh;
 

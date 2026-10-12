@@ -76,7 +76,7 @@ namespace Gameplay.Player
                 Damage = baseStats.Damage,
                 Luck = baseStats.Luck,
                 Defence = baseStats.Defence,
-                Speed = baseStats.Speed
+                Speed = baseStats.Speed,
             };
 
             _statsStash.Set(entity, stats);
@@ -87,12 +87,12 @@ namespace Gameplay.Player
                 {
                     MaxWeapons = config.MaxWeapons,
                     GatheringRadius = config.GatheringRadius,
-                    EvasionChance = config.EvasionChance
+                    EvasionChance = config.EvasionChance,
                 });
 
             _healthStash.Set(entity, new HealthComponent
             {
-                Current = stats.MaxHealth
+                Current = stats.MaxHealth,
             });
         }
 
@@ -102,14 +102,14 @@ namespace Gameplay.Player
 
             _movementStash.Set(entity, new MovementComponent
             {
-                Direction = Vector3.zero
+                Direction = Vector3.zero,
             });
 
             _inputStash.Set(entity, new PlayerInputComponent());
 
             _positionStash.Set(entity, new PositionComponent
             {
-                Position = position
+                Position = position,
             });
 
             _colliderStash.Set(
@@ -121,7 +121,7 @@ namespace Gameplay.Player
                     Length = config.Collider.Length,
                     Size = config.Collider.Size,
                     Angle = 0f,
-                    CapsuleOrientation = config.Collider.CapsuleOrientation
+                    CapsuleOrientation = config.Collider.CapsuleOrientation,
                 });
         }
 
