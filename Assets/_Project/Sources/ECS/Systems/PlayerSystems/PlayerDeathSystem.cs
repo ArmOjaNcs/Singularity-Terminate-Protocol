@@ -8,14 +8,13 @@ namespace ECS.PlayerSystems
 {
     public sealed class PlayerDeathSystem : ISystem
     {
-        public World World { get; set; }
-
         private Filter _filter;
-
         private Stash<DeathComponent> _deathStash;
         private Stash<AnimatedCreatureComponent> _animatedCreatureStash;
         private Stash<HealthComponent> _healthStash;
-        private Stash<PlayerStatsComponent> _statsStash;
+        private Stash<StatsComponent> _statsStash;
+
+        public World World { get; set; }
 
         public void OnAwake()
         {
@@ -29,7 +28,7 @@ namespace ECS.PlayerSystems
             _animatedCreatureStash =
                 World.GetStash<AnimatedCreatureComponent>();
             _healthStash = World.GetStash<HealthComponent>();
-            _statsStash = World.GetStash<PlayerStatsComponent>();
+            _statsStash = World.GetStash<StatsComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -43,6 +42,9 @@ namespace ECS.PlayerSystems
                     continue;
 
                 AnimatedCreature view = _animatedCreatureStash.Get(entity).View;
+
+                if (view == null)
+                    continue;
 
                 death.AnimationStarted = true;
 
@@ -66,20 +68,20 @@ namespace ECS.PlayerSystems
             if (!_deathStash.Has(entity))
                 return;
 
-            ref HealthComponent health =
-                ref _healthStash.Get(entity);
+            ref HealthComponent health = ref _healthStash.Get(entity);
 
-            ref PlayerStatsComponent stats =
-                ref _statsStash.Get(entity);
+            ref StatsComponent stats = ref _statsStash.Get(entity);
 
-            AnimatedCreature view =
-                _animatedCreatureStash.Get(entity).View;
+            AnimatedCreature view = _animatedCreatureStash.Get(entity).View;
 
-            health.Current = stats.Stats.MaxHealth;
+            health.Current = stats.MaxHealth;
 
-            view.OnDeathPerformed -= OnDeathPerformed;
-            view.ResetState();
-            view.ResetAnimator();
+            if (view != null)
+            {
+                view.OnDeathPerformed -= OnDeathPerformed;
+                view.ResetState();
+                view.ResetAnimator();
+            }
 
             _deathStash.Remove(entity);
         }
@@ -89,8 +91,6 @@ namespace ECS.PlayerSystems
             view.OnDeathPerformed -= OnDeathPerformed;
         }
 
-        public void Dispose()
-        {
-        }
+        public void Dispose() { }
     }
 }

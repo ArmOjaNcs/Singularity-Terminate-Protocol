@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02d2a7b7f9b17fd4d9d2b52c715b2174, type: 3}
+  m_Name: ArcProjectileConfig
+  m_EditorClassIdentifier: 
+  Type: 2
+  Prefab: {fileID: 8570826228377179493, guid: eee1383f6978de44fa588e206542df38, type: 3}
+  PoolCapacity: 5
+  Collider:
+    Type: 2
+    Radius: 1
+    Length: 5
+    Size: {x: 0, y: 0}
+    CapsuleOrientation: 0
+  ColliderOffset: {x: 0.662, y: 0, z: 0}
+  TrajectoryRadius: 0.25
+  StartAngle: -45
+  EndAngle: 45

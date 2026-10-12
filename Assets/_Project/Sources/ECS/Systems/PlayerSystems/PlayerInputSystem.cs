@@ -7,11 +7,13 @@ namespace ECS.PlayerSystems
 {
     public sealed class PlayerInputSystem : ISystem
     {
-        public World World { get; set; }
-
         private Filter _filter;
+
         private Stash<MovementComponent> _movementStash;
         private Stash<PlayerInputComponent> _inputStash;
+        private Stash<MovementLockComponent> _movementLockStash;
+
+        public World World { get; set; }
 
         public void OnAwake()
         {
@@ -19,10 +21,17 @@ namespace ECS.PlayerSystems
                 .With<PlayerTag>()
                 .With<MovementComponent>()
                 .With<PlayerInputComponent>()
+                .Without<DeathComponent>()
                 .Build();
 
-            _movementStash = World.GetStash<MovementComponent>();
-            _inputStash = World.GetStash<PlayerInputComponent>();
+            _movementStash =
+                World.GetStash<MovementComponent>();
+
+            _inputStash =
+                World.GetStash<PlayerInputComponent>();
+
+            _movementLockStash =
+                World.GetStash<MovementLockComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -30,21 +39,33 @@ namespace ECS.PlayerSystems
             Vector3 direction = new Vector3(
                 Input.GetAxisRaw("Horizontal"),
                 Input.GetAxisRaw("Vertical"),
-                0f
-            );
+                0f);
 
-            bool death = Input.GetButtonDown("Fire1");
-            bool victory = Input.GetButtonDown("Fire2");
+            bool death =
+                Input.GetButtonDown("Fire1");
+
+            bool victory =
+                Input.GetButtonDown("Fire2");
 
             if (direction.sqrMagnitude > 1f)
                 direction.Normalize();
 
             foreach (var entity in _filter)
             {
-                ref var movement = ref _movementStash.Get(entity);
-                ref var input = ref _inputStash.Get(entity);
-                
+                ref var movement =
+                    ref _movementStash.Get(entity);
+
+                ref var input =
+                    ref _inputStash.Get(entity);
+
+                if (_movementLockStash.Has(entity))
+                {
+                    movement.Direction = Vector3.zero;
+                    continue;
+                }
+
                 movement.Direction = direction;
+
                 input.VictoryPressed = victory;
                 input.DeathPressed = death;
             }

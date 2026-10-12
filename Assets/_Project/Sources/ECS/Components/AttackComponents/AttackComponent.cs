@@ -1,17 +1,23 @@
-using EnemyConfigs;
 using Scellecs.Morpeh;
 
 namespace ECS.AttackComponents
 {
     public struct AttackComponent : IComponent
     {
-        public bool IsAttacking;
+        public int ProjectileCount;
+        public int Pierce;
+
+        public float AttackDuration;
+        public float FireRate;
         public float Damage;
-        public float AttackRadius;
         public float AttackCooldown;
         public float CurrentCooldown;
+        public float TargetSearchRadius;
+        public float DistanceFromSource;
+        public float AttackRadius;
+        public float ProjectileSpeed;
+        public float ProjectileLifetime;
+
         public AttackTargetType TargetType;
-        public string SourceId;
-        public ProjectileConfig ProjectileConfig;
     }
 }

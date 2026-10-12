@@ -10,12 +10,11 @@ namespace ECS.ProjectileSystems
         private const int SortingMultiplier = 100;
         private const int ProjectileSortingOffset = 10000;
 
-        public World World { get; set; }
-
         private Filter _filter;
-
         private Stash<PositionComponent> _positionStash;
         private Stash<ProjectileViewComponent> _projectileViewStash;
+
+        public World World { get; set; }
 
         public void OnAwake()
         {
@@ -24,26 +23,21 @@ namespace ECS.ProjectileSystems
                 .With<ProjectileViewComponent>()
                 .Build();
 
-            _positionStash =
-                World.GetStash<PositionComponent>();
+            _positionStash = World.GetStash<PositionComponent>();
 
-            _projectileViewStash =
-                World.GetStash<ProjectileViewComponent>();
+            _projectileViewStash = World.GetStash<ProjectileViewComponent>();
         }
 
         public void OnUpdate(float deltaTime)
         {
             foreach (Entity entity in _filter)
             {
-                ref PositionComponent position =
-                    ref _positionStash.Get(entity);
+                ref PositionComponent position = ref _positionStash.Get(entity);
 
-                ref ProjectileViewComponent viewComponent =
-                    ref _projectileViewStash.Get(entity);
+                ref ProjectileViewComponent viewComponent = ref _projectileViewStash.Get(entity);
 
-                int sortingOrder =
-                    ProjectileSortingOffset -
-                    Mathf.RoundToInt(position.Position.y * SortingMultiplier);
+                int sortingOrder = 
+                    ProjectileSortingOffset - Mathf.RoundToInt(position.Position.y * SortingMultiplier);
 
                 viewComponent.View.SetSortingOrder(sortingOrder);
             }

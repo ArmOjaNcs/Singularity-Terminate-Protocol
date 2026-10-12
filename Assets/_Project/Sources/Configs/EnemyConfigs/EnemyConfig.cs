@@ -4,12 +4,8 @@ using UnityEngine;
 namespace EnemyConfigs
 {
     [CreateAssetMenu(fileName = "EnemyConfig", menuName = "Game/Enemy/Enemy Config")]
-    public class EnemyConfig : ScriptableObject
+    public class EnemyConfig : CreatureConfig
     {
-        public string Id;
-        public string DisplayName;
-        public GameObject Prefab;
-        public BaseStats Stats;
-        public ProjectileConfig ProjectileConfig;
+        
     }
 }

@@ -1,13 +1,13 @@
+using Configs;
 using UnityEngine;
 
 namespace PlayerConfigs
 {
     [CreateAssetMenu(fileName = "PlayerConfig", menuName = "Game/Player/Player Config")]
-    public class PlayerConfig : ScriptableObject
+    public class PlayerConfig : CreatureConfig
     {
-        public string Id;
-        public string DisplayName;
-        public GameObject Prefab;
-        public PlayerStats Stats;
+        public int MaxWeapons;
+        public float EvasionChance;
+        public float GatheringRadius;
     }
 }

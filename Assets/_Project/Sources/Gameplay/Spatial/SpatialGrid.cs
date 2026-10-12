@@ -60,9 +60,7 @@ namespace Gameplay.Spatial
                 {
                     int key = GetCellKey(x, y);
 
-                    if (!_cells.TryGetValue(
-                            key,
-                            out List<Entity> entities))
+                    if (!_cells.TryGetValue(key, out List<Entity> entities))
                         continue;
 
                     for (int i = 0; i < entities.Count; i++)
