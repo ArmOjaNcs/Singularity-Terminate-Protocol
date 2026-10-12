@@ -49,12 +49,7 @@ public sealed class ItemPickupSystem : ISystem
 
             item.IsPickedUp = true;
 
-            if (_addXpStash.Has(itemEntity))
-                _addXpStash.Get(itemEntity).LooterEntity = looter;
-
             AnimatePickup(itemEntity, looter);
-
-            Debug.Log($"Предмет {item.Id} успешно поднят!");
         }
     }
 
@@ -67,6 +62,7 @@ public sealed class ItemPickupSystem : ISystem
         if (_playerViewStash.Has(looter) == false || World.IsDisposed(item))
             return;
 
+        int xpAmount = _addXpStash.Has(item) ? _addXpStash.Get(item).Amount : 0;
         Transform targetTransform = _playerViewStash.Get(looter).View.transform;
         Vector3 targetPosition = targetTransform.position;
         Transform itemTransform = _itemViewStash.Get(item).View.transform;
@@ -103,6 +99,17 @@ public sealed class ItemPickupSystem : ISystem
                 {
                     if (itemTransform != null)
                         Object.Destroy(itemTransform.gameObject);
+
+                    if (World.IsDisposed(looter) == false && xpAmount > 0)
+                    {
+                        Entity xpEventEntity = World.CreateEntity();
+
+                        _addXpStash.Set(xpEventEntity, new AddExperienceEvent
+                        {
+                            LooterEntity = looter,
+                            Amount = xpAmount,
+                        });
+                    }
 
                     if (World.IsDisposed(item) == false)
                         World.RemoveEntity(item);

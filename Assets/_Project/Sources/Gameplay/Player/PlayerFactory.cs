@@ -1,17 +1,21 @@
 using Configs;
 using ECS.CommonComponents;
 using ECS.PlayerComponents;
+using ECS.PlayerSystems;
 using ECS.ViewComponents;
 using ECS.WeaponSystems;
 using Gameplay.View;
 using PlayerConfigs;
 using Scellecs.Morpeh;
+using UniRx;
 using UnityEngine;
 
 namespace Gameplay.Player
 {
     public sealed class PlayerFactory
     {
+        private const int InitialFirstLevelUpXP = 100;
+
         private readonly World _world;
         private readonly WeaponFactory _weaponFactory;
 
@@ -23,6 +27,11 @@ namespace Gameplay.Player
         private readonly Stash<PlayerInputComponent> _inputStash;
         private readonly Stash<PositionComponent> _positionStash;
         private readonly Stash<ColliderComponent> _colliderStash;
+
+        private readonly Stash<PlayerExperienceComponent> _xpStash;
+        private readonly Stash<AddExperienceEvent> _addXpStash;
+
+        private readonly Stash<LooterComponent> _looterStash;
 
         private readonly Stash<ViewComponent> _viewStash;
         private readonly Stash<AnimatedCreatureComponent> _animatedCreatureStash;
@@ -45,6 +54,11 @@ namespace Gameplay.Player
             _viewStash = world.GetStash<ViewComponent>();
             _animatedCreatureStash = world.GetStash<AnimatedCreatureComponent>();
             _playerViewStash = world.GetStash<PlayerViewComponent>();
+
+            _xpStash = world.GetStash<PlayerExperienceComponent>();
+            _addXpStash = world.GetStash<AddExperienceEvent>();
+
+            _looterStash = world.GetStash<LooterComponent>();
         }
 
         public GameObject Create(PlayerConfig config, Vector3 position)
@@ -123,6 +137,15 @@ namespace Gameplay.Player
                     Angle = 0f,
                     CapsuleOrientation = config.Collider.CapsuleOrientation,
                 });
+
+            _xpStash.Set(entity, new PlayerExperienceComponent
+            {
+                CurrentXP = new ReactiveProperty<int>(0),
+                NextLevelXP = new ReactiveProperty<int>(InitialFirstLevelUpXP),
+                CurrentLevel = new ReactiveProperty<int>(1),
+            });
+            _addXpStash.Set(entity, new AddExperienceEvent { Amount = 0 });
+            _looterStash.Set(entity, new LooterComponent { PickupRadius = config.GatheringRadius });
         }
 
         private GameObject CreateView(Entity entity, PlayerConfig config, Vector3 position)
