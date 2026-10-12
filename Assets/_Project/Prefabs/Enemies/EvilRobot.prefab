@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 7340041613121306881}
   - component: {fileID: 3826924235702110043}
   - component: {fileID: 1048324404144151524}
+  - component: {fileID: 5051726952197100658}
   m_Layer: 0
   m_Name: EvilRobot
   m_TagString: Untagged
@@ -106,3 +107,17 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &5051726952197100658
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2045332483728427177}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7563707695df1541b89f14b9bbaa0a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Renderer: {fileID: 3826924235702110043}
+  Animator: {fileID: 1048324404144151524}

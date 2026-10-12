@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8079058858659996961}
   - component: {fileID: 2431497182355058315}
   - component: {fileID: 473190911992671934}
+  - component: {fileID: -8592117775018244261}
   m_Layer: 0
   m_Name: Magnus
   m_TagString: Untagged
@@ -106,3 +107,17 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &-8592117775018244261
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7907244585206537310}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7563707695df1541b89f14b9bbaa0a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Renderer: {fileID: 2431497182355058315}
+  Animator: {fileID: 473190911992671934}

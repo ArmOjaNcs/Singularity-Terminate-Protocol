@@ -16,12 +16,12 @@ MonoBehaviour:
   Prefab: {fileID: 8570826228377179493, guid: eee1383f6978de44fa588e206542df38, type: 3}
   PoolCapacity: 5
   Collider:
-    Type: 2
-    Radius: 1
-    Length: 5
-    Size: {x: 0, y: 0}
+    Type: 3
+    Radius: 1.4
+    Length: 1.5
+    Size: {x: 38, y: 0}
     CapsuleOrientation: 0
-  ColliderOffset: {x: 0.662, y: 0, z: 0}
+  ColliderOffset: {x: 0, y: 0, z: 0}
   TrajectoryRadius: 0.25
   StartAngle: -45
   EndAngle: 45
