@@ -26,8 +26,8 @@ MonoBehaviour:
   WeaponConfig: {fileID: 11400000, guid: 5b045256455b0174bba4e60113162d12, type: 2}
   Collider:
     Type: 2
-    Radius: 1
-    Length: 1
+    Radius: 0.35
+    Length: 1.25
     Size: {x: 0, y: 0}
     CapsuleOrientation: 1
   MaxWeapons: 2

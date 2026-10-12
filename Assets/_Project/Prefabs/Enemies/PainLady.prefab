@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6337530104520698781}
   - component: {fileID: 4965889762577791137}
   - component: {fileID: 8141710074098952109}
+  - component: {fileID: -3808839765831907423}
   m_Layer: 0
   m_Name: PainLady
   m_TagString: Untagged
@@ -106,3 +107,17 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!114 &-3808839765831907423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 33143499586398883}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7563707695df1541b89f14b9bbaa0a0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Renderer: {fileID: 4965889762577791137}
+  Animator: {fileID: 8141710074098952109}

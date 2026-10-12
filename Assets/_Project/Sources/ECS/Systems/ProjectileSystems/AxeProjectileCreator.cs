@@ -144,7 +144,7 @@ namespace ECS.ProjectileSystems
                 Radius = _config.Collider.Radius,
                 Length = _config.Collider.Length,
                 Size = _config.Collider.Size,
-                Angle = 0f, 
+                Angle = 0, 
                 CapsuleOrientation = _config.Collider.CapsuleOrientation,
             });
 

@@ -13,6 +13,6 @@ MonoBehaviour:
   m_Name: MeleeDefaultConfig 1
   m_EditorClassIdentifier: 
   Type: 0
-  ProjectileConfig: {fileID: 11400000, guid: c2b57a3710e16614198182c2f4879507, type: 2}
-  AttackConfig: {fileID: 11400000, guid: ce3eb3307f23f08419ee48e21f81b11e, type: 2}
+  ProjectileConfig: {fileID: 11400000, guid: f31844c51a3063542a1eb5f289d70cfb, type: 2}
+  AttackConfig: {fileID: 11400000, guid: dc6d82213039c134ca601b04178a04ce, type: 2}
   Effects: []

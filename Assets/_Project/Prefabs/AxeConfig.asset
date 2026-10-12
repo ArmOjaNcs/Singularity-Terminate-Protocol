@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: AxeConfig
   m_EditorClassIdentifier: 
   Type: 1
-  ProjectileConfig: {fileID: 11400000, guid: 2bb05f0db09cf5345b51a1c071aa59d4, type: 2}
-  AttackConfig: {fileID: 11400000, guid: 178b565a363a42745a39ef1cc24a09db, type: 2}
+  ProjectileConfig: {fileID: 11400000, guid: 024852038c938a84187ebbbfe1feff33, type: 2}
+  AttackConfig: {fileID: 11400000, guid: 11378c5fa77d4c7439ac11c37c48b9a4, type: 2}
   Effects:
   - {fileID: 11400000, guid: 6ad4d587b62cf354ab72b0d3089ff4b4, type: 2}
