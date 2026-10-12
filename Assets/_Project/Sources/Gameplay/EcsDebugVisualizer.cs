@@ -229,6 +229,7 @@ namespace Gameplay.Debug
         private void DrawSector(ColliderComponent collider)
         {
             float radius = Mathf.Max(0f, collider.Radius);
+
             float halfAngle = Mathf.Clamp(
                 collider.Size.x * 0.5f,
                 0f,
@@ -236,29 +237,29 @@ namespace Gameplay.Debug
 
             const int segments = 32;
 
-            Vector3 previousPoint =
-                SectorPoint(collider.Angle - halfAngle, radius);
+            Vector3 previousPoint = SectorPoint(-halfAngle, radius);
 
             for (int i = 1; i <= segments; i++)
             {
                 float angle = Mathf.Lerp(
-                    collider.Angle - halfAngle,
-                    collider.Angle + halfAngle,
+                    -halfAngle,
+                    halfAngle,
                     i / (float)segments);
 
                 Vector3 currentPoint = SectorPoint(angle, radius);
 
                 Gizmos.DrawLine(previousPoint, currentPoint);
+
                 previousPoint = currentPoint;
             }
 
             Gizmos.DrawLine(
                 Vector3.zero,
-                SectorPoint(collider.Angle - halfAngle, radius));
+                SectorPoint(-halfAngle, radius));
 
             Gizmos.DrawLine(
                 Vector3.zero,
-                SectorPoint(collider.Angle + halfAngle, radius));
+                SectorPoint(halfAngle, radius));
         }
 
         private Vector3 SectorPoint(float angle, float radius)
