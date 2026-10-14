@@ -50,7 +50,7 @@ public sealed class PlayerExperienceSystem : ISystem
 
                         Entity levelUpEntity = World.CreateEntity();
 
-                        _levelUpStash.Set(levelUpEntity, new LevelUpEvent { NewLevel = xpComp.CurrentLevel.Value });
+                        _levelUpStash.Set(levelUpEntity, new LevelUpEvent { NewLevel = xpComp.CurrentLevel.Value, Owner = looter });
                     }
                 }
 

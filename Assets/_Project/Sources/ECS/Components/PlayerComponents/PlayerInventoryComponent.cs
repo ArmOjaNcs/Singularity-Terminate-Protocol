@@ -1,7 +1,18 @@
 using System.Collections.Generic;
 using Scellecs.Morpeh;
 
-public struct PlayerInventoryComponent : IComponent
+namespace ECS.PlayerComponents
 {
-    public Dictionary<string, int> ActiveUpgrades;
+    public struct PlayerInventoryComponent : IComponent
+    {
+        public Dictionary<string, int> ActiveUpgrades;
+        public int CurrentWeaponsAmount;
+        public int MaxWeapons;
+
+        public int CurrentSkillsAmount;
+        public int MaxSkills;
+
+        public int CurrentTurretsAmount;
+        public int MaxTurrets;
+    }
 }

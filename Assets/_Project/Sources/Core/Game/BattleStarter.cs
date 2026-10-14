@@ -22,6 +22,7 @@ using PlayerConfigs;
 using ProjectileConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
+using UpgradeConfigs;
 using Zenject;
 
 namespace Core.Game
@@ -31,6 +32,7 @@ namespace Core.Game
         private PlayerConfig _playerConfig;
         private ProjectileDatabase _projectileDatabase;
         private List<GemExpConfig> _itemConfigs;
+        private List<WeaponUpgradeConfig> _weaponUpgradeConfigs;
         private Vector3 _playerSpawnPoint;
         private NavigationGrid _navigationGrid;
         private Transform _projectileContainer;
@@ -70,7 +72,8 @@ namespace Core.Game
             LevelBar levelBar,
             EnemyConfig enemyConfig,
             Vector3 enemySpawnPoint,
-            UIService uiService)
+            UIService uiService,
+            List<WeaponUpgradeConfig> weaponUpgradeConfigs)
         {
             _playerConfig = playerConfig;
             _projectileDatabase = projectileDatabase;
@@ -84,6 +87,7 @@ namespace Core.Game
             _enemySpawnPoint = enemySpawnPoint;
             _enemyConfig = enemyConfig;
             _uiService = uiService;
+            _weaponUpgradeConfigs = weaponUpgradeConfigs;
 
             Initialize();
         }
@@ -113,7 +117,7 @@ namespace Core.Game
         private void CreateFactories()
         {
             _weaponFactory = new WeaponFactory(_world);
-            _playerFactory = new PlayerFactory(_world, _weaponFactory);
+            _playerFactory = new PlayerFactory(_world, _weaponFactory, _weaponUpgradeConfigs);
             _enemyFactory = new EnemyFactory(_world, _weaponFactory);
             _itemFactory = new ItemFactory(_world);
 

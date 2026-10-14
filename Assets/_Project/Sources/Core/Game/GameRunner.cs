@@ -81,7 +81,7 @@ namespace Core.Game
         private void CreateFactories()
         {
             _weaponFactory = new WeaponFactory(_world);
-            _playerFactory = new PlayerFactory(_world, _weaponFactory);
+            // _playerFactory = new PlayerFactory(_world, _weaponFactory);
             _enemyFactory = new EnemyFactory(_world, _weaponFactory);
 
             _projectileFactory = new ProjectileFactory(

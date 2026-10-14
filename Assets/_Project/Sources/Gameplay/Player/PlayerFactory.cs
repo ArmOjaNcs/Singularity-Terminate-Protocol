@@ -1,14 +1,17 @@
+using System.Collections.Generic;
 using Configs;
 using ECS.CommonComponents;
 using ECS.PlayerComponents;
 using ECS.PlayerSystems;
 using ECS.ViewComponents;
+using ECS.WeaponComponents;
 using ECS.WeaponSystems;
 using Gameplay.View;
 using PlayerConfigs;
 using Scellecs.Morpeh;
 using UniRx;
 using UnityEngine;
+using UpgradeConfigs;
 
 namespace Gameplay.Player
 {
@@ -32,15 +35,19 @@ namespace Gameplay.Player
         private readonly Stash<AddExperienceEvent> _addXpStash;
 
         private readonly Stash<LooterComponent> _looterStash;
+        private readonly Stash<PlayerInventoryComponent> _inventoryStash;
 
         private readonly Stash<ViewComponent> _viewStash;
         private readonly Stash<AnimatedCreatureComponent> _animatedCreatureStash;
         private readonly Stash<PlayerViewComponent> _playerViewStash;
 
-        public PlayerFactory(World world, WeaponFactory weaponFactory)
+        private List<WeaponUpgradeConfig> _weaponUpgradeConfigs;
+
+        public PlayerFactory(World world, WeaponFactory weaponFactory, List<WeaponUpgradeConfig> weaponUpgradeConfigs)
         {
             _world = world;
             _weaponFactory = weaponFactory;
+            _weaponUpgradeConfigs = weaponUpgradeConfigs;
 
             _playerTagStash = world.GetStash<PlayerTag>();
             _statsStash = world.GetStash<StatsComponent>();
@@ -59,6 +66,7 @@ namespace Gameplay.Player
             _addXpStash = world.GetStash<AddExperienceEvent>();
 
             _looterStash = world.GetStash<LooterComponent>();
+            _inventoryStash = world.GetStash<PlayerInventoryComponent>();
         }
 
         public GameObject Create(PlayerConfig config, Vector3 position)
@@ -99,7 +107,6 @@ namespace Gameplay.Player
                 entity,
                 new PlayerStatsComponent
                 {
-                    MaxWeapons = config.MaxWeapons,
                     GatheringRadius = config.GatheringRadius,
                     EvasionChance = config.EvasionChance,
                 });
@@ -146,6 +153,26 @@ namespace Gameplay.Player
             });
             _addXpStash.Set(entity, new AddExperienceEvent { Amount = 0 });
             _looterStash.Set(entity, new LooterComponent { PickupRadius = config.GatheringRadius });
+            _inventoryStash.Set(entity, new PlayerInventoryComponent
+            {
+                ActiveUpgrades = GetInitialUpgrades(config),
+                MaxSkills = config.MaxSkills,
+                MaxTurrets = config.MaxTurrets,
+                MaxWeapons = config.MaxWeapons,
+            });
+        }
+
+        private Dictionary<string, int> GetInitialUpgrades(PlayerConfig config)
+        {
+            WeaponType type = config.WeaponConfig.Type;
+            Dictionary<string, int> result = new Dictionary<string, int>();
+
+            var initialWeapon = _weaponUpgradeConfigs.Find((item) => item.Type == type && item.IsBaseWeapon);
+
+            if (initialWeapon != null)
+                result.Add(initialWeapon.UpgradeId, 1);
+
+            return result;
         }
 
         private GameObject CreateView(Entity entity, PlayerConfig config, Vector3 position)
