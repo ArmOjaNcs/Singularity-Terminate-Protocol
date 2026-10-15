@@ -1,4 +1,3 @@
-using ECS.ProjectileComponents;
 using ECS.WeaponComponents;
 using System.Collections.Generic;
 
@@ -16,29 +15,15 @@ namespace ECS.DamageComponents
         private readonly Dictionary<WeaponType, float> _damageByWeapon =
             new Dictionary<WeaponType, float>();
 
-        private readonly Dictionary<ProjectileType, float> _damageByProjectile =
-            new Dictionary<ProjectileType, float>();
-
         public void Add(DamageStatisticComponent statistic)
         {
             TotalDamage += statistic.Damage;
             TotalBlockedDamage += statistic.BlockedDamage;
             TotalHits++;
 
-            AddDamage(
-                _damageByCreature,
-                statistic.Context.SourceType,
-                statistic.Damage);
+            AddDamage(_damageByCreature, statistic.Context.SourceType, statistic.Damage);
 
-            AddDamage(
-                _damageByWeapon,
-                statistic.Context.WeaponType,
-                statistic.Damage);
-
-            AddDamage(
-                _damageByProjectile,
-                statistic.Context.ProjectileType,
-                statistic.Damage);
+            AddDamage(_damageByWeapon, statistic.Context.WeaponType, statistic.Damage);
         }
 
         public float GetDamage(CreatureType type)
@@ -49,11 +34,6 @@ namespace ECS.DamageComponents
         public float GetDamage(WeaponType type)
         {
             return GetDamage(_damageByWeapon, type);
-        }
-
-        public float GetDamage(ProjectileType type)
-        {
-            return GetDamage(_damageByProjectile, type);
         }
 
         private void AddDamage<T>(Dictionary<T, float> dictionary, T key, float damage)
@@ -77,7 +57,6 @@ namespace ECS.DamageComponents
 
             _damageByCreature.Clear();
             _damageByWeapon.Clear();
-            _damageByProjectile.Clear();
         }
     }
 }

@@ -77,15 +77,5 @@ namespace Core.Game
         {
             return GetSafePierce(pierce) + 1;
         }
-
-        public static ProjectileType GetSafeProjectileType(
-            ProjectileType type,
-            ProjectileType fallback)
-        {
-            if (Enum.IsDefined(typeof(ProjectileType), type))
-                return type;
-
-            return fallback;
-        }
     }
 }

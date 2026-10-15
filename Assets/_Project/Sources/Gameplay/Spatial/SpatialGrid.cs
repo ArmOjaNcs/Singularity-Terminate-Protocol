@@ -9,7 +9,8 @@ namespace Gameplay.Spatial
         private readonly float _cellSize;
         private readonly float _inverseCellSize;
 
-        private readonly Dictionary<int, List<Entity>> _cells = new Dictionary<int, List<Entity>>();
+        private readonly Dictionary<int, List<Entity>> _cells =
+            new Dictionary<int, List<Entity>>();
 
         public SpatialGrid(float cellSize)
         {
@@ -30,18 +31,42 @@ namespace Gameplay.Spatial
 
         public void Add(Entity entity, Vector3 position)
         {
-            int key = GetCellKey(position);
-
-            if (!_cells.TryGetValue(key, out List<Entity> entities))
-            {
-                entities = new List<Entity>();
-                _cells.Add(key, entities);
-            }
-
-            entities.Add(entity);
+            Add(entity, position, 0f);
         }
 
-        public void Query(Vector3 center, float radius, List<Entity> results)
+        public void Add(
+            Entity entity,
+            Vector3 position,
+            float boundsRadius)
+        {
+            boundsRadius = Mathf.Max(0f, boundsRadius);
+
+            int minX = GetCellCoordinate(position.x - boundsRadius);
+            int maxX = GetCellCoordinate(position.x + boundsRadius);
+            int minY = GetCellCoordinate(position.y - boundsRadius);
+            int maxY = GetCellCoordinate(position.y + boundsRadius);
+
+            for (int x = minX; x <= maxX; x++)
+            {
+                for (int y = minY; y <= maxY; y++)
+                {
+                    int key = GetCellKey(x, y);
+
+                    if (!_cells.TryGetValue(key, out List<Entity> entities))
+                    {
+                        entities = new List<Entity>();
+                        _cells.Add(key, entities);
+                    }
+
+                    entities.Add(entity);
+                }
+            }
+        }
+
+        public void Query(
+            Vector3 center,
+            float radius,
+            List<Entity> results)
         {
             results.Clear();
 
@@ -50,7 +75,6 @@ namespace Gameplay.Spatial
 
             int minX = GetCellCoordinate(center.x - radius);
             int maxX = GetCellCoordinate(center.x + radius);
-
             int minY = GetCellCoordinate(center.y - radius);
             int maxY = GetCellCoordinate(center.y + radius);
 
@@ -64,7 +88,12 @@ namespace Gameplay.Spatial
                         continue;
 
                     for (int i = 0; i < entities.Count; i++)
-                        results.Add(entities[i]);
+                    {
+                        Entity entity = entities[i];
+
+                        if (!results.Contains(entity))
+                            results.Add(entity);
+                    }
                 }
             }
         }

@@ -144,6 +144,7 @@ namespace Gameplay.Player
                 NextLevelXP = new ReactiveProperty<int>(InitialFirstLevelUpXP),
                 CurrentLevel = new ReactiveProperty<int>(1),
             });
+
             _addXpStash.Set(entity, new AddExperienceEvent { Amount = 0 });
             _looterStash.Set(entity, new LooterComponent { PickupRadius = config.GatheringRadius });
         }

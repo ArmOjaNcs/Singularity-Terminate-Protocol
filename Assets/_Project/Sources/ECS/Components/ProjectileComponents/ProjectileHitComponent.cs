@@ -5,7 +5,7 @@ namespace ECS.ProjectileComponents
 {
     public struct ProjectileHitComponent : IComponent
     {
-        public List<Entity> Targets;
+        public List<ProjectileHitRecord> Records;
         public int HitCount;
     }
 }
