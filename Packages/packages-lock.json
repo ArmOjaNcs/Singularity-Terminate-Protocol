@@ -1,13 +1,12 @@
 {
   "dependencies": {
     "com.codewriter.triinspector": {
-      "version": "https://github.com/codewriter-packages/Tri-Inspector.git#1.13.2",
+      "version": "file:C:/Users/Professional/Downloads/Tri-Inspector-1.15.1",
       "depth": 0,
-      "source": "git",
+      "source": "local",
       "dependencies": {
         "com.unity.localization": "1.0.0"
-      },
-      "hash": "0905424ee7fc114fcf06da6e1c372c8c8ee8431f"
+      }
     },
     "com.scellecs.morpeh": {
       "version": "https://github.com/scellecs/morpeh.git?path=Scellecs.Morpeh#2024.1.1",
