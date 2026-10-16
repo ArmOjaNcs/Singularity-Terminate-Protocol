@@ -5,5 +5,6 @@ namespace ECS.PlayerSystems
     public struct LevelUpEvent : IComponent
     {
         public int NewLevel;
+        public Entity Owner;
     }
 }

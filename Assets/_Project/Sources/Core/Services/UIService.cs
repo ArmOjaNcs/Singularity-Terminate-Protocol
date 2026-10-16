@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ECS.PlayerComponents;
 using UI;
 using UnityEngine;
 using Zenject;
@@ -14,10 +15,7 @@ namespace Core.Services
         private Transform _levelUpContainer;
         private LevelUpScreen _levelUpScreen;
 
-        public bool IsLevelUpScreenOpen { get; private set; }
-
-        [Inject]
-        public void Construct(
+        public UIService(
             Transform levelUpContainer,
             LevelUpScreen levelUpScreenPrefab,
             DiContainer container)
@@ -27,7 +25,9 @@ namespace Core.Services
             _container = container;
         }
 
-        public void ShowLevelUpScreen()
+        public bool IsLevelUpScreenOpen { get; private set; }
+
+        public void ShowLevelUpScreen(PlayerInventoryComponent inventoryComponent)
         {
             if (_levelUpScreen == null)
             {
@@ -36,7 +36,7 @@ namespace Core.Services
                 _levelUpScreen = levelUp.GetComponent<LevelUpScreen>();
             }
 
-            _levelUpScreen.Setup();
+            _levelUpScreen.Setup(inventoryComponent);
 
             IsLevelUpScreenOpen = true;
         }

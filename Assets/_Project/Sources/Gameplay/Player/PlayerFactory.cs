@@ -1,14 +1,18 @@
+using System.Collections.Generic;
 using Configs;
 using ECS.CommonComponents;
 using ECS.PlayerComponents;
 using ECS.PlayerSystems;
 using ECS.ViewComponents;
+using ECS.WeaponComponents;
 using ECS.WeaponSystems;
 using Gameplay.View;
 using PlayerConfigs;
 using Scellecs.Morpeh;
 using UniRx;
 using UnityEngine;
+using UpgradeConfigs;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace Gameplay.Player
 {
@@ -32,15 +36,25 @@ namespace Gameplay.Player
         private readonly Stash<AddExperienceEvent> _addXpStash;
 
         private readonly Stash<LooterComponent> _looterStash;
+        private readonly Stash<PlayerInventoryComponent> _inventoryStash;
 
         private readonly Stash<ViewComponent> _viewStash;
         private readonly Stash<AnimatedCreatureComponent> _animatedCreatureStash;
         private readonly Stash<PlayerViewComponent> _playerViewStash;
 
-        public PlayerFactory(World world, WeaponFactory weaponFactory)
+        private List<NewWeaponUpgradeConfig> _weaponUpgradeConfigs;
+        private List<NewTurretUpgradeConfig> _turretUpgradeConfigs;
+
+        public PlayerFactory(
+            World world,
+            WeaponFactory weaponFactory,
+            List<NewWeaponUpgradeConfig> weaponUpgradeConfigs,
+            List<NewTurretUpgradeConfig> turretUpgradeConfigs)
         {
             _world = world;
             _weaponFactory = weaponFactory;
+            _weaponUpgradeConfigs = weaponUpgradeConfigs;
+            _turretUpgradeConfigs = turretUpgradeConfigs;
 
             _playerTagStash = world.GetStash<PlayerTag>();
             _statsStash = world.GetStash<StatsComponent>();
@@ -59,6 +73,7 @@ namespace Gameplay.Player
             _addXpStash = world.GetStash<AddExperienceEvent>();
 
             _looterStash = world.GetStash<LooterComponent>();
+            _inventoryStash = world.GetStash<PlayerInventoryComponent>();
         }
 
         public GameObject Create(PlayerConfig config, Vector3 position)
@@ -99,7 +114,6 @@ namespace Gameplay.Player
                 entity,
                 new PlayerStatsComponent
                 {
-                    MaxWeapons = config.MaxWeapons,
                     GatheringRadius = config.GatheringRadius,
                     EvasionChance = config.EvasionChance,
                 });
@@ -147,6 +161,39 @@ namespace Gameplay.Player
 
             _addXpStash.Set(entity, new AddExperienceEvent { Amount = 0 });
             _looterStash.Set(entity, new LooterComponent { PickupRadius = config.GatheringRadius });
+            InitializeInventory(config, entity);
+        }
+
+        private void InitializeInventory(PlayerConfig config, Entity entity)
+        {
+            WeaponType type = config.WeaponConfig.Type;
+            Dictionary<string, int> initialUpgrades = new Dictionary<string, int>();
+            int currentTurrets = 0;
+            int currentWeapons = 0;
+            var initialWeapon = _weaponUpgradeConfigs.Find((item) => item.Type == type);
+            var initialTurret = _turretUpgradeConfigs.Find((item) => item.Type == type);
+
+            if (initialWeapon != null)
+            {
+                initialUpgrades.Add(initialWeapon.UpgradeId, 1);
+                currentWeapons++;
+            }
+
+            if (initialTurret != null)
+            {
+                initialUpgrades.Add(initialTurret.UpgradeId, 1);
+                currentTurrets++;
+            }
+
+            _inventoryStash.Set(entity, new PlayerInventoryComponent
+            {
+                ActiveUpgrades = initialUpgrades,
+                CurrentTurretsAmount = currentTurrets,
+                MaxTurrets = config.MaxTurrets,
+                CurrentWeaponsAmount = currentWeapons,
+                MaxWeapons = config.MaxWeapons,
+                MaxSkills = config.MaxSkills,
+            });
         }
 
         private GameObject CreateView(Entity entity, PlayerConfig config, Vector3 position)
@@ -187,9 +234,7 @@ namespace Gameplay.Player
         private void CreateWeapon(Entity entity, PlayerConfig config)
         {
             if (config.WeaponConfig == null)
-            {
                 return;
-            }
 
             _weaponFactory.Create(config.WeaponConfig, entity);
         }

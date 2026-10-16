@@ -7,6 +7,8 @@ namespace PlayerConfigs
     public class PlayerConfig : CreatureConfig
     {
         public int MaxWeapons;
+        public int MaxTurrets;
+        public int MaxSkills;
         public float EvasionChance;
         public float GatheringRadius;
     }

@@ -22,6 +22,7 @@ using PlayerConfigs;
 using ProjectileConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
+using UpgradeConfigs;
 using Zenject;
 
 namespace Core.Game
@@ -31,6 +32,8 @@ namespace Core.Game
         private PlayerConfig _playerConfig;
         private ProjectileDatabase _projectileDatabase;
         private List<GemExpConfig> _itemConfigs;
+        private List<NewWeaponUpgradeConfig> _weaponConfigs;
+        private List<NewTurretUpgradeConfig> _turretConfigs;
         private Vector3 _playerSpawnPoint;
         private NavigationGrid _navigationGrid;
         private Transform _projectileContainer;
@@ -70,7 +73,9 @@ namespace Core.Game
             LevelBar levelBar,
             EnemyConfig enemyConfig,
             Vector3 enemySpawnPoint,
-            UIService uiService)
+            UIService uiService,
+            List<NewWeaponUpgradeConfig> weaponConfigs,
+            List<NewTurretUpgradeConfig> turretConfigs)
         {
             _playerConfig = playerConfig;
             _projectileDatabase = projectileDatabase;
@@ -84,6 +89,8 @@ namespace Core.Game
             _enemySpawnPoint = enemySpawnPoint;
             _enemyConfig = enemyConfig;
             _uiService = uiService;
+            _weaponConfigs = weaponConfigs;
+            _turretConfigs = turretConfigs;
 
             Initialize();
         }
@@ -113,7 +120,7 @@ namespace Core.Game
         private void CreateFactories()
         {
             _weaponFactory = new WeaponFactory(_world);
-            _playerFactory = new PlayerFactory(_world, _weaponFactory);
+            _playerFactory = new PlayerFactory(_world, _weaponFactory, _weaponConfigs, _turretConfigs);
             _enemyFactory = new EnemyFactory(_world, _weaponFactory);
             _itemFactory = new ItemFactory(_world);
 
@@ -201,6 +208,7 @@ namespace Core.Game
 
             _gameplaySystems.AddSystem(new PlayerExperienceSystem());
             _gameplaySystems.AddSystem(new LevelUpSystem(_uiService));
+            _gameplaySystems.AddSystem(new PlayerUpgradeSystem());
         }
 
         private void AddStatisticSystems()

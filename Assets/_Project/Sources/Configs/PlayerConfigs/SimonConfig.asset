@@ -30,6 +30,8 @@ MonoBehaviour:
     Length: 1.25
     Size: {x: 0, y: 0}
     CapsuleOrientation: 1
-  MaxWeapons: 2
+  MaxWeapons: 6
+  MaxTurrets: 2
+  MaxSkills: 6
   EvasionChance: 5
   GatheringRadius: 2
