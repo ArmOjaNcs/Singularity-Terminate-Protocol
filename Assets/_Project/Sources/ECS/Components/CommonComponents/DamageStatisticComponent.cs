@@ -9,5 +9,6 @@ namespace ECS.DamageComponents
         public DamageContext Context;
         public float Damage;
         public float BlockedDamage;
+        public bool IsCritical;
     }
 }

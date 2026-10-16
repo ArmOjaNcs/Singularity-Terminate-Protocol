@@ -1,4 +1,5 @@
 using ECS.AttackComponents;
+using ECS.ProjectileComponents;
 using UnityEngine;
 
 namespace Configs
@@ -18,5 +19,7 @@ namespace Configs
         public float ProjectileSpeed;
         public float ProjectileLifetime;
         public AttackTargetType TargetType;
+        public HitPolicyType HitPolicy;
+        public float HitInterval;
     }
 }

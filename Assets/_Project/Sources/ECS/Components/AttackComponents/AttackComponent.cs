@@ -1,3 +1,4 @@
+using ECS.ProjectileComponents;
 using Scellecs.Morpeh;
 
 namespace ECS.AttackComponents
@@ -18,7 +19,9 @@ namespace ECS.AttackComponents
         public float AttackRadius;
         public float ProjectileSpeed;
         public float ProjectileLifetime;
+        public float HitInterval;
 
         public AttackTargetType TargetType;
+        public HitPolicyType HitPolicy;
     }
 }

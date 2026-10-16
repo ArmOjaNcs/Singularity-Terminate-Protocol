@@ -18,9 +18,11 @@ MonoBehaviour:
   FireRate: 2
   Damage: 10
   AttackCooldown: 2
-  DistanceFromSource: 0.25
+  DistanceFromSource: 0.75
   AttackRadius: 0.5
   TargetSearchRadius: 2
   ProjectileSpeed: 5
   ProjectileLifetime: 0.1
-  TargetType: 0
+  TargetType: 1
+  HitPolicy: 0
+  HitInterval: 0

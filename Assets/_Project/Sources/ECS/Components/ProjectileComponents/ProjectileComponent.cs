@@ -8,7 +8,6 @@ namespace ECS.ProjectileComponents
     public struct ProjectileComponent : IComponent
     {
         public Entity Weapon;
-        public ProjectileType Type;
         public WeaponType WeaponType;
 
         public float Speed;
@@ -16,9 +15,11 @@ namespace ECS.ProjectileComponents
         public float CurrentLifetime;
         public float Damage;
         public int Pierce;
+        public float HitInterval;
 
         public Vector3 Direction;
         public AttackTargetType TargetType;
+        public HitPolicyType HitPolicy;
 
         public bool CleanupRequested;
     }

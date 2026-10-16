@@ -1,4 +1,4 @@
-using ECS.ProjectileComponents;
+using ECS.WeaponComponents;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -9,11 +9,11 @@ namespace ProjectileConfigs
     {
         public List<ProjectileConfig> Projectiles;
 
-        public ProjectileConfig Get(ProjectileType type)
+        public ProjectileConfig Get(WeaponType type)
         {
             foreach (ProjectileConfig projectile in Projectiles)
             {
-                if (projectile != null && projectile.Type == type)
+                if (projectile != null && projectile.WeaponType == type)
                     return projectile;
             }
 

@@ -15,7 +15,6 @@ namespace ECS.WeaponSystems
 
         private readonly Stash<WeaponTag> _weaponTagStash;
         private readonly Stash<WeaponComponent> _weaponStash;
-        private readonly Stash<WeaponProjectileComponent> _weaponProjectileStash;
         private readonly Stash<AttackComponent> _attackStash;
         private readonly Stash<AttackStatusComponent> _attackStatusStash;
         private readonly Stash<ProjectileCreationComponent> _projectileCreationStash;
@@ -29,7 +28,6 @@ namespace ECS.WeaponSystems
 
             _weaponTagStash = world.GetStash<WeaponTag>();
             _weaponStash = world.GetStash<WeaponComponent>();
-            _weaponProjectileStash = world.GetStash<WeaponProjectileComponent>();
             _attackStash = world.GetStash<AttackComponent>();
             _attackStatusStash = world.GetStash<AttackStatusComponent>();
             _projectileCreationStash = world.GetStash<ProjectileCreationComponent>();
@@ -51,16 +49,6 @@ namespace ECS.WeaponSystems
                 Type = config.Type
             });
 
-            if (config.ProjectileConfig != null)
-            {
-                _weaponProjectileStash.Set(
-                    weapon,
-                    new WeaponProjectileComponent
-                    {
-                        Type = config.ProjectileConfig.Type
-                    });
-            }
-
             _attackStash.Set(weapon, new AttackComponent
             {
                 ProjectileCount = config.AttackConfig.ProjectileCount,
@@ -75,7 +63,9 @@ namespace ECS.WeaponSystems
                 AttackRadius = config.AttackConfig.AttackRadius,
                 ProjectileSpeed = config.AttackConfig.ProjectileSpeed,
                 ProjectileLifetime = config.AttackConfig.ProjectileLifetime,
-                TargetType = config.AttackConfig.TargetType
+                TargetType = config.AttackConfig.TargetType,
+                HitPolicy = config.AttackConfig.HitPolicy,
+                HitInterval = config.AttackConfig.HitInterval,
             });
 
             _attackStatusStash.Set(weapon, new AttackStatusComponent
