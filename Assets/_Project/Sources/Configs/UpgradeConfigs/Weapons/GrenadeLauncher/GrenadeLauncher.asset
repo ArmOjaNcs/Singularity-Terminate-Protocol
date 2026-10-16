@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c3e3760d5970b2240bc64c7fef468807, type: 3}
+  m_Script: {fileID: 11500000, guid: 91e02437c03b9434b923f41e050eefa3, type: 3}
   m_Name: GrenadeLauncher
   m_EditorClassIdentifier: 
   UpgradeId: GrenadeLauncher

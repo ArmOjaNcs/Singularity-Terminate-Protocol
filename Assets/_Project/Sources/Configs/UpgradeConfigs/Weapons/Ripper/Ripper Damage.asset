@@ -20,4 +20,5 @@ MonoBehaviour:
   RequiredUpgradeIds:
   - {fileID: 11400000, guid: eb3b2abd06df80f448a53d424fbe6480, type: 2}
   Type: 6
-  IsBaseWeapon: 0
+  Stat: 4
+  StatsFactor: 5

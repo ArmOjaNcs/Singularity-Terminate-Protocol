@@ -12,6 +12,7 @@ using Scellecs.Morpeh;
 using UniRx;
 using UnityEngine;
 using UpgradeConfigs;
+using static UnityEngine.EventSystems.EventTrigger;
 
 namespace Gameplay.Player
 {
@@ -41,13 +42,19 @@ namespace Gameplay.Player
         private readonly Stash<AnimatedCreatureComponent> _animatedCreatureStash;
         private readonly Stash<PlayerViewComponent> _playerViewStash;
 
-        private List<WeaponUpgradeConfig> _weaponUpgradeConfigs;
+        private List<NewWeaponUpgradeConfig> _weaponUpgradeConfigs;
+        private List<NewTurretUpgradeConfig> _turretUpgradeConfigs;
 
-        public PlayerFactory(World world, WeaponFactory weaponFactory, List<WeaponUpgradeConfig> weaponUpgradeConfigs)
+        public PlayerFactory(
+            World world,
+            WeaponFactory weaponFactory,
+            List<NewWeaponUpgradeConfig> weaponUpgradeConfigs,
+            List<NewTurretUpgradeConfig> turretUpgradeConfigs)
         {
             _world = world;
             _weaponFactory = weaponFactory;
             _weaponUpgradeConfigs = weaponUpgradeConfigs;
+            _turretUpgradeConfigs = turretUpgradeConfigs;
 
             _playerTagStash = world.GetStash<PlayerTag>();
             _statsStash = world.GetStash<StatsComponent>();
@@ -153,26 +160,39 @@ namespace Gameplay.Player
             });
             _addXpStash.Set(entity, new AddExperienceEvent { Amount = 0 });
             _looterStash.Set(entity, new LooterComponent { PickupRadius = config.GatheringRadius });
-            _inventoryStash.Set(entity, new PlayerInventoryComponent
-            {
-                ActiveUpgrades = GetInitialUpgrades(config),
-                MaxSkills = config.MaxSkills,
-                MaxTurrets = config.MaxTurrets,
-                MaxWeapons = config.MaxWeapons,
-            });
+            InitializeInventory(config, entity);
         }
 
-        private Dictionary<string, int> GetInitialUpgrades(PlayerConfig config)
+        private void InitializeInventory(PlayerConfig config, Entity entity)
         {
             WeaponType type = config.WeaponConfig.Type;
-            Dictionary<string, int> result = new Dictionary<string, int>();
-
-            var initialWeapon = _weaponUpgradeConfigs.Find((item) => item.Type == type && item.IsBaseWeapon);
+            Dictionary<string, int> initialUpgrades = new Dictionary<string, int>();
+            int currentTurrets = 0;
+            int currentWeapons = 0;
+            var initialWeapon = _weaponUpgradeConfigs.Find((item) => item.Type == type);
+            var initialTurret = _turretUpgradeConfigs.Find((item) => item.Type == type);
 
             if (initialWeapon != null)
-                result.Add(initialWeapon.UpgradeId, 1);
+            {
+                initialUpgrades.Add(initialWeapon.UpgradeId, 1);
+                currentWeapons++;
+            }
 
-            return result;
+            if (initialTurret != null)
+            {
+                initialUpgrades.Add(initialTurret.UpgradeId, 1);
+                currentTurrets++;
+            }
+
+            _inventoryStash.Set(entity, new PlayerInventoryComponent
+            {
+                ActiveUpgrades = initialUpgrades,
+                CurrentTurretsAmount = currentTurrets,
+                MaxTurrets = config.MaxTurrets,
+                CurrentWeaponsAmount = currentWeapons,
+                MaxWeapons = config.MaxWeapons,
+                MaxSkills = config.MaxSkills,
+            });
         }
 
         private GameObject CreateView(Entity entity, PlayerConfig config, Vector3 position)
@@ -213,9 +233,7 @@ namespace Gameplay.Player
         private void CreateWeapon(Entity entity, PlayerConfig config)
         {
             if (config.WeaponConfig == null)
-            {
                 return;
-            }
 
             _weaponFactory.Create(config.WeaponConfig, entity);
         }

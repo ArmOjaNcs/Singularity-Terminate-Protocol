@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c3e3760d5970b2240bc64c7fef468807, type: 3}
+  m_Script: {fileID: 11500000, guid: 91e02437c03b9434b923f41e050eefa3, type: 3}
   m_Name: Axe
   m_EditorClassIdentifier: 
   UpgradeId: BattleAxe
@@ -20,4 +20,4 @@ MonoBehaviour:
   Icon: {fileID: 21300000, guid: 5fa90264899793d4e915834fc3e3acad, type: 3}
   RequiredUpgradeIds: []
   Type: 1
-  IsBaseWeapon: 1
+  Config: {fileID: 11400000, guid: 5b045256455b0174bba4e60113162d12, type: 2}

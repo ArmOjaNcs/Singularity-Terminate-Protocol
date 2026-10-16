@@ -3,6 +3,7 @@ using Scellecs.Morpeh;
 
 namespace ECS.PlayerComponents
 {
+    [System.Serializable]
     public struct PlayerInventoryComponent : IComponent
     {
         public Dictionary<string, int> ActiveUpgrades;

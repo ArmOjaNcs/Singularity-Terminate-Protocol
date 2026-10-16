@@ -1,10 +1,11 @@
 using System.Collections.Generic;
+using ECS.PlayerComponents;
 using Scellecs.Morpeh;
 using UnityEngine;
 
 namespace UpgradeConfigs
 {
-    public class UpgradeConfig : ScriptableObject
+    public abstract class UpgradeConfig : ScriptableObject
     {
         public string UpgradeId;
         public string Title;
@@ -12,5 +13,7 @@ namespace UpgradeConfigs
         public string Description;
         public Sprite Icon;
         public List<UpgradeConfig> RequiredUpgradeIds;
+
+        public abstract void Apply(Entity entity, PlayerInventoryComponent inventory);
     }
 }

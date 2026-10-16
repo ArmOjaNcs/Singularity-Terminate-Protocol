@@ -2,6 +2,7 @@ using Scellecs.Morpeh;
 
 namespace ECS.AttackComponents
 {
+    [System.Serializable]
     public struct AttackComponent : IComponent
     {
         public int ProjectileCount;

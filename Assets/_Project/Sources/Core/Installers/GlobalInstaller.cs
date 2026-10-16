@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 using Core.Services;
+using ECS.WeaponSystems;
+using Scellecs.Morpeh;
 using UnityEngine;
 using UpgradeConfigs;
 using Zenject;
@@ -9,7 +11,9 @@ namespace Core.Installers
     public class GlobalInstaller : MonoInstaller
     {
         [SerializeField] private AudioService _audioService;
+        [SerializeField] private List<NewWeaponUpgradeConfig> _weapons;
         [SerializeField] private List<WeaponUpgradeConfig> _weaponUpgrades;
+        [SerializeField] private List<NewTurretUpgradeConfig> _turrets;
         [SerializeField] private List<TurretUpgradeConfig> _turretUpgrades;
         [SerializeField] private List<SkillUpgradeConfig> _skillUpgrades;
 
@@ -17,11 +21,16 @@ namespace Core.Installers
         {
             BindInstances();
             BindServices();
+            BindToConfigs();
         }
 
         private void BindInstances()
         {
+            Container.BindInstance(World.Default).AsSingle();
+
+            Container.BindInstance(_weapons).AsSingle();
             Container.BindInstance(_weaponUpgrades).AsSingle();
+            Container.BindInstance(_turrets).AsSingle();
             Container.BindInstance(_turretUpgrades).AsSingle();
             Container.BindInstance(_skillUpgrades).AsSingle();
         }
@@ -34,6 +43,16 @@ namespace Core.Installers
                 .AsSingle();
 
             Container.Bind<UpgradeGenerator>().AsSingle();
+            Container.Bind<WeaponFactory>().AsSingle();
+        }
+
+        private void BindToConfigs()
+        {
+            foreach (var upgrade in _weapons)
+                Container.Inject(upgrade);
+
+            foreach (var upgrade in _turrets)
+                Container.Inject(upgrade);
         }
     }
 }
