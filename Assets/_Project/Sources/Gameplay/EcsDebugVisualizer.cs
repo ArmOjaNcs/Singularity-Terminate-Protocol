@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.EnemyComponents;
@@ -5,6 +6,10 @@ using ECS.PlayerComponents;
 using ECS.ProjectileComponents;
 using Scellecs.Morpeh;
 using UnityEngine;
+
+#if UNITY_EDITOR
+using UnityEditor;
+#endif
 
 namespace Gameplay.Debug
 {
@@ -93,9 +98,16 @@ namespace Gameplay.Debug
             if (!Application.isPlaying)
                 return;
 
+#if UNITY_EDITOR
             if (ShowOnlySelected &&
-                UnityEditor.Selection.activeGameObject != gameObject)
+                Selection.activeGameObject != gameObject)
+            {
                 return;
+            }
+#else
+            if (ShowOnlySelected)
+                return;
+#endif
 
             if (!_initialized)
             {
@@ -149,9 +161,17 @@ namespace Gameplay.Debug
         {
             Matrix4x4 previousMatrix = Gizmos.matrix;
 
+            float angle = collider.Angle;
+
+            if (collider.Type == ColliderType.Capsule &&
+                collider.CapsuleOrientation == CapsuleOrientation.Y)
+            {
+                angle += 90f;
+            }
+
             Gizmos.matrix = Matrix4x4.TRS(
                 center,
-                Quaternion.Euler(0f, 0f, collider.Angle),
+                Quaternion.Euler(0f, 0f, angle),
                 Vector3.one);
 
             switch (collider.Type)
@@ -190,40 +210,19 @@ namespace Gameplay.Debug
 
             float halfSegment = length * 0.5f - radius;
 
-            Vector3 axis;
-            Vector3 perpendicular;
-
-            switch (collider.CapsuleOrientation)
-            {
-                case CapsuleOrientation.X:
-                    axis = Vector3.right;
-                    perpendicular = Vector3.up;
-                    break;
-
-                case CapsuleOrientation.Y:
-                    axis = Vector3.up;
-                    perpendicular = Vector3.right;
-                    break;
-
-                default:
-                    axis = Vector3.right;
-                    perpendicular = Vector3.up;
-                    break;
-            }
-
-            Vector3 first = -axis * halfSegment;
-            Vector3 second = axis * halfSegment;
+            Vector3 first = Vector3.left * halfSegment;
+            Vector3 second = Vector3.right * halfSegment;
 
             Gizmos.DrawWireSphere(first, radius);
             Gizmos.DrawWireSphere(second, radius);
 
             Gizmos.DrawLine(
-                first + perpendicular * radius,
-                second + perpendicular * radius);
+                first + Vector3.up * radius,
+                second + Vector3.up * radius);
 
             Gizmos.DrawLine(
-                first - perpendicular * radius,
-                second - perpendicular * radius);
+                first - Vector3.up * radius,
+                second - Vector3.up * radius);
         }
 
         private void DrawSector(ColliderComponent collider)
@@ -233,7 +232,7 @@ namespace Gameplay.Debug
             float halfAngle = Mathf.Clamp(
                 collider.Size.x * 0.5f,
                 0f,
-                180f);
+                90f);
 
             const int segments = 32;
 
@@ -325,23 +324,37 @@ namespace Gameplay.Debug
 
                     if (!validTarget ||
                         !_positionStash.Has(targetEntity))
+                    {
                         continue;
+                    }
 
                     ref PositionComponent source =
                         ref _positionStash.Get(entity);
 
-                    ref PositionComponent destination =
-                        ref _positionStash.Get(targetEntity);
+                    Vector3 destination = GetColliderPosition(
+                        targetEntity);
 
                     Gizmos.DrawLine(
                         source.Position,
-                        destination.Position);
+                        destination);
                 }
                 catch (InvalidHasOperationException)
                 {
                     // ÷ель уже удалена из ECS.
                 }
             }
+        }
+
+        private Vector3 GetColliderPosition(Entity entity)
+        {
+            if (_colliderPositionStash.Has(entity))
+            {
+                return _colliderPositionStash
+                    .Get(entity)
+                    .CenterPosition;
+            }
+
+            return _positionStash.Get(entity).Position;
         }
     }
 }

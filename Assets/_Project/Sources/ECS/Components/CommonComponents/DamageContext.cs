@@ -1,4 +1,3 @@
-using ECS.ProjectileComponents;
 using ECS.WeaponComponents;
 using Scellecs.Morpeh;
 
@@ -10,6 +9,5 @@ namespace ECS.CommonComponents
         public DamageType DamageType;
         public CreatureType SourceType;
         public WeaponType WeaponType;
-        public ProjectileType ProjectileType;
     }
 }

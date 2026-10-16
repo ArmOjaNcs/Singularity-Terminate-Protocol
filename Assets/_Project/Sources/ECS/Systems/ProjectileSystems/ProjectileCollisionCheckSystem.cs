@@ -33,6 +33,7 @@ namespace ECS.ProjectileSystems
         private Stash<DamageRequest> _damageRequestStash;
         private Stash<CleanupRequest> _cleanupRequestStash;
         private Stash<ProjectileViewComponent> _projectileViewStash;
+        private Stash<ProjectileHitComponent> _projectileHitStash;
 
         public ProjectileCollisionCheckSystem(SpatialGrid grid)
         {
@@ -66,6 +67,7 @@ namespace ECS.ProjectileSystems
             _damageRequestStash = World.GetStash<DamageRequest>();
             _cleanupRequestStash = World.GetStash<CleanupRequest>();
             _projectileViewStash = World.GetStash<ProjectileViewComponent>();
+            _projectileHitStash = World.GetStash<ProjectileHitComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -93,7 +95,13 @@ namespace ECS.ProjectileSystems
                     if (!CheckCollision(projectile, target))
                         continue;
 
+                    if (!TryRegisterHit(projectile, target))
+                        continue;
+
                     CreateDamageRequest(projectile, target);
+
+                    if (projectileComponent.HitPolicy != HitPolicyType.Pierce)
+                        continue;
 
                     if (projectileComponent.Pierce <= 0)
                     {
@@ -104,6 +112,83 @@ namespace ECS.ProjectileSystems
                     projectileComponent.Pierce--;
                 }
             }
+        }
+
+        private bool TryRegisterHit(Entity projectile, Entity target)
+        {
+            if (!_projectileHitStash.Has(projectile))
+                return false;
+
+            ref ProjectileComponent projectileComponent =
+                ref _projectileStash.Get(projectile);
+
+            ref ProjectileHitComponent hitComponent =
+                ref _projectileHitStash.Get(projectile);
+
+            List<ProjectileHitRecord> records = hitComponent.Records;
+
+            if (records == null)
+            {
+                records = new List<ProjectileHitRecord>();
+                hitComponent.Records = records;
+            }
+
+            int recordIndex = records.FindIndex(
+                record => record.Target == target);
+
+            switch (projectileComponent.HitPolicy)
+            {
+                case HitPolicyType.Pierce:
+                case HitPolicyType.OncePerTarget:
+                    {
+                        if (recordIndex >= 0)
+                            return false;
+
+                        records.Add(new ProjectileHitRecord
+                        {
+                            Target = target,
+                            NextHitTime = 0f
+                        });
+
+                        break;
+                    }
+
+                case HitPolicyType.PeriodicPerTarget:
+                    {
+                        float currentTime = projectileComponent.CurrentLifetime;
+                        float hitInterval = Mathf.Max(
+                            0.01f,
+                            projectileComponent.HitInterval);
+
+                        if (recordIndex < 0)
+                        {
+                            records.Add(new ProjectileHitRecord
+                            {
+                                Target = target,
+                                NextHitTime = currentTime + hitInterval
+                            });
+
+                            break;
+                        }
+
+                        ProjectileHitRecord record = records[recordIndex];
+
+                        if (currentTime < record.NextHitTime)
+                            return false;
+
+                        record.NextHitTime = currentTime + hitInterval;
+                        records[recordIndex] = record;
+
+                        break;
+                    }
+
+                default:
+                    return false;
+            }
+
+            hitComponent.HitCount++;
+
+            return true;
         }
 
         private Vector3 GetColliderPosition(Entity entity)
@@ -141,169 +226,16 @@ namespace ECS.ProjectileSystems
         private bool CheckCollision(Entity projectile, Entity target)
         {
             ref ColliderComponent projectileCollider = ref _colliderStash.Get(projectile);
+            ref ColliderComponent targetCollider = ref _colliderStash.Get(target);
 
             Vector3 projectilePosition = GetColliderPosition(projectile);
-
             Vector3 targetPosition = GetColliderPosition(target);
 
-            float targetRadius = GetQueryRadius(target);
-
-            switch (projectileCollider.Type)
-            {
-                case ColliderType.Circle:
-                    return CheckCircle(
-                        projectilePosition,
-                        projectileCollider,
-                        targetPosition,
-                        targetRadius);
-
-                case ColliderType.Box:
-                    return CheckBox(
-                        projectilePosition,
-                        projectileCollider,
-                        targetPosition,
-                        targetRadius);
-
-                case ColliderType.Capsule:
-                    return CheckCapsule(
-                        projectilePosition,
-                        projectileCollider,
-                        targetPosition,
-                        targetRadius);
-
-                case ColliderType.Sector:
-                    return CheckSector(
-                        projectilePosition,
-                        projectileCollider,
-                        targetPosition,
-                        targetRadius);
-
-                default:
-                    return false;
-            }
-        }
-
-        private bool CheckCircle(
-            Vector3 position,
-            ColliderComponent collider,
-            Vector3 targetPosition,
-            float targetRadius)
-        {
-            Vector2 offset = new Vector2(
-                targetPosition.x - position.x,
-                targetPosition.y - position.y);
-
-            float distance = offset.magnitude;
-
-            return distance <= collider.Radius + targetRadius;
-        }
-
-        private bool CheckBox(
-            Vector3 position,
-            ColliderComponent collider,
-            Vector3 targetPosition,
-            float targetRadius)
-        {
-            Vector2 offset = new Vector2(
-                targetPosition.x - position.x,
-                targetPosition.y - position.y);
-
-            Vector2 localTarget = Rotate(offset, -collider.Angle);
-
-            float halfWidth = collider.Size.x * 0.5f;
-
-            float halfHeight = collider.Size.y * 0.5f;
-
-            return Mathf.Abs(localTarget.x) <=
-                       halfWidth + targetRadius &&
-                   Mathf.Abs(localTarget.y) <=
-                       halfHeight + targetRadius;
-        }
-
-        private bool CheckCapsule(
-            Vector3 position,
-            ColliderComponent collider,
-            Vector3 targetPosition,
-            float targetRadius)
-        {
-            float radians = collider.Angle * Mathf.Deg2Rad;
-
-            Vector2 direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
-
-            float halfSegmentLength = Mathf.Max(0f, collider.Length * 0.5f - collider.Radius);
-
-            Vector2 center = new Vector2(position.x, position.y);
-
-            Vector2 target = new Vector2(targetPosition.x, targetPosition.y);
-
-            Vector2 pointA = center - direction * halfSegmentLength;
-
-            Vector2 pointB = center + direction * halfSegmentLength;
-
-            float distance = DistanceToSegment(target, pointA, pointB);
-
-            return distance <= collider.Radius + targetRadius;
-        }
-
-        private bool CheckSector(
-            Vector3 position,
-            ColliderComponent collider,
-            Vector3 targetPosition,
-            float targetRadius)
-        {
-            Vector2 center = new Vector2(position.x, position.y);
-
-            Vector2 offset = new Vector2(targetPosition.x, targetPosition.y) - center;
-
-            float distance = offset.magnitude;
-
-            if (distance > collider.Radius + targetRadius)
-                return false;
-
-            if (distance <= 0f)
-                return true;
-
-            float radians = collider.Angle * Mathf.Deg2Rad;
-
-            Vector2 direction = new Vector2(Mathf.Cos(radians), Mathf.Sin(radians));
-
-            float angle = Vector2.Angle(direction, offset);
-
-            float sectorAngle = collider.Size.x * 0.5f;
-
-            return angle <= sectorAngle;
-        }
-
-        private float DistanceToSegment(Vector2 point, Vector2 start, Vector2 end)
-        {
-            Vector2 segment = end - start;
-
-            float lengthSquared = segment.sqrMagnitude;
-
-            if (lengthSquared <= 0f)
-                return Vector2.Distance(point, start);
-
-            float t = Vector2.Dot(point - start, segment) / lengthSquared;
-
-            t = Mathf.Clamp01(t);
-
-            Vector2 closest = start + segment * t;
-
-            return Vector2.Distance(point, closest);
-        }
-
-        private Vector2 Rotate(Vector2 value, float angle)
-        {
-            float radians = angle * Mathf.Deg2Rad;
-
-            float cos = Mathf.Cos(radians);
-            float sin = Mathf.Sin(radians);
-
-            return new Vector2(
-                value.x * cos -
-                value.y * sin,
-                value.x * sin +
-                value.y * cos);
+            return ColliderGeometry.Overlaps(
+                projectilePosition,
+                projectileCollider,
+                targetPosition,
+                targetCollider);
         }
 
         private bool IsValidTarget(Entity entity, ProjectileComponent projectile)
@@ -351,7 +283,6 @@ namespace ECS.ProjectileSystems
                         DamageType = DamageType.Direct,
                         SourceType = sourceType,
                         WeaponType = projectileComponent.WeaponType,
-                        ProjectileType = projectileComponent.Type
                     }
                 });
         }

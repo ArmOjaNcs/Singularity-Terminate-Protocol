@@ -17,7 +17,7 @@ MonoBehaviour:
   Name: 
   Prefab: {fileID: 3914983768660671423, guid: 4bd2ad3e8dff0f14195702ab25b3af2c, type: 3}
   Stats:
-    MaxHealth: 1000000
+    MaxHealth: 100
     HealthRegeneration: 0
     Damage: 10
     Luck: 0

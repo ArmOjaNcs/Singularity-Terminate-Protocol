@@ -1,7 +1,6 @@
 using Configs;
 using ECS.WeaponComponents;
 using EffectConfigs;
-using ProjectileConfigs;
 using UnityEngine;
 
 namespace WeaponConfigs
@@ -10,7 +9,6 @@ namespace WeaponConfigs
     public class WeaponConfig : ScriptableObject
     {
         public WeaponType Type;
-        public ProjectileConfig ProjectileConfig;
         public AttackConfig AttackConfig;
         public EffectConfig[] Effects;
     }

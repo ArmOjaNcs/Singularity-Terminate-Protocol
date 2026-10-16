@@ -49,28 +49,28 @@ namespace ECS.ProjectileSystems
             {
                 _requestStash.Remove(weapon);
 
-                ref ProjectileCreationComponent creation = ref _creationStash.Get(weapon);
-                ref AttackStatusComponent attackStatus = ref _attackStatusStash.Get(weapon);
+                ref ProjectileCreationComponent creation =
+                    ref _creationStash.Get(weapon);
+
+                ref AttackStatusComponent attackStatus =
+                    ref _attackStatusStash.Get(weapon);
 
                 if (creation.IsInitialized || !attackStatus.IsAttacking)
                     continue;
-
-                creation.ElapsedTime = 0f;
-                creation.RemainingCount = 0;
-                creation.IsInitialized = true;
-                attackStatus.CreationFinished = false;
 
                 _projectileFactory.Begin(weapon);
             }
 
             foreach (Entity weapon in _creationFilter)
             {
-                ref ProjectileCreationComponent creation = ref _creationStash.Get(weapon);
+                ref ProjectileCreationComponent creation =
+                    ref _creationStash.Get(weapon);
 
                 if (!creation.IsInitialized)
                     continue;
 
-                ref AttackStatusComponent attackStatus = ref _attackStatusStash.Get(weapon);
+                ref AttackStatusComponent attackStatus =
+                    ref _attackStatusStash.Get(weapon);
 
                 if (attackStatus.CreationFinished)
                     continue;

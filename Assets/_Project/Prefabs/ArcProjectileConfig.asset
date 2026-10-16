@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02d2a7b7f9b17fd4d9d2b52c715b2174, type: 3}
   m_Name: ArcProjectileConfig
   m_EditorClassIdentifier: 
-  Type: 2
+  WeaponType: 1
   Prefab: {fileID: 8570826228377179493, guid: eee1383f6978de44fa588e206542df38, type: 3}
   PoolCapacity: 5
   Collider:

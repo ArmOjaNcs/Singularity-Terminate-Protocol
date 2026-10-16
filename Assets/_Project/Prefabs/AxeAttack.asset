@@ -13,14 +13,16 @@ MonoBehaviour:
   m_Name: AxeAttack
   m_EditorClassIdentifier: 
   ProjectileCount: 1
-  Pierce: 100
-  AttackDuration: 1.5
+  Pierce: 1
+  AttackDuration: 0.35
   FireRate: 1
   Damage: 10
   AttackCooldown: 2
-  DistanceFromSource: 0.25
+  DistanceFromSource: 0.45
   AttackRadius: 0.5
   TargetSearchRadius: 2
-  ProjectileSpeed: 5
-  ProjectileLifetime: 1
+  ProjectileSpeed: 10
+  ProjectileLifetime: 0.35
   TargetType: 0
+  HitPolicy: 1
+  HitInterval: 0
