@@ -9,6 +9,7 @@ namespace Core.Installers
     {
         [Header("Objects")]
         [SerializeField] private LevelBar _levelBar;
+        [SerializeField] private EquipPanel _equipPanel;
 
         [Header("Prefabs")]
         [SerializeField] private LevelUpScreen _levelUpScreenPrefab;
@@ -26,6 +27,7 @@ namespace Core.Installers
         private void BindInstances()
         {
             Container.BindInstance(_levelBar).AsSingle();
+            Container.BindInstance(_equipPanel).AsSingle();
         }
     }
 }

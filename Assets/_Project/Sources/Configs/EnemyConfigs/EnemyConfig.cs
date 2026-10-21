@@ -6,6 +6,6 @@ namespace EnemyConfigs
     [CreateAssetMenu(fileName = "EnemyConfig", menuName = "Game/Enemy/Enemy Config")]
     public class EnemyConfig : CreatureConfig
     {
-        
+        public int PoolCapacity;
     }
 }

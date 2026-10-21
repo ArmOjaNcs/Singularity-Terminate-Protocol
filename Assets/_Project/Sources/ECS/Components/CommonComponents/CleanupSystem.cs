@@ -1,7 +1,7 @@
+using System.Collections.Generic;
 using ECS.CommonComponents;
 using ECS.EnemyComponents;
 using ECS.ProjectileComponents;
-using ECS.ViewComponents;
 using ECS.WeaponComponents;
 using Scellecs.Morpeh;
 
@@ -18,8 +18,10 @@ namespace ECS.CommonSystems
         private Stash<CleanupRequest> _cleanupRequestStash;
         private Stash<ProjectileComponent> _projectileStash;
         private Stash<WeaponComponent> _weaponStash;
-        private Stash<ViewComponent> _viewStash;
         private Stash<EnemyTag> _enemyTagStash;
+
+        private readonly List<Entity> _requestsToRemove = new List<Entity>();
+        private readonly HashSet<Entity> _entitiesToRemove = new HashSet<Entity>();
 
         public void OnAwake()
         {
@@ -38,12 +40,16 @@ namespace ECS.CommonSystems
             _cleanupRequestStash = World.GetStash<CleanupRequest>();
             _projectileStash = World.GetStash<ProjectileComponent>();
             _weaponStash = World.GetStash<WeaponComponent>();
-            _viewStash = World.GetStash<ViewComponent>();
             _enemyTagStash = World.GetStash<EnemyTag>();
         }
 
         public void OnUpdate(float deltaTime)
         {
+            _requestsToRemove.Clear();
+            _entitiesToRemove.Clear();
+
+            // Сначала определяем, какие сущности нужно удалить.
+            // Во время обхода фильтров сущности не удаляем.
             foreach (Entity request in _filter)
             {
                 ref CleanupRequest cleanupRequest =
@@ -53,31 +59,32 @@ namespace ECS.CommonSystems
 
                 if (candidate == default)
                 {
-                    World.RemoveEntity(request);
+                    _requestsToRemove.Add(request);
                     continue;
                 }
 
                 if (_enemyTagStash.Has(candidate))
                 {
                     if (HasProjectiles(candidate))
-                    {
                         continue;
-                    }
 
-                    CleanupEnemy(candidate);
+                    CollectWeapons(candidate);
+                    _entitiesToRemove.Add(candidate);
                 }
                 else if (_projectileStash.Has(candidate))
                 {
-                    CleanupProjectile(candidate);
-                }
-                else
-                {
-                    World.RemoveEntity(request);
-                    continue;
+                    _entitiesToRemove.Add(candidate);
                 }
 
-                World.RemoveEntity(request);
+                _requestsToRemove.Add(request);
             }
+
+            // Удаляем сущности только после завершения обхода фильтров.
+            foreach (Entity entity in _entitiesToRemove)
+                World.RemoveEntity(entity);
+
+            foreach (Entity request in _requestsToRemove)
+                World.RemoveEntity(request);
         }
 
         private bool HasProjectiles(Entity owner)
@@ -96,31 +103,21 @@ namespace ECS.CommonSystems
             return false;
         }
 
-        private void CleanupEnemy(Entity enemy)
-        {
-            if (HasProjectiles(enemy))
-                return;
-
-            CleanupWeapons(enemy);
-            World.RemoveEntity(enemy);
-        }
-
-        private void CleanupWeapons(Entity owner)
+        private void CollectWeapons(Entity owner)
         {
             foreach (Entity weapon in _weaponFilter)
             {
                 if (_weaponStash.Get(weapon).Owner != owner)
                     continue;
 
-                World.RemoveEntity(weapon);
+                _entitiesToRemove.Add(weapon);
             }
         }
 
-        private void CleanupProjectile(Entity projectile)
+        public void Dispose()
         {
-            World.RemoveEntity(projectile);
+            _requestsToRemove.Clear();
+            _entitiesToRemove.Clear();
         }
-
-        public void Dispose() { }
     }
 }

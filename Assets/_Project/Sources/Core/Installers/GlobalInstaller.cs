@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Core.Services;
 using ECS.WeaponSystems;
 using Scellecs.Morpeh;
@@ -21,7 +22,6 @@ namespace Core.Installers
         {
             BindInstances();
             BindServices();
-            BindToConfigs();
         }
 
         private void BindInstances()
@@ -44,15 +44,15 @@ namespace Core.Installers
 
             Container.Bind<UpgradeGenerator>().AsSingle();
             Container.Bind<WeaponFactory>().AsSingle();
-        }
 
-        private void BindToConfigs()
-        {
-            foreach (var upgrade in _weapons)
-                Container.Inject(upgrade);
+            List<UpgradeConfig> upgradeConfigsList = _weapons
+                .Concat<UpgradeConfig>(_weaponUpgrades)
+                .Concat<UpgradeConfig>(_turrets)
+                .Concat<UpgradeConfig>(_turretUpgrades)
+                .Concat<UpgradeConfig>(_skillUpgrades)
+                .ToList();
 
-            foreach (var upgrade in _turrets)
-                Container.Inject(upgrade);
+            Container.Bind<UpgradeStorage>().AsSingle().WithArguments(upgradeConfigsList);
         }
     }
 }

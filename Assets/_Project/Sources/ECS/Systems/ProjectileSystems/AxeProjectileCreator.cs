@@ -1,8 +1,6 @@
-using Core.Game;
 using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.ProjectileComponents;
-using Gameplay.View;
 using ProjectileConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
@@ -15,76 +13,80 @@ namespace ECS.ProjectileSystems
 
         private readonly Stash<AttackComponent> _attackStash;
         private readonly Stash<PositionComponent> _positionStash;
+        private readonly Stash<ProjectileComponent> _projectileStash;
         private readonly Stash<RotationComponent> _rotationStash;
         private readonly Stash<ArcTrajectoryComponent> _arcTrajectoryStash;
         private readonly Stash<ColliderPositionComponent> _colliderPositionStash;
-        private readonly Stash<ProjectileViewComponent> _projectileViewStash;
-
-        private readonly ObjectPool<AnimatedView> _axeViews;
 
         public AxeProjectileCreator(
             World world,
-            ProjectileConfig config,
-            Transform container)
+            ArcProjectileConfig config)
         {
-            _config = config as ArcProjectileConfig;
+            _config = config;
 
             _attackStash = world.GetStash<AttackComponent>();
             _positionStash = world.GetStash<PositionComponent>();
+            _projectileStash = world.GetStash<ProjectileComponent>();
             _rotationStash = world.GetStash<RotationComponent>();
             _arcTrajectoryStash = world.GetStash<ArcTrajectoryComponent>();
-            _colliderPositionStash = world.GetStash<ColliderPositionComponent>();
-            _projectileViewStash = world.GetStash<ProjectileViewComponent>();
-
-            _axeViews = new ObjectPool<AnimatedView>(
-                config.Prefab,
-                config.PoolCapacity,
-                container);
+            _colliderPositionStash =
+                world.GetStash<ColliderPositionComponent>();
         }
 
-        public void Configure(Entity weapon, Entity projectile, Vector3 direction)
+        public void Create(Entity weapon, Entity[] projectiles)
         {
+            if (_config == null ||
+                !_attackStash.Has(weapon) ||
+                !_positionStash.Has(weapon))
+            {
+                return;
+            }
+
             ref AttackComponent attack = ref _attackStash.Get(weapon);
 
-            Vector3 colliderOffset = _config.ColliderOffset;
-
-            _rotationStash.Set(projectile, new RotationComponent
+            foreach (Entity projectile in projectiles)
             {
-                Angle = 0f
-            });
+                if (!_projectileStash.Has(projectile) ||
+                    !_positionStash.Has(projectile))
+                {
+                    continue;
+                }
 
-            _arcTrajectoryStash.Set(projectile, new ArcTrajectoryComponent
-            {
-                Direction = direction,
-                ColliderOffset = colliderOffset,
-                DistanceFromSource = attack.DistanceFromSource,
-                Radius = _config.TrajectoryRadius,
-                StartAngle = _config.StartAngle,
-                EndAngle = _config.EndAngle,
-                StartRotationAngle = -45f,
-                EndRotationAngle = 45f,
-                Duration = attack.AttackDuration,
-                CurrentTime = 0f
-            });
+                Vector3 direction =
+                    _projectileStash.Get(projectile).Direction;
 
-            _colliderPositionStash.Set(projectile, new ColliderPositionComponent
-            {
-                CenterPosition = _positionStash.Get(projectile).Position + colliderOffset
-            });
+                Vector3 colliderOffset = _config.ColliderOffset;
 
-            AnimatedView view = _axeViews.GetElement();
+                _rotationStash.Set(projectile, new RotationComponent
+                {
+                    Angle = 0f
+                });
 
-            if (view == null)
-                return;
+                _arcTrajectoryStash.Set(
+                    projectile,
+                    new ArcTrajectoryComponent
+                    {
+                        Direction = direction,
+                        ColliderOffset = colliderOffset,
+                        DistanceFromSource = attack.DistanceFromSource,
+                        Radius = _config.TrajectoryRadius,
+                        StartAngle = _config.StartAngle,
+                        EndAngle = _config.EndAngle,
+                        StartRotationAngle = _config.StartAngle,
+                        EndRotationAngle = _config.EndAngle,
+                        Duration = attack.AttackDuration,
+                        CurrentTime = 0f
+                    });
 
-            view.SetEntity(projectile);
-
-            _projectileViewStash.Set(projectile, new ProjectileViewComponent
-            {
-                View = view
-            });
-
-            view.SetActive(true);
+                _colliderPositionStash.Set(
+                    projectile,
+                    new ColliderPositionComponent
+                    {
+                        CenterPosition =
+                            _positionStash.Get(projectile).Position +
+                            colliderOffset
+                    });
+            }
         }
     }
 }

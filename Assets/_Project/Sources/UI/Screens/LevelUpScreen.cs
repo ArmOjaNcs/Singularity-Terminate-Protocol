@@ -1,10 +1,7 @@
 using System.Collections.Generic;
-using Core.Services;
 using ECS.PlayerComponents;
 using UnityEngine;
-using UpgradeConfigs;
 using Zenject;
-using static UnityEditor.Progress;
 
 namespace UI
 {

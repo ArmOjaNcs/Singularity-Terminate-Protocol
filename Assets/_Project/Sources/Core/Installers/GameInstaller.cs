@@ -20,7 +20,8 @@ namespace Core.Installers
         [Header("Databases")]
         [SerializeField] private ProjectileDatabase _projectileDatabase;
         [SerializeField] private List<GemExpConfig> _itemConfigs;
-        [SerializeField] private EnemyConfig _enemyConfig;
+        [SerializeField] private EnemyConfigsDatabase _enemyConfigsDatabase;
+        [SerializeField] private EnemySpawnDatabase _enemySpawnDatabase;
 
         [Header("Arena")]
         [SerializeField] private NavigationGrid _navigationGrid;
@@ -31,6 +32,7 @@ namespace Core.Installers
 
         [Header("Containers")]
         [SerializeField] private Transform _projectileContainer;
+        [SerializeField] private Transform _enemyContainer;
 
         public override void InstallBindings()
         {
@@ -58,7 +60,8 @@ namespace Core.Installers
         {
             Container.BindInstance(_projectileDatabase).AsSingle();
             Container.BindInstance(_itemConfigs).AsSingle();
-            Container.BindInstance(_enemyConfig).AsSingle();
+            Container.BindInstance(_enemyConfigsDatabase).AsSingle();
+            Container.BindInstance(_enemySpawnDatabase).AsSingle();
         }
 
         private void BindArenaInstances()
@@ -74,7 +77,11 @@ namespace Core.Installers
 
         private void BindContainerInstances()
         {
-            Container.BindInstance(_projectileContainer).WithId("ProjectileContainer").AsSingle();
+            Container.BindInstance(_projectileContainer)
+                .WithId("ProjectileContainer");
+
+            Container.BindInstance(_enemyContainer)
+                .WithId("EnemyContainer");
         }
     }
 }

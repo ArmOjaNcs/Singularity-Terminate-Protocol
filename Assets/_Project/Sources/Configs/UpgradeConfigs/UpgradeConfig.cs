@@ -12,8 +12,7 @@ namespace UpgradeConfigs
         [TextArea(3, 5)]
         public string Description;
         public Sprite Icon;
+        public UpgradeType UpgradeType;
         public List<UpgradeConfig> RequiredUpgradeIds;
-
-        public abstract void Apply(Entity entity, PlayerInventoryComponent inventory);
     }
 }
