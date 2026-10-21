@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.EnemyComponents;
@@ -11,7 +10,7 @@ using UnityEngine;
 using UnityEditor;
 #endif
 
-namespace Gameplay.Debug
+namespace Gameplay
 {
     public sealed class EcsDebugVisualizer : MonoBehaviour
     {

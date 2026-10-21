@@ -52,7 +52,10 @@ namespace ECS.WeaponSystems
             _attackStash.Set(weapon, new AttackComponent
             {
                 ProjectileCount = config.AttackConfig.ProjectileCount,
+                ShotsInAttack = config.AttackConfig.ShotsInAttack,
                 Pierce = config.AttackConfig.Pierce,
+                MaxRicochets = config.AttackConfig.MaxRicochets,
+
                 AttackDuration = config.AttackConfig.AttackDuration,
                 FireRate = config.AttackConfig.FireRate,
                 Damage = config.AttackConfig.Damage,
@@ -63,9 +66,11 @@ namespace ECS.WeaponSystems
                 AttackRadius = config.AttackConfig.AttackRadius,
                 ProjectileSpeed = config.AttackConfig.ProjectileSpeed,
                 ProjectileLifetime = config.AttackConfig.ProjectileLifetime,
+                RicochetChance = config.AttackConfig.RicochetChance,
+                ShotSpreadAngle = config.AttackConfig.ShotSpreadAngle,
                 TargetType = config.AttackConfig.TargetType,
                 HitPolicy = config.AttackConfig.HitPolicy,
-                HitInterval = config.AttackConfig.HitInterval,
+                HitInterval = config.AttackConfig.HitInterval
             });
 
             _attackStatusStash.Set(weapon, new AttackStatusComponent

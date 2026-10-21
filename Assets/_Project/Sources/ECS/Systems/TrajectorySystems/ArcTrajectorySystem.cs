@@ -62,15 +62,31 @@ namespace ECS.TrajectorySystems
                 float progress = Mathf.Clamp01(
                     trajectory.CurrentTime / trajectory.Duration);
 
+                Vector3 direction = trajectory.Direction;
+
+                direction.z = 0f;
+
+                if (direction.sqrMagnitude <= 0.0001f)
+                    continue;
+
+                direction.Normalize();
+
+                float startAngle = trajectory.StartAngle;
+                float endAngle = trajectory.EndAngle;
+
+                if (direction.x < 0f)
+                {
+                    startAngle = -trajectory.StartAngle;
+                    endAngle = -trajectory.EndAngle;
+                }
+
                 float trajectoryAngle = Mathf.Lerp(
-                    trajectory.StartAngle,
-                    trajectory.EndAngle,
+                    startAngle,
+                    endAngle,
                     progress);
 
                 float trajectoryRadians =
                     trajectoryAngle * Mathf.Deg2Rad;
-
-                Vector3 direction = trajectory.Direction.normalized;
 
                 Vector3 perpendicular = new Vector3(
                     -direction.y,
@@ -96,6 +112,9 @@ namespace ECS.TrajectorySystems
                     trajectory.StartRotationAngle,
                     trajectory.EndRotationAngle,
                     progress);
+
+                if (direction.x < 0f)
+                    rotationOffset = -rotationOffset;
 
                 float attackAngle = Mathf.Atan2(
                     direction.y,

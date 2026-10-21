@@ -1,10 +1,13 @@
-using Configs;
+
+using Core.Game;
 using ECS.CommonComponents;
 using ECS.EnemyComponents;
 using ECS.ViewComponents;
 using ECS.WeaponSystems;
 using EnemyConfigs;
+using Gameplay.Creatures;
 using Scellecs.Morpeh;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Gameplay.Enemy
@@ -12,146 +15,151 @@ namespace Gameplay.Enemy
     public sealed class EnemyFactory
     {
         private readonly World _world;
-        private readonly WeaponFactory _weaponFactory;
+        private readonly CreatureFactory _creatureFactory;
+        private readonly EnemyConfigsDatabase _database;
+        private readonly Transform _container;
+
+        private readonly Dictionary<CreatureType, ObjectPool<EnemyView>> _views =
+            new Dictionary<CreatureType, ObjectPool<EnemyView>>();
 
         private readonly Stash<EnemyTag> _enemyTagStash;
-        private readonly Stash<StatsComponent> _statsStash;
-        private readonly Stash<HealthComponent> _healthStash;
-        private readonly Stash<MovementComponent> _movementStash;
-        private readonly Stash<PositionComponent> _positionStash;
-        private readonly Stash<ColliderComponent> _colliderStash;
-
+        private readonly Stash<EnemyMovementVariationComponent>
+            _movementVariationStash;
         private readonly Stash<ViewComponent> _viewStash;
         private readonly Stash<AnimatedCreatureComponent> _animatedCreatureStash;
         private readonly Stash<EnemyViewComponent> _enemyViewStash;
 
-        public EnemyFactory(World world, WeaponFactory weaponFactory)
+        public EnemyFactory(
+            World world,
+            WeaponFactory weaponFactory,
+            EnemyConfigsDatabase database,
+            Transform container)
         {
             _world = world;
-            _weaponFactory = weaponFactory;
+            _creatureFactory = new CreatureFactory(world, weaponFactory);
+            _database = database;
+            _container = container;
 
             _enemyTagStash = world.GetStash<EnemyTag>();
-            _statsStash = world.GetStash<StatsComponent>();
-            _healthStash = world.GetStash<HealthComponent>();
-            _movementStash = world.GetStash<MovementComponent>();
-            _positionStash = world.GetStash<PositionComponent>();
-            _colliderStash = world.GetStash<ColliderComponent>();
-
+            _movementVariationStash =
+                world.GetStash<EnemyMovementVariationComponent>();
             _viewStash = world.GetStash<ViewComponent>();
-            _animatedCreatureStash = world.GetStash<AnimatedCreatureComponent>();
+            _animatedCreatureStash =
+                world.GetStash<AnimatedCreatureComponent>();
             _enemyViewStash = world.GetStash<EnemyViewComponent>();
+
+            InitializeConfigs();
         }
 
-        public GameObject Create(EnemyConfig config, Vector3 position)
+        public Entity Create(EnemyConfig config, Vector3 position)
         {
-            Entity entity = _world.CreateEntity();
-
-            CreateStats(entity, config);
-            CreateGameplayComponents(entity, config, position);
-
-            GameObject enemyObject = CreateView(entity, config, position);
-
-            if (enemyObject == null)
-                return null;
-
-            CreateWeapon(entity, config);
-
-            return enemyObject;
-        }
-
-        private void CreateStats(Entity entity, EnemyConfig config)
-        {
-            BaseStats baseStats = config.Stats;
-
-            StatsComponent stats = new StatsComponent
+            if (config == null || config.Collider == null)
             {
-                CreatureType = config.CreatureType,
-                MaxHealth = baseStats.MaxHealth,
-                HealthRegeneration = baseStats.HealthRegeneration,
-                Damage = baseStats.Damage,
-                Luck = baseStats.Luck,
-                Defence = baseStats.Defence,
-                Speed = baseStats.Speed
-            };
-
-            _statsStash.Set(entity, stats);
-
-            _healthStash.Set(entity, new HealthComponent
-            {
-                Current = stats.MaxHealth
-            });
-        }
-
-        private void CreateGameplayComponents(Entity entity, EnemyConfig config, Vector3 position)
-        {
-            _enemyTagStash.Set(entity, new EnemyTag());
-
-            _movementStash.Set(entity, new MovementComponent
-            {
-                Direction = Vector3.zero
-            });
-
-            _positionStash.Set(entity, new PositionComponent
-            {
-                Position = position
-            });
-
-            _colliderStash.Set(
-                entity,
-                new ColliderComponent
-                {
-                    Type = config.Collider.Type,
-                    Radius = config.Collider.Radius,
-                    Length = config.Collider.Length,
-                    Size = config.Collider.Size,
-                    Angle = 0f,
-                    CapsuleOrientation = config.Collider.CapsuleOrientation
-                });
-        }
-
-        private GameObject CreateView(Entity entity, EnemyConfig config, Vector3 position)
-        {
-            GameObject enemyObject = Object.Instantiate(config.Prefab);
-            enemyObject.transform.position = position;
-
-            EnemyView view = enemyObject.GetComponent<EnemyView>();
-
-            if (view == null)
-            {
-                Object.Destroy(enemyObject);
-                _world.RemoveEntity(entity);
-
-                return null;
+                return default;
             }
 
+            if (!_views.TryGetValue(
+                    config.CreatureType,
+                    out ObjectPool<EnemyView> pool))
+            {
+                return default;
+            }
+
+            EnemyView view = pool.GetElement();
+
+            if (view == null)
+                return default;
+
+            Entity entity = _world.CreateEntity();
+
+            view.transform.position = position;
+            view.ResetState();
+            view.ResetAnimator();
             view.SetEntity(entity);
+
+            _enemyTagStash.Set(entity, new EnemyTag());
+
+            _creatureFactory.CreateCommonComponents(
+                entity,
+                config,
+                position);
+
+            _movementVariationStash.Set(
+                entity,
+                new EnemyMovementVariationComponent
+                {
+                    SpeedMultiplier = Random.Range(0.85f, 1.15f),
+                    ApproachOffset =
+                        Random.insideUnitCircle.normalized *
+                        Random.Range(0.4f, 1.2f)
+                });
 
             _viewStash.Set(entity, new ViewComponent
             {
                 View = view
             });
 
-            _animatedCreatureStash.Set(entity, new AnimatedCreatureComponent
-            {
-                View = view
-            });
+            _animatedCreatureStash.Set(
+                entity,
+                new AnimatedCreatureComponent
+                {
+                    View = view
+                });
 
             _enemyViewStash.Set(entity, new EnemyViewComponent
             {
                 View = view
             });
 
-            return enemyObject;
+            _creatureFactory.CreateWeapons(entity, config);
+
+            view.SetActive(true);
+
+            return entity;
         }
 
-        private void CreateWeapon(Entity entity, EnemyConfig config)
+        private void InitializeConfigs()
         {
-            if (config.WeaponConfig == null)
-            {
+            if (_database == null || _database.Enemies == null)
                 return;
-            }
 
-            _weaponFactory.Create(config.WeaponConfig, entity);
+            foreach (EnemyConfig config in _database.Enemies)
+            {
+                if (config == null ||
+                    config.Prefab == null ||
+                    config.Collider == null)
+                {
+                    continue;
+                }
+
+                if (_views.ContainsKey(config.CreatureType))
+                {
+                    Debug.LogWarning(
+                        $"EnemyFactory: duplicate config for {config.CreatureType}.",
+                        config);
+
+                    continue;
+                }
+
+                EnemyView prefab = config.Prefab.GetComponent<EnemyView>();
+
+                if (prefab == null)
+                {
+                    Debug.LogWarning(
+                        $"EnemyFactory: prefab for {config.CreatureType} " +
+                        "does not contain EnemyView.",
+                        config);
+
+                    continue;
+                }
+
+                _views.Add(
+                    config.CreatureType,
+                    new ObjectPool<EnemyView>(
+                        prefab,
+                        config.PoolCapacity,
+                        _container));
+            }
         }
     }
 }

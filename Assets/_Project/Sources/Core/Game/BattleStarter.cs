@@ -33,16 +33,18 @@ namespace Core.Game
     {
         private PlayerConfig _playerConfig;
         private ProjectileDatabase _projectileDatabase;
+        private EnemyConfigsDatabase _enemyConfigsDatabase;
+        private EnemySpawnDatabase _enemySpawnDatabase;
         private List<GemExpConfig> _itemConfigs;
         private List<NewWeaponUpgradeConfig> _weaponConfigs;
         private List<NewTurretUpgradeConfig> _turretConfigs;
         private Vector3 _playerSpawnPoint;
         private NavigationGrid _navigationGrid;
         private Transform _projectileContainer;
+        private Transform _enemyContainer;
+
         private CinemachineVirtualCamera _camera;
         private PolygonCollider2D _cameraBounds;
-        private EnemyConfig _enemyConfig;
-        private Vector3 _enemySpawnPoint;
 
         private World _world;
         private SystemsGroup _gameplaySystems;
@@ -56,6 +58,8 @@ namespace Core.Game
 
         private ViewPauseSystem _viewPauseSystem;
         private PlayerDeathSystem _playerDeathSystem;
+        private EnemySpawnSystem _enemySpawnSystem;
+
         private GameObject _playerGameObject;
         private DamageStatistics _damageStatistics;
 
@@ -67,10 +71,15 @@ namespace Core.Game
         public void Construct(
             PlayerConfig playerConfig,
             ProjectileDatabase projectileDatabase,
+            EnemyConfigsDatabase enemyConfigsDatabase,
+            EnemySpawnDatabase enemySpawnDatabase,
             List<GemExpConfig> itemConfigs,
             Vector3 spawnPoint,
             NavigationGrid navigationGrid,
-            [Inject(Id = "ProjectileContainer")] Transform projectileContainer,
+            [Inject(Id = "ProjectileContainer")]
+            Transform projectileContainer,
+            [Inject(Id = "EnemyContainer")]
+            Transform enemyContainer,
             CinemachineVirtualCamera camera,
             PolygonCollider2D cameraBounds,
             LevelBar levelBar,
@@ -83,9 +92,14 @@ namespace Core.Game
         {
             _playerConfig = playerConfig;
             _projectileDatabase = projectileDatabase;
+            _enemyConfigsDatabase = enemyConfigsDatabase;
+            _enemySpawnDatabase = enemySpawnDatabase;
+            _itemConfigs = itemConfigs;
+
             _playerSpawnPoint = spawnPoint;
             _navigationGrid = navigationGrid;
             _projectileContainer = projectileContainer;
+            _enemyContainer = enemyContainer;
 
             _camera = camera;
             _cameraBounds = cameraBounds;
@@ -110,7 +124,6 @@ namespace Core.Game
             CreateFactories();
             CreateSystems();
             CreatePlayer();
-            CreateEnemy();
             CreateItems();
             SetUI();
         }
@@ -128,8 +141,19 @@ namespace Core.Game
         private void CreateFactories()
         {
             _weaponFactory = new WeaponFactory(_world);
-            _playerFactory = new PlayerFactory(_world, _weaponFactory, _weaponConfigs, _turretConfigs);
-            _enemyFactory = new EnemyFactory(_world, _weaponFactory);
+
+            _playerFactory = new PlayerFactory(
+                _world,
+                _weaponFactory,
+				_weaponConfigs,
+				_turretConfigs);
+
+            _enemyFactory = new EnemyFactory(
+                _world,
+                _weaponFactory,
+                _enemyConfigsDatabase,
+                _enemyContainer);
+
             _itemFactory = new ItemFactory(_world);
 
             _projectileFactory = new ProjectileFactory(
@@ -142,8 +166,8 @@ namespace Core.Game
         {
             _gameplaySystems = _world.CreateSystemsGroup();
 
-            AddMovementSystems();
             AddTargetingSystems();
+            AddMovementSystems();
             AddAttackSystems();
             AddProjectileSystems();
             AddCombatSystems();
@@ -159,6 +183,7 @@ namespace Core.Game
             _gameplaySystems.AddSystem(new PlayerInputSystem());
             _gameplaySystems.AddSystem(new PlayerMovementSystem(_navigationGrid));
             _gameplaySystems.AddSystem(new WeaponPositionSystem());
+            _gameplaySystems.AddSystem(new EnemyMovementSystem(_navigationGrid, _spatialGrid));
         }
 
         private void AddTargetingSystems()
@@ -179,6 +204,7 @@ namespace Core.Game
         private void AddProjectileSystems()
         {
             _gameplaySystems.AddSystem(new ProjectileCreationSystem(_projectileFactory));
+            _gameplaySystems.AddSystem(new StraightTrajectorySystem());
             _gameplaySystems.AddSystem(new ArcTrajectorySystem());
             _gameplaySystems.AddSystem(new ProjectileViewSystem());
             _gameplaySystems.AddSystem(new ProjectileCollisionCheckSystem(_spatialGrid));
@@ -189,7 +215,7 @@ namespace Core.Game
         {
             _gameplaySystems.AddSystem(new DamageSystem());
             _gameplaySystems.AddSystem(new EffectSystem());
-            _gameplaySystems.AddSystem(new KnockbackSystem());
+            _gameplaySystems.AddSystem(new KnockbackSystem(_navigationGrid));
         }
 
         private void AddViewSystems()
@@ -202,11 +228,20 @@ namespace Core.Game
             _gameplaySystems.AddSystem(_viewPauseSystem);
 
             _gameplaySystems.AddSystem(new PlayerAnimationSystem());
+            _gameplaySystems.AddSystem(new MoveAnimationSystem());
         }
 
         private void AddLifecycleSystems()
         {
             _playerDeathSystem = new PlayerDeathSystem();
+
+            _enemySpawnSystem = new EnemySpawnSystem(
+                _enemyFactory,
+                _enemyConfigsDatabase,
+                _enemySpawnDatabase,
+                _navigationGrid);
+
+            _gameplaySystems.AddSystem(_enemySpawnSystem);
             _gameplaySystems.AddSystem(new CleanupSystem());
             _gameplaySystems.AddSystem(_playerDeathSystem);
             _gameplaySystems.AddSystem(new EnemyDeathSystem());
@@ -222,35 +257,33 @@ namespace Core.Game
         private void AddStatisticSystems()
         {
             _damageStatistics = new DamageStatistics();
-            _gameplaySystems.AddSystem(new DamageStatisticsSystem(_damageStatistics));
+
+            _gameplaySystems.AddSystem(
+                new DamageStatisticsSystem(_damageStatistics));
         }
 
         private void CreatePlayer()
         {
-            Vector3 spawnPosition = _playerSpawnPoint;
-
-            _playerGameObject =
-                _playerFactory.Create(
-                    _playerConfig,
-                    spawnPosition);
+            _playerGameObject = _playerFactory.Create(
+                _playerConfig,
+                _playerSpawnPoint);
 
             SetCamera(_playerGameObject.transform);
         }
 
-        private void CreateEnemy()
-        {
-            _enemyFactory.Create(_enemyConfig, _enemySpawnPoint);
-        }
-
         private void SetUI()
         {
-            Entity playerEntity = _playerGameObject.GetComponent<AnimatedCreature>().Entity;
+            Entity playerEntity =
+                _playerGameObject.GetComponent<AnimatedCreature>().Entity;
+
             var xpStash = _world.GetStash<PlayerExperienceComponent>();
             var inventoryStash = _world.GetStash<PlayerInventoryComponent>();
 
             if (xpStash.Has(playerEntity))
             {
-                PlayerExperienceComponent xpComponent = xpStash.Get(playerEntity);
+                PlayerExperienceComponent xpComponent =
+                    xpStash.Get(playerEntity);
+
                 _levelBar.Setup(xpComponent);
             }
 
@@ -263,12 +296,29 @@ namespace Core.Game
 
         private void CreateItems()
         {
-            _itemFactory.Create(_itemConfigs, _playerSpawnPoint + new Vector3(5, 5));
-            _itemFactory.Create(_itemConfigs, _playerSpawnPoint + new Vector3(-5, 5));
-            _itemFactory.Create(_itemConfigs, _playerSpawnPoint + new Vector3(5, -5));
-            _itemFactory.Create(_itemConfigs, _playerSpawnPoint + new Vector3(10, 10));
-            _itemFactory.Create(_itemConfigs, _playerSpawnPoint + new Vector3(-10, 10));
-            _itemFactory.Create(_itemConfigs, _playerSpawnPoint + new Vector3(10, -10));
+            _itemFactory.Create(
+                _itemConfigs,
+                _playerSpawnPoint + new Vector3(5, 5));
+
+            _itemFactory.Create(
+                _itemConfigs,
+                _playerSpawnPoint + new Vector3(-5, 5));
+
+            _itemFactory.Create(
+                _itemConfigs,
+                _playerSpawnPoint + new Vector3(5, -5));
+
+            _itemFactory.Create(
+                _itemConfigs,
+                _playerSpawnPoint + new Vector3(10, 10));
+
+            _itemFactory.Create(
+                _itemConfigs,
+                _playerSpawnPoint + new Vector3(-10, 10));
+
+            _itemFactory.Create(
+                _itemConfigs,
+                _playerSpawnPoint + new Vector3(10, -10));
         }
 
         private void SetCamera(Transform playerTransform)
@@ -279,11 +329,14 @@ namespace Core.Game
             _camera.LookAt = playerTransform;
             _camera.Follow = playerTransform;
 
-            CinemachineConfiner2D confiner = _camera.GetComponent<CinemachineConfiner2D>();
+            CinemachineConfiner2D confiner =
+                _camera.GetComponent<CinemachineConfiner2D>();
 
             if (confiner != null && _cameraBounds != null)
             {
-                confiner.m_BoundingShape2D = _cameraBounds.GetComponent<Collider2D>();
+                confiner.m_BoundingShape2D =
+                    _cameraBounds.GetComponent<Collider2D>();
+
                 confiner.InvalidateCache();
             }
         }

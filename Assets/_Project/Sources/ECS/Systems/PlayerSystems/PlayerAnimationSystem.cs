@@ -33,26 +33,26 @@ namespace ECS.PlayerSystems
         {
             foreach (Entity entity in _filter)
             {
-                ref MovementComponent movement =
-                    ref _movementStash.Get(entity);
+                //ref MovementComponent movement =
+                //    ref _movementStash.Get(entity);
 
-                ref PlayerInputComponent input =
-                    ref _inputStash.Get(entity);
+                //ref PlayerInputComponent input =
+                //    ref _inputStash.Get(entity);
 
-                AnimatedCreature view = _playerViewStash.Get(entity).View;
+                //AnimatedCreature view = _playerViewStash.Get(entity).View;
 
-                bool isMoving =
-                    movement.Direction != UnityEngine.Vector3.zero;
+                //bool isMoving =
+                //    movement.Direction != UnityEngine.Vector3.zero;
 
-                view.SetMoving(isMoving);
+                //view.SetMoving(isMoving);
 
-                if (movement.Direction.x > 0f)
-                    view.SetFacingLeft(false);
-                else if (movement.Direction.x < 0f)
-                    view.SetFacingLeft(true);
+                //if (movement.Direction.x > 0f)
+                //    view.SetFacingLeft(false);
+                //else if (movement.Direction.x < 0f)
+                //    view.SetFacingLeft(true);
 
-                if (input.VictoryPressed)
-                    view.SetWin();
+                //if (input.VictoryPressed)
+                //    view.SetWin();
             }
         }
 
