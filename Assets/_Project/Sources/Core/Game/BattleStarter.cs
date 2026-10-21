@@ -65,6 +65,7 @@ namespace Core.Game
 
         private LevelBar _levelBar;
         private EquipPanel _equipPanel;
+        private Vector3 _enemySpawnPoint;
         private UIService _uiService;
 
         [Inject]
@@ -84,7 +85,6 @@ namespace Core.Game
             PolygonCollider2D cameraBounds,
             LevelBar levelBar,
             EquipPanel equipPanel,
-            EnemyConfig enemyConfig,
             Vector3 enemySpawnPoint,
             UIService uiService,
             List<NewWeaponUpgradeConfig> weaponConfigs,
@@ -109,7 +109,6 @@ namespace Core.Game
             _enemySpawnPoint = enemySpawnPoint;
             _uiService = uiService;
 
-            _enemyConfig = enemyConfig;
             _itemConfigs = itemConfigs;
             _weaponConfigs = weaponConfigs;
             _turretConfigs = turretConfigs;
@@ -145,8 +144,8 @@ namespace Core.Game
             _playerFactory = new PlayerFactory(
                 _world,
                 _weaponFactory,
-				_weaponConfigs,
-				_turretConfigs);
+                _weaponConfigs,
+                _turretConfigs);
 
             _enemyFactory = new EnemyFactory(
                 _world,

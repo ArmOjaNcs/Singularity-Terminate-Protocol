@@ -117,13 +117,13 @@ namespace ECS.PlayerSystems
                 throw new ArgumentException("Неверный тип апгрейда");
 
             var weaponStash = World.GetStash<WeaponComponent>();
-            var weaponFilter = World.Filter.With<WeaponComponent>().Build();
+            var weaponFilter = World.Filter.With<WeaponComponent>().With<PlayerInventoryComponent>().Build();
 
             foreach (var weaponEntity in weaponFilter)
             {
                 ref var weapon = ref weaponStash.Get(weaponEntity);
 
-                if (weapon.Owner == playerEntity)
+                if (weapon.Type == config.Type)
                 {
                     ApplyWeaponStatsUpgrade(weaponEntity, config);
 

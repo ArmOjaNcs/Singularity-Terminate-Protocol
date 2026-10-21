@@ -13,6 +13,7 @@ using Scellecs.Morpeh;
 using UniRx;
 using UnityEngine;
 using UpgradeConfigs;
+using WeaponConfigs;
 using static UnityEngine.EventSystems.EventTrigger;
 
 namespace Gameplay.Player
@@ -101,7 +102,7 @@ namespace Gameplay.Player
                 new PlayerStatsComponent
                 {
                     GatheringRadius = config.GatheringRadius,
-                    EvasionChance = config.EvasionChance
+                    EvasionChance = config.EvasionChance,
                 });
 
             _inputStash.Set(entity, new PlayerInputComponent());
@@ -111,41 +112,34 @@ namespace Gameplay.Player
                 CurrentXP = new ReactiveProperty<int>(0),
                 NextLevelXP = new ReactiveProperty<int>(
                     InitialFirstLevelUpXP),
-                CurrentLevel = new ReactiveProperty<int>(1)
+                CurrentLevel = new ReactiveProperty<int>(1),
             });
 
             _addXpStash.Set(entity, new AddExperienceEvent
             {
-                Amount = 0
+                Amount = 0,
             });
 
             _looterStash.Set(entity, new LooterComponent
             {
-                PickupRadius = config.GatheringRadius
+                PickupRadius = config.GatheringRadius,
             });
             InitializeInventory(config, entity);
         }
 
-
         private void InitializeInventory(PlayerConfig config, Entity entity)
         {
-            WeaponType type = config.WeaponConfig.Type;
+            WeaponConfig[] weapons = config.WeaponConfig;
             Dictionary<string, int> initialUpgrades = new Dictionary<string, int>();
             int currentTurrets = 0;
             int currentWeapons = 0;
-            var initialWeapon = _weaponUpgradeConfigs.Find((item) => item.Type == type);
-            var initialTurret = _turretUpgradeConfigs.Find((item) => item.Type == type);
 
-            if (initialWeapon != null)
+            foreach (var weapon in weapons)
             {
+                var initialWeapon = _weaponUpgradeConfigs.Find((item) => item.Type == weapon.Type);
+
                 initialUpgrades.Add(initialWeapon.UpgradeId, 1);
                 currentWeapons++;
-            }
-
-            if (initialTurret != null)
-            {
-                initialUpgrades.Add(initialTurret.UpgradeId, 1);
-                currentTurrets++;
             }
 
             _inventoryStash.Set(entity, new PlayerInventoryComponent
@@ -177,21 +171,21 @@ namespace Gameplay.Player
 
             _viewStash.Set(entity, new ViewComponent
             {
-                View = view
+                View = view,
             });
 
             _animatedCreatureStash.Set(
                 entity,
                 new AnimatedCreatureComponent
                 {
-                    View = view
+                    View = view,
                 });
 
             _playerViewStash.Set(
                 entity,
                 new PlayerViewComponent
                 {
-                    View = view
+                    View = view,
                 });
 
             return playerObject;
