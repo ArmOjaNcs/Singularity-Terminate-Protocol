@@ -1,19 +1,19 @@
-using System.Collections.Generic;
 using Scellecs.Morpeh;
+using UniRx;
 
 namespace ECS.PlayerComponents
 {
     [System.Serializable]
     public struct PlayerInventoryComponent : IComponent
     {
-        public Dictionary<string, int> ActiveUpgrades;
+        public ReactiveDictionary<string, int> ActiveUpgrades;
         public int CurrentWeaponsAmount;
-        public int MaxWeapons;
+        public ReactiveProperty<int> MaxWeapons;
 
-        public int CurrentSkillsAmount;
-        public int MaxSkills;
+        public int CurrentItemsAmount;
+        public ReactiveProperty<int> MaxItems;
 
         public int CurrentTurretsAmount;
-        public int MaxTurrets;
+        public ReactiveProperty<int> MaxTurrets;
     }
 }

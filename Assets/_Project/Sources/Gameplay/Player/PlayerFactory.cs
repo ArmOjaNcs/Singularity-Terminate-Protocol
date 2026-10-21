@@ -187,12 +187,12 @@ namespace Gameplay.Player
 
             _inventoryStash.Set(entity, new PlayerInventoryComponent
             {
-                ActiveUpgrades = initialUpgrades,
+                ActiveUpgrades = new ReactiveDictionary<string, int>(initialUpgrades),
                 CurrentTurretsAmount = currentTurrets,
-                MaxTurrets = config.MaxTurrets,
+                MaxTurrets = new ReactiveProperty<int>(config.MaxTurrets),
                 CurrentWeaponsAmount = currentWeapons,
-                MaxWeapons = config.MaxWeapons,
-                MaxSkills = config.MaxSkills,
+                MaxWeapons = new ReactiveProperty<int>(config.MaxWeapons),
+                MaxItems = new ReactiveProperty<int>(config.MaxSkills),
             });
         }
 

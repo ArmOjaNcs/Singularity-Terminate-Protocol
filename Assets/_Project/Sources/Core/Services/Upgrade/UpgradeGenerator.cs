@@ -48,6 +48,7 @@ public class UpgradeGenerator
         foreach (var upgrade in _skillUpgrades)
         {
             bool hasUpgrade = inventory.ActiveUpgrades.TryGetValue(upgrade.UpgradeId, out int currentLevel);
+            bool isNewSkill = currentLevel == 0;
 
             if (hasUpgrade && currentLevel >= upgrade.MaxLevel)
                 continue;
@@ -58,7 +59,7 @@ public class UpgradeGenerator
                     continue;
             }
 
-            if (currentLevel == 0 && inventory.CurrentSkillsAmount == inventory.MaxSkills)
+            if (hasUpgrade == false && inventory.CurrentItemsAmount == inventory.MaxItems.Value)
                 continue;
 
             _upgradeConfigs.Add(new UpgradeState { Config = upgrade, CurrentLevel = currentLevel });
@@ -89,7 +90,7 @@ public class UpgradeGenerator
                     continue;
             }
 
-            if (currentLevel == 0 && inventory.CurrentWeaponsAmount == inventory.MaxWeapons)
+            if (currentLevel == 0 && inventory.CurrentWeaponsAmount == inventory.MaxWeapons.Value)
                 continue;
 
             _upgradeConfigs.Add(new UpgradeState { Config = upgrade, CurrentLevel = currentLevel });

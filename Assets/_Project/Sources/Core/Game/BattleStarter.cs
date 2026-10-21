@@ -7,6 +7,7 @@ using ECS.CommonSystems;
 using ECS.DamageComponents;
 using ECS.DamageSystems;
 using ECS.EnemySystems;
+using ECS.PlayerComponents;
 using ECS.PlayerSystems;
 using ECS.ProjectileSystems;
 using ECS.TrajectorySystems;
@@ -21,6 +22,7 @@ using Gameplay.View;
 using PlayerConfigs;
 using ProjectileConfigs;
 using Scellecs.Morpeh;
+using UI;
 using UnityEngine;
 using UpgradeConfigs;
 using Zenject;
@@ -58,6 +60,7 @@ namespace Core.Game
         private DamageStatistics _damageStatistics;
 
         private LevelBar _levelBar;
+        private EquipPanel _equipPanel;
         private UIService _uiService;
 
         [Inject]
@@ -71,6 +74,7 @@ namespace Core.Game
             CinemachineVirtualCamera camera,
             PolygonCollider2D cameraBounds,
             LevelBar levelBar,
+            EquipPanel equipPanel,
             EnemyConfig enemyConfig,
             Vector3 enemySpawnPoint,
             UIService uiService,
@@ -79,16 +83,20 @@ namespace Core.Game
         {
             _playerConfig = playerConfig;
             _projectileDatabase = projectileDatabase;
-            _itemConfigs = itemConfigs;
             _playerSpawnPoint = spawnPoint;
             _navigationGrid = navigationGrid;
             _projectileContainer = projectileContainer;
+
             _camera = camera;
             _cameraBounds = cameraBounds;
+
             _levelBar = levelBar;
+            _equipPanel = equipPanel;
             _enemySpawnPoint = enemySpawnPoint;
-            _enemyConfig = enemyConfig;
             _uiService = uiService;
+
+            _enemyConfig = enemyConfig;
+            _itemConfigs = itemConfigs;
             _weaponConfigs = weaponConfigs;
             _turretConfigs = turretConfigs;
 
@@ -103,8 +111,8 @@ namespace Core.Game
             CreateSystems();
             CreatePlayer();
             CreateEnemy();
-            SetUI();
             CreateItems();
+            SetUI();
         }
 
         private void CreateWorld()
@@ -208,7 +216,7 @@ namespace Core.Game
 
             _gameplaySystems.AddSystem(new PlayerExperienceSystem());
             _gameplaySystems.AddSystem(new LevelUpSystem(_uiService));
-            _gameplaySystems.AddSystem(new PlayerUpgradeSystem());
+            _gameplaySystems.AddSystem(new PlayerUpgradeSystem(_weaponFactory, _equipPanel));
         }
 
         private void AddStatisticSystems()
@@ -238,11 +246,18 @@ namespace Core.Game
         {
             Entity playerEntity = _playerGameObject.GetComponent<AnimatedCreature>().Entity;
             var xpStash = _world.GetStash<PlayerExperienceComponent>();
+            var inventoryStash = _world.GetStash<PlayerInventoryComponent>();
 
             if (xpStash.Has(playerEntity))
             {
                 PlayerExperienceComponent xpComponent = xpStash.Get(playerEntity);
                 _levelBar.Setup(xpComponent);
+            }
+
+            if (inventoryStash.Has(playerEntity))
+            {
+                PlayerInventoryComponent inventoryComponent = inventoryStash.Get(playerEntity);
+                _equipPanel.Setup(inventoryComponent);
             }
         }
 

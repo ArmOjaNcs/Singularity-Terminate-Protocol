@@ -25,6 +25,11 @@ public class UpgradeItem : MonoBehaviour
     private World _world;
     private UIService _uiService;
 
+    private void OnDisable()
+    {
+        _button.onClick.RemoveListener(OnCardClicked);
+    }
+
     [Inject]
     public void Construct(World world, UIService uiService)
     {
@@ -45,9 +50,8 @@ public class UpgradeItem : MonoBehaviour
         _description.text = config.Description;
 
         _levelText.color = isNew ? _newLevelTextColor : _defaultLevelTextColor;
-        _levelText.text = isNew ? "Новое!" : $"Уровень{newLevel}";
+        _levelText.text = isNew ? "Новое!" : $"Уровень {newLevel}";
 
-        _button.onClick.RemoveAllListeners();
         _button.onClick.AddListener(OnCardClicked);
     }
 

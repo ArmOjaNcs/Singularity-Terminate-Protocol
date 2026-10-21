@@ -13,16 +13,5 @@ namespace UpgradeConfigs
     {
         public WeaponType Type;
         public WeaponConfig Config;
-        [Inject] protected WeaponFactory _factory;
-
-        public override void Apply(Entity entity, PlayerInventoryComponent inventory)
-        {
-            World world = entity.GetWorld();
-
-            _factory.Create(Config, entity);
-
-            inventory.ActiveUpgrades.Add(UpgradeId, 1);
-            inventory.CurrentWeaponsAmount++;
-        }
     }
 }

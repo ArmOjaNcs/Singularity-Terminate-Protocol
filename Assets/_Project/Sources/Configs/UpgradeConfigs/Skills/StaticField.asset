@@ -17,5 +17,8 @@ MonoBehaviour:
   Description: "\u0417\u0430\u0449\u0438\u0449\u0430\u0435\u0442 \u043E\u0442 \u0443\u0440\u043E\u043D\u0430
     \u043F\u043E\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u043D\u043E"
   Icon: {fileID: 21300000, guid: 3594853efcedb8c4f8b0d1c6abd552b9, type: 3}
-  MaxLevel: 5
+  UpgradeType: 2
   RequiredUpgradeIds: []
+  MaxLevel: 5
+  Stat: 0
+  StatFactor: 5
