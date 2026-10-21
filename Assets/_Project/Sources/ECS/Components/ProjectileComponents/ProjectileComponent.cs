@@ -15,6 +15,7 @@ namespace ECS.ProjectileComponents
         public float CurrentLifetime;
         public float Damage;
         public int Pierce;
+        public int RicochetsCount;
         public float HitInterval;
 
         public Vector3 Direction;

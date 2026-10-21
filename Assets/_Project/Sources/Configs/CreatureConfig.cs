@@ -10,7 +10,7 @@ namespace Configs
         public string Name;
         public GameObject Prefab;
         public BaseStats Stats;
-        public WeaponConfig WeaponConfig;
+        public WeaponConfig[] WeaponConfig;
         public ColliderConfig Collider;
     }
 }

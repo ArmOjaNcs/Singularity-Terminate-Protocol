@@ -1,4 +1,6 @@
 using ECS.CommonComponents;
+using Gameplay;
+using Gameplay.Navigation;
 using Scellecs.Morpeh;
 using UnityEngine;
 
@@ -6,6 +8,10 @@ namespace ECS.CommonSystems
 {
     public sealed class KnockbackSystem : ISystem
     {
+        private const float KnockbackDuration = 0.2f;
+
+        private readonly MovementResolver _movementResolver;
+
         public World World { get; set; }
 
         private Filter _requestFilter;
@@ -14,26 +20,30 @@ namespace ECS.CommonSystems
         private Stash<KnockbackComponent> _knockbackStash;
         private Stash<MovementLockComponent> _movementLockStash;
         private Stash<PositionComponent> _positionStash;
+        private Stash<ColliderComponent> _colliderStash;
         private Stash<KnockbackRequest> _requestStash;
+
+        public KnockbackSystem(NavigationGrid navigationGrid)
+        {
+            _movementResolver = new MovementResolver(navigationGrid);
+        }
 
         public void OnAwake()
         {
             _filter = World.Filter
                 .With<KnockbackComponent>()
                 .With<PositionComponent>()
+                .With<ColliderComponent>()
                 .Build();
 
             _requestFilter = World.Filter
                 .With<KnockbackRequest>()
                 .Build();
 
-            _knockbackStash =
-                World.GetStash<KnockbackComponent>();
-
+            _knockbackStash = World.GetStash<KnockbackComponent>();
             _movementLockStash = World.GetStash<MovementLockComponent>();
-
             _positionStash = World.GetStash<PositionComponent>();
-
+            _colliderStash = World.GetStash<ColliderComponent>();
             _requestStash = World.GetStash<KnockbackRequest>();
         }
 
@@ -45,13 +55,15 @@ namespace ECS.CommonSystems
                     ref _requestStash.Get(requestEntity);
 
                 if (request.Target == default ||
-                    !_positionStash.Has(request.Target))
+                    !_positionStash.Has(request.Target) ||
+                    !_colliderStash.Has(request.Target))
                 {
                     World.RemoveEntity(requestEntity);
                     continue;
                 }
 
                 Vector3 direction = request.Direction;
+                direction.z = 0f;
 
                 if (direction.sqrMagnitude <= 0f)
                 {
@@ -65,45 +77,56 @@ namespace ECS.CommonSystems
                     {
                         Direction = direction.normalized,
                         Force = request.Force,
-                        Duration = 0.2f,
+                        Duration = KnockbackDuration,
                         Elapsed = 0f
                     });
 
-                _movementLockStash.Set(request.Target, new MovementLockComponent());
+                _movementLockStash.Set(
+                    request.Target,
+                    new MovementLockComponent());
 
                 World.RemoveEntity(requestEntity);
             }
 
             foreach (Entity entity in _filter)
             {
-                ref KnockbackComponent knockback = ref _knockbackStash.Get(entity);
+                ref KnockbackComponent knockback =
+                    ref _knockbackStash.Get(entity);
 
-                ref PositionComponent position = ref _positionStash.Get(entity);
+                ref PositionComponent position =
+                    ref _positionStash.Get(entity);
 
-                if (knockback.Duration <= 0f)
+                ref ColliderComponent collider =
+                    ref _colliderStash.Get(entity);
+
+                if (knockback.Duration <= 0f ||
+                    knockback.Elapsed >= knockback.Duration)
                 {
                     RemoveKnockback(entity);
                     continue;
                 }
 
-                float progress = knockback.Elapsed / knockback.Duration;
+                float progress = Mathf.Clamp01(
+                    knockback.Elapsed / knockback.Duration);
 
-                progress = Mathf.Clamp01(progress);
+                float strength = 1f -
+                    Mathf.SmoothStep(0f, 1f, progress);
 
-                float strength = 1f - Mathf.SmoothStep(0f, 1f, progress);
-
-                position.Position +=
+                Vector3 delta =
                     knockback.Direction *
                     knockback.Force *
                     strength *
                     deltaTime;
 
+                _movementResolver.Move(
+                    ref position.Position,
+                    delta,
+                    collider);
+
                 knockback.Elapsed += deltaTime;
 
                 if (knockback.Elapsed >= knockback.Duration)
-                {
                     RemoveKnockback(entity);
-                }
             }
         }
 
