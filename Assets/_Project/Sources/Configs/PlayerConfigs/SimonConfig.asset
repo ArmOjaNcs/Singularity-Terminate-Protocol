@@ -20,7 +20,7 @@ MonoBehaviour:
     MaxHealth: 1000
     HealthRegeneration: 2
     Damage: 5
-    Luck: 100
+    Luck: 50
     Defence: 1
     Speed: 5
   WeaponConfig:

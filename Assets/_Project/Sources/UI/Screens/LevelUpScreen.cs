@@ -7,7 +7,6 @@ namespace UI
 {
     public class LevelUpScreen : UIScreen
     {
-        private const int LuckyItemsAmount = 4;
         [Inject] private UpgradeGenerator _generator;
         [Inject] private DiContainer _container;
 
@@ -17,10 +16,12 @@ namespace UI
 
         private List<UpgradeState> _items;
         private PlayerInventoryComponent _inventory;
+        private bool _isLuckyStrike;
 
-        public void Setup(PlayerInventoryComponent inventory)
+        public void Setup(PlayerInventoryComponent inventory, bool isLuckyStrike)
         {
             _inventory = inventory;
+            _isLuckyStrike = isLuckyStrike;
 
             UpdateItems();
         }
@@ -35,7 +36,7 @@ namespace UI
 
             gameObject.SetActive(true);
 
-            _items = _generator.GenerateSelection(_inventory);
+            _items = _generator.GenerateSelection(_inventory, _isLuckyStrike);
 
             foreach (var item in _items)
             {
@@ -43,8 +44,15 @@ namespace UI
                 card.Setup(item);
             }
 
-            _luckInformationItem.SetActive(_items.Count < LuckyItemsAmount);
-            _luckInformationItem.transform.SetAsLastSibling();
+            if (_isLuckyStrike)
+            {
+                _luckInformationItem.SetActive(false);
+            }
+            else
+            {
+                _luckInformationItem.SetActive(true);
+                _luckInformationItem.transform.SetAsLastSibling();
+            }
         }
 
         public override void Close()

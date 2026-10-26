@@ -7,6 +7,8 @@ using UpgradeConfigs;
 
 public class UpgradeGenerator
 {
+    private const int ItemsAmount = 3;
+    private const int LuckyItemsAmount = 4;
     private readonly List<NewWeaponUpgradeConfig> _weapons;
     private readonly List<WeaponUpgradeConfig> _weaponUpgrades;
 
@@ -30,12 +32,14 @@ public class UpgradeGenerator
         _skillUpgrades = skillUpgrades;
     }
 
-    public List<UpgradeState> GenerateSelection(PlayerInventoryComponent inventory, int count = 3)
+    public List<UpgradeState> GenerateSelection(PlayerInventoryComponent inventory, bool isLuckyStrike)
     {
         _upgradeConfigs.Clear();
 
         GetSkillUpgrades(inventory);
         GetWeaponUpgrades(inventory);
+
+        int count = isLuckyStrike ? LuckyItemsAmount : ItemsAmount;
 
         if (_upgradeConfigs.Count > 0)
             return _upgradeConfigs.OrderBy(x => Random.value).Take(count).ToList();

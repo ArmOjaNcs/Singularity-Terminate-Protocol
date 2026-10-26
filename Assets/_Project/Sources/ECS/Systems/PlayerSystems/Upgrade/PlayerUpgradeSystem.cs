@@ -14,7 +14,6 @@ namespace ECS.PlayerSystems
     public sealed class PlayerUpgradeSystem : ISystem
     {
         private WeaponFactory _factory;
-        private EquipPanel _equipPanel;
 
         private Filter _eventFilter;
         private Filter _playerFilter;
@@ -22,12 +21,9 @@ namespace ECS.PlayerSystems
         private Stash<UpgradeSelectedEvent> _eventStash;
         private Stash<PlayerInventoryComponent> _inventoryStash;
 
-        private bool _isNewLevel;
-
         public PlayerUpgradeSystem(WeaponFactory factory, EquipPanel equipPanel)
         {
             _factory = factory;
-            _equipPanel = equipPanel;
         }
 
         public World World { get; set; }
@@ -54,7 +50,6 @@ namespace ECS.PlayerSystems
                 foreach (var playerEntity in _playerFilter)
                 {
                     ref var inventory = ref _inventoryStash.Get(playerEntity);
-                    _isNewLevel = false;
 
                     ApplyUpgrade(playerEntity, ref inventory, upgrade);
                 }
@@ -211,7 +206,6 @@ namespace ECS.PlayerSystems
             {
                 inventory.ActiveUpgrades.Add(upgradeId, 1);
                 inventory.CurrentItemsAmount++;
-                _isNewLevel = true;
             }
         }
 

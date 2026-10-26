@@ -29,7 +29,7 @@ namespace Core.Services
 
         public bool IsLevelUpScreenOpen { get; private set; }
 
-        public void ShowLevelUpScreen(PlayerInventoryComponent inventoryComponent)
+        public void ShowLevelUpScreen(PlayerInventoryComponent inventoryComponent, bool isLuckyStrike)
         {
             if (_levelUpScreen == null)
             {
@@ -38,7 +38,7 @@ namespace Core.Services
                 _levelUpScreen = levelUp.GetComponent<LevelUpScreen>();
             }
 
-            _levelUpScreen.Setup(inventoryComponent);
+            _levelUpScreen.Setup(inventoryComponent, isLuckyStrike);
 
             IsLevelUpScreenOpen = true;
         }

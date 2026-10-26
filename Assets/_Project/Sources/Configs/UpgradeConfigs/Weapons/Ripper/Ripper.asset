@@ -18,6 +18,7 @@ MonoBehaviour:
     \u0440\u0430\u0441\u0441\u0442\u043E\u044F\u043D\u0438\u0435, \u043D\u0430\u043D\u043E\u0441\u0438\u0442
     \u0431\u043E\u043B\u044C\u0448\u043E\u0439 \u0443\u0440\u043E\u043D"
   Icon: {fileID: 21300000, guid: 992d20e18af3ebe4d92ceaf44592abe4, type: 3}
+  UpgradeType: 0
   RequiredUpgradeIds: []
   Type: 6
-  IsBaseWeapon: 1
+  Config: {fileID: 0}

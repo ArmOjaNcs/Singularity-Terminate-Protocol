@@ -1,6 +1,4 @@
-using Core.Services;
 using UnityEngine;
-using Zenject;
 
 namespace UI
 {

@@ -1,10 +1,7 @@
 using System.Collections.Generic;
-using Configs;
-using ECS.CommonComponents;
 using ECS.PlayerComponents;
 using ECS.PlayerSystems;
 using ECS.ViewComponents;
-using ECS.WeaponComponents;
 using ECS.WeaponSystems;
 using Gameplay.Creatures;
 using Gameplay.View;
@@ -14,7 +11,6 @@ using UniRx;
 using UnityEngine;
 using UpgradeConfigs;
 using WeaponConfigs;
-using static UnityEngine.EventSystems.EventTrigger;
 
 namespace Gameplay.Player
 {
