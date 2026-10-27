@@ -7,6 +7,7 @@ using ECS.CommonSystems;
 using ECS.DamageComponents;
 using ECS.DamageSystems;
 using ECS.EnemySystems;
+using ECS.PlayerComponents;
 using ECS.PlayerSystems;
 using ECS.ProjectileSystems;
 using ECS.TrajectorySystems;
@@ -21,7 +22,9 @@ using Gameplay.View;
 using PlayerConfigs;
 using ProjectileConfigs;
 using Scellecs.Morpeh;
+using UI;
 using UnityEngine;
+using UpgradeConfigs;
 using Zenject;
 
 namespace Core.Game
@@ -33,7 +36,8 @@ namespace Core.Game
         private EnemyConfigsDatabase _enemyConfigsDatabase;
         private EnemySpawnDatabase _enemySpawnDatabase;
         private List<GemExpConfig> _itemConfigs;
-
+        private List<NewWeaponUpgradeConfig> _weaponConfigs;
+        private List<NewTurretUpgradeConfig> _turretConfigs;
         private Vector3 _playerSpawnPoint;
         private NavigationGrid _navigationGrid;
         private Transform _projectileContainer;
@@ -60,6 +64,8 @@ namespace Core.Game
         private DamageStatistics _damageStatistics;
 
         private LevelBar _levelBar;
+        private EquipPanel _equipPanel;
+        private Vector3 _enemySpawnPoint;
         private UIService _uiService;
 
         [Inject]
@@ -78,7 +84,11 @@ namespace Core.Game
             CinemachineVirtualCamera camera,
             PolygonCollider2D cameraBounds,
             LevelBar levelBar,
-            UIService uiService)
+            EquipPanel equipPanel,
+            Vector3 enemySpawnPoint,
+            UIService uiService,
+            List<NewWeaponUpgradeConfig> weaponConfigs,
+            List<NewTurretUpgradeConfig> turretConfigs)
         {
             _playerConfig = playerConfig;
             _projectileDatabase = projectileDatabase;
@@ -93,8 +103,15 @@ namespace Core.Game
 
             _camera = camera;
             _cameraBounds = cameraBounds;
+
             _levelBar = levelBar;
+            _equipPanel = equipPanel;
+            _enemySpawnPoint = enemySpawnPoint;
             _uiService = uiService;
+
+            _itemConfigs = itemConfigs;
+            _weaponConfigs = weaponConfigs;
+            _turretConfigs = turretConfigs;
 
             Initialize();
         }
@@ -106,8 +123,8 @@ namespace Core.Game
             CreateFactories();
             CreateSystems();
             CreatePlayer();
-            SetUI();
             CreateItems();
+            SetUI();
         }
 
         private void CreateWorld()
@@ -126,7 +143,9 @@ namespace Core.Game
 
             _playerFactory = new PlayerFactory(
                 _world,
-                _weaponFactory);
+                _weaponFactory,
+                _weaponConfigs,
+                _turretConfigs);
 
             _enemyFactory = new EnemyFactory(
                 _world,
@@ -231,6 +250,7 @@ namespace Core.Game
 
             _gameplaySystems.AddSystem(new PlayerExperienceSystem());
             _gameplaySystems.AddSystem(new LevelUpSystem(_uiService));
+            _gameplaySystems.AddSystem(new PlayerUpgradeSystem(_weaponFactory, _equipPanel));
         }
 
         private void AddStatisticSystems()
@@ -256,6 +276,7 @@ namespace Core.Game
                 _playerGameObject.GetComponent<AnimatedCreature>().Entity;
 
             var xpStash = _world.GetStash<PlayerExperienceComponent>();
+            var inventoryStash = _world.GetStash<PlayerInventoryComponent>();
 
             if (xpStash.Has(playerEntity))
             {
@@ -263,6 +284,12 @@ namespace Core.Game
                     xpStash.Get(playerEntity);
 
                 _levelBar.Setup(xpComponent);
+            }
+
+            if (inventoryStash.Has(playerEntity))
+            {
+                PlayerInventoryComponent inventoryComponent = inventoryStash.Get(playerEntity);
+                _equipPanel.Setup(inventoryComponent);
             }
         }
 

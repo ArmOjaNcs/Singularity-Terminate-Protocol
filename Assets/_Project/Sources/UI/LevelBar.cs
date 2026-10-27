@@ -11,6 +11,11 @@ public class LevelBar : MonoBehaviour
 
     private CompositeDisposable _disposables = new CompositeDisposable();
 
+    private void OnDestroy()
+    {
+        _disposables.Dispose();
+    }
+
     public void Setup(PlayerExperienceComponent xpComponent)
     {
         _disposables.Clear();
@@ -39,10 +44,5 @@ public class LevelBar : MonoBehaviour
                 levelText.text = newLevel.ToString();
             })
             .AddTo(_disposables);
-    }
-
-    private void OnDestroy()
-    {
-        _disposables.Dispose();
     }
 }

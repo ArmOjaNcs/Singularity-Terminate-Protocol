@@ -1,4 +1,5 @@
 using Core.Services;
+using ECS.PlayerComponents;
 using Scellecs.Morpeh;
 using UnityEngine;
 
@@ -8,6 +9,7 @@ namespace ECS.PlayerSystems
     {
         private Filter _filter;
         private Stash<LevelUpEvent> _levelUpStash;
+        private Stash<PlayerInventoryComponent> _inventoryStash;
         private UIService _uiService;
         private bool _isPausedByMe;
 
@@ -21,6 +23,7 @@ namespace ECS.PlayerSystems
         public void OnAwake()
         {
             _levelUpStash = World.GetStash<LevelUpEvent>();
+            _inventoryStash = World.GetStash<PlayerInventoryComponent>();
 
             _filter = World.Filter
                 .With<LevelUpEvent>()
@@ -47,12 +50,13 @@ namespace ECS.PlayerSystems
             foreach (var entity in _filter)
             {
                 ref var levelUp = ref _levelUpStash.Get(entity);
+                ref var inventory = ref _inventoryStash.Get(levelUp.Owner);
 
                 // Pause
                 Time.timeScale = 0f;
                 _isPausedByMe = true;
 
-                _uiService.ShowLevelUpScreen();
+                _uiService.ShowLevelUpScreen(inventory);
                 World.RemoveEntity(entity);
 
                 break;

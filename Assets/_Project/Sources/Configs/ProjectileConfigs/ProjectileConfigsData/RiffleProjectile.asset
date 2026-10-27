@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9edd52ae47f0214684e73e42bd9a4a1, type: 3}
   m_Name: RiffleProjectile
   m_EditorClassIdentifier: 
-  WeaponType: 4
+  WeaponType: 12
   Prefab: {fileID: 5290974922434242153, guid: d7681ab97c16be944a9d00e3715e863c, type: 3}
   PoolCapacity: 30
   Collider:

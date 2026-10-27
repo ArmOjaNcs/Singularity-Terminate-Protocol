@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2457d278a026d464d802991988530822, type: 3}
   m_Name: MeleeLargeProjectile
   m_EditorClassIdentifier: 
-  WeaponType: 2
+  WeaponType: 11
   Prefab: {fileID: 0}
   PoolCapacity: 0
   Collider:

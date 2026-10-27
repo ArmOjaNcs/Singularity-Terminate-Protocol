@@ -12,6 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b14ce4776afc1c4da735d705aacc21d, type: 3}
   m_Name: AssasinWeapon
   m_EditorClassIdentifier: 
-  Type: 4
+  Type: 12
   AttackConfig: {fileID: 11400000, guid: 4bb04adfba3d8d24683451e9d3699fbf, type: 2}
   Effects: []

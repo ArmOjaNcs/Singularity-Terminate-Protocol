@@ -38,6 +38,8 @@ MonoBehaviour:
     Size: {x: 0, y: 0}
     Center: {x: 0, y: -0.55}
     CapsuleOrientation: 0
-  MaxWeapons: 0
-  EvasionChance: 0
-  GatheringRadius: 0
+  MaxWeapons: 6
+  MaxTurrets: 2
+  MaxSkills: 6
+  EvasionChance: 5
+  GatheringRadius: 2

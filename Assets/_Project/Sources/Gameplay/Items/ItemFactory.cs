@@ -33,7 +33,9 @@ namespace Gameplay.Items
         public GameObject Create(List<GemExpConfig> config, Vector3 position)
         {
             Entity entity = _world.CreateEntity();
-            int randomIndex = UnityEngine.Random.Range(0, config.Count);
+
+            // int randomIndex = UnityEngine.Random.Range(0, config.Count);
+            int randomIndex = 2;
             GemExpConfig itemConfig = config[randomIndex];
 
             _itemStash.Set(entity, new ItemPickupComponent

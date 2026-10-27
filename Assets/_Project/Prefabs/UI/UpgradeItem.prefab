@@ -34,8 +34,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -109.2, y: -11.3}
-  m_SizeDelta: {x: 200, y: 50}
+  m_AnchoredPosition: {x: 60, y: -15}
+  m_SizeDelta: {x: 540, y: 60}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &3073903742923832346
 CanvasRenderer:
@@ -130,7 +130,7 @@ MonoBehaviour:
   m_VertexBufferAutoSizeReduction: 0
   m_useMaxVisibleDescender: 1
   m_pageToDisplay: 1
-  m_margin: {x: 0, y: 0, z: -337.9803, w: -11.319946}
+  m_margin: {x: 0, y: 0, z: -0.64553833, w: -0.12210846}
   m_isUsingLegacyAnimationComponent: 0
   m_isVolumetricText: 0
   m_hasFontAssetChanged: 0
@@ -170,8 +170,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 225, y: -35}
-  m_SizeDelta: {x: 150, y: 20}
+  m_AnchoredPosition: {x: 260, y: -35}
+  m_SizeDelta: {x: 211.5251, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &463842930470826423
 CanvasRenderer:
@@ -201,7 +201,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\u0446\u0435\u043F\u043D\u0430\u044F \u043F\u0438\u043B\u0430"
+  m_text: "\u0426\u0435\u043F\u043D\u0430\u044F \u043F\u0438\u043B\u0430"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 9e1c0f7ce3644df459790e4e5ac611a2, type: 2}
   m_sharedMaterial: {fileID: 6914841378772673354, guid: 9e1c0f7ce3644df459790e4e5ac611a2, type: 2}
@@ -244,9 +244,9 @@ MonoBehaviour:
   m_lineSpacingMax: 0
   m_paragraphSpacing: 0
   m_charWidthMaxAdj: 0
-  m_enableWordWrapping: 1
+  m_enableWordWrapping: 0
   m_wordWrappingRatios: 0.4
-  m_overflowMode: 0
+  m_overflowMode: 2
   m_linkedTextComponent: {fileID: 0}
   parentLinkedComponent: {fileID: 0}
   m_enableKerning: 1
@@ -357,7 +357,7 @@ GameObject:
   - component: {fileID: 49882550364342340}
   - component: {fileID: 6748231203420259893}
   m_Layer: 0
-  m_Name: NewItemTag
+  m_Name: LevelText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -567,7 +567,7 @@ GameObject:
   - component: {fileID: 2555755710334712495}
   - component: {fileID: 1297561494894494104}
   - component: {fileID: 1509025920872061799}
-  - component: {fileID: 7933323606761548307}
+  - component: {fileID: 5338581829298622714}
   m_Layer: 0
   m_Name: UpgradeItem
   m_TagString: Untagged
@@ -680,7 +680,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &7933323606761548307
+--- !u!114 &5338581829298622714
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -689,7 +689,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 5836962473709799040}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eb0f14b5baeba514381b7a79b23a27f7, type: 3}
+  m_Script: {fileID: 11500000, guid: 7e4ddae7d09da434e8801d35c2f2d448, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _screen: {fileID: 0}
+  _newLevelTextColor: {r: 1, g: 0.92941177, b: 0.23921569, a: 1}
+  _defaultLevelTextColor: {r: 1, g: 1, b: 1, a: 1}
+  _image: {fileID: 8516909990692842386}
+  _name: {fileID: 7516119939755614273}
+  _description: {fileID: 1815081335150901110}
+  _levelText: {fileID: 6748231203420259893}
+  _button: {fileID: 1509025920872061799}
