@@ -15,7 +15,8 @@ namespace Gameplay.Creatures
         private readonly Stash<HealthComponent> _healthStash;
         private readonly Stash<MovementComponent> _movementStash;
         private readonly Stash<PositionComponent> _positionStash;
-        private readonly Stash<ColliderComponent> _colliderStash;
+        private readonly Stash<HitBoxComponent> _hitBoxStash;
+        private readonly Stash<NavigationBoxComponent> _navigationBoxStash;
 
         public CreatureFactory(
             World world,
@@ -27,7 +28,8 @@ namespace Gameplay.Creatures
             _healthStash = world.GetStash<HealthComponent>();
             _movementStash = world.GetStash<MovementComponent>();
             _positionStash = world.GetStash<PositionComponent>();
-            _colliderStash = world.GetStash<ColliderComponent>();
+            _hitBoxStash = world.GetStash<HitBoxComponent>();
+            _navigationBoxStash = world.GetStash<NavigationBoxComponent>();
         }
 
         public void CreateCommonComponents(
@@ -89,15 +91,33 @@ namespace Gameplay.Creatures
                 Position = position
             });
 
-            _colliderStash.Set(entity, new ColliderComponent
+            ColliderConfig hitBoxConfig = config.HitBox;
+            ColliderConfig navigationBoxConfig =
+                config.NavigationBox ?? hitBoxConfig;
+
+            _hitBoxStash.Set(entity, new HitBoxComponent
             {
-                Type = config.Collider.Type,
-                Radius = config.Collider.Radius,
-                Length = config.Collider.Length,
-                Size = config.Collider.Size,
-                Angle = 0f,
-                CapsuleOrientation = config.Collider.CapsuleOrientation
+                Collider = CreateCollider(hitBoxConfig)
             });
+
+            _navigationBoxStash.Set(entity, new NavigationBoxComponent
+            {
+                Collider = CreateCollider(navigationBoxConfig)
+            });
+        }
+
+        private static ColliderComponent CreateCollider(ColliderConfig config)
+        {
+            return new ColliderComponent
+            {
+                Type = config.Type,
+                Radius = config.Radius,
+                Length = config.Length,
+                Size = config.Size,
+                Center = config.Center,
+                Angle = 0f,
+                CapsuleOrientation = config.CapsuleOrientation
+            };
         }
     }
 }

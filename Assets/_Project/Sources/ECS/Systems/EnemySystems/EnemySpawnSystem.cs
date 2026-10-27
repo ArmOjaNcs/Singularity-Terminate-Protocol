@@ -1,3 +1,4 @@
+using Configs;
 using ECS.CommonComponents;
 using ECS.PlayerComponents;
 using EnemyConfigs;
@@ -28,6 +29,8 @@ namespace ECS.EnemySystems
         private readonly List<WaveRuntime> _waves = new List<WaveRuntime>();
         private readonly List<Vector3> _candidatePositions = new List<Vector3>(4);
 
+        private const float CardinalLateralSpread = 0.15f;
+
         private float _elapsedTime;
 
         public EnemySpawnSystem(
@@ -47,6 +50,7 @@ namespace ECS.EnemySystems
             _playerFilter = World.Filter
                 .With<PlayerTag>()
                 .With<PositionComponent>()
+                .Without<DeathComponent>()
                 .Build();
 
             _positionStash = World.GetStash<PositionComponent>();
@@ -169,7 +173,7 @@ namespace ECS.EnemySystems
                     continue;
                 }
 
-                if (enemyConfig.Collider == null)
+                if (enemyConfig.HitBox == null)
                 {
                     enemy.Timer = _enemySpawnDatabase.RetryInterval;
                     continue;
@@ -297,7 +301,17 @@ namespace ECS.EnemySystems
             foreach (Vector3 direction in directions)
             {
                 float distance = Random.Range(minDistance, maxDistance);
-                Vector3 candidate = playerPosition + direction * distance;
+                Vector3 perpendicular = new Vector3(
+                    -direction.y,
+                    direction.x,
+                    0f);
+                float lateralOffset = Random.Range(
+                    -distance * CardinalLateralSpread,
+                    distance * CardinalLateralSpread);
+                Vector3 candidate =
+                    playerPosition +
+                    direction * distance +
+                    perpendicular * lateralOffset;
 
                 // Отбрасываем точки за пределами сетки и на заблокированных клетках.
                 if (!_navigationGrid.IsWalkable(candidate))
@@ -309,14 +323,18 @@ namespace ECS.EnemySystems
 
         private ColliderComponent CreateCollider(EnemyConfig config)
         {
+            ColliderConfig colliderConfig =
+                config.NavigationBox ?? config.HitBox;
+
             return new ColliderComponent
             {
-                Type = config.Collider.Type,
-                Radius = config.Collider.Radius,
-                Length = config.Collider.Length,
-                Size = config.Collider.Size,
+                Type = colliderConfig.Type,
+                Radius = colliderConfig.Radius,
+                Length = colliderConfig.Length,
+                Size = colliderConfig.Size,
+                Center = colliderConfig.Center,
                 Angle = 0f,
-                CapsuleOrientation = config.Collider.CapsuleOrientation
+                CapsuleOrientation = colliderConfig.CapsuleOrientation
             };
         }
 

@@ -62,7 +62,9 @@ namespace Gameplay.Player
 
         public GameObject Create(PlayerConfig config, Vector3 position)
         {
-            if (config == null || config.Prefab == null)
+            if (config == null ||
+                config.Prefab == null ||
+                config.HitBox == null)
                 return null;
 
             Entity entity = _world.CreateEntity();
@@ -132,10 +134,25 @@ namespace Gameplay.Player
 
             foreach (var weapon in weapons)
             {
+                if (weapon == null)
+                {
+                    Debug.LogError("Player config contains an empty weapon reference.");
+                    continue;
+                }
+
                 var initialWeapon = _weaponUpgradeConfigs.Find((item) => item.Type == weapon.Type);
 
-                initialUpgrades.Add(initialWeapon.UpgradeId, 1);
                 currentWeapons++;
+
+                if (initialWeapon == null)
+                {
+                    Debug.LogError(
+                        $"No base weapon upgrade config found for player weapon type {weapon.Type}. " +
+                        "The player will still spawn, but this weapon will not be registered in the upgrade inventory.");
+                    continue;
+                }
+
+                initialUpgrades[initialWeapon.UpgradeId] = 1;
             }
 
             _inventoryStash.Set(entity, new PlayerInventoryComponent

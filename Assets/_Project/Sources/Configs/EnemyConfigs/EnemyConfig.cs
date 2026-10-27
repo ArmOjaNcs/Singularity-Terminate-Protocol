@@ -1,4 +1,5 @@
 using Configs;
+using ECS.EnemyComponents;
 using UnityEngine;
 
 namespace EnemyConfigs
@@ -7,5 +8,8 @@ namespace EnemyConfigs
     public class EnemyConfig : CreatureConfig
     {
         public int PoolCapacity;
+        public MovePolicyType MovePolicy;
+        public AttackPolicyType AttackPolicy;
+        [Min(0f)] public float PreferredAttackDistance;
     }
 }

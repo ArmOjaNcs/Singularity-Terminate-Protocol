@@ -23,12 +23,20 @@ MonoBehaviour:
     Luck: 0
     Defence: 0
     Speed: 0
-  WeaponConfig: {fileID: 0}
-  Collider:
-    Type: 0
-    Radius: 0
-    Length: 0
+  WeaponConfig: []
+  HitBox:
+    Type: 2
+    Radius: 0.3
+    Length: 1.45
     Size: {x: 0, y: 0}
+    Center: {x: 0, y: 0}
+    CapsuleOrientation: 1
+  NavigationBox:
+    Type: 2
+    Radius: 0.2
+    Length: 0.6
+    Size: {x: 0, y: 0}
+    Center: {x: 0, y: -0.55}
     CapsuleOrientation: 0
   MaxWeapons: 6
   MaxTurrets: 2

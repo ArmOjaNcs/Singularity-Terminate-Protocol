@@ -3,6 +3,7 @@ using ECS.CommonComponents;
 using ECS.EnemyComponents;
 using ECS.PlayerComponents;
 using ECS.ProjectileComponents;
+using Gameplay.Spatial;
 using Scellecs.Morpeh;
 using UnityEngine;
 
@@ -18,6 +19,10 @@ namespace Gameplay
         public bool ShowColliders = true;
         public Color ColliderColor = Color.cyan;
 
+        [Header("Navigation Boxes")]
+        public bool ShowNavigationBoxes;
+        public Color NavigationBoxColor = Color.magenta;
+
         [Header("Target Search Radius")]
         public bool ShowTargetSearchRadius = true;
         public Color SearchRadiusColor = Color.green;
@@ -32,13 +37,14 @@ namespace Gameplay
         private World _world;
 
         private Filter _colliderFilter;
+        private Filter _navigationBoxFilter;
         private Filter _attackFilter;
         private Filter _targetFilter;
         private Filter _enemyFilter;
         private Filter _playerFilter;
 
-        private Stash<ColliderComponent> _colliderStash;
-        private Stash<ColliderPositionComponent> _colliderPositionStash;
+        private Stash<HitBoxComponent> _hitBoxStash;
+        private Stash<NavigationBoxComponent> _navigationBoxStash;
         private Stash<PositionComponent> _positionStash;
         private Stash<AttackComponent> _attackStash;
         private Stash<TargetComponent> _targetStash;
@@ -57,15 +63,17 @@ namespace Gameplay
             if (_world == null)
                 return;
 
-            _colliderStash = _world.GetStash<ColliderComponent>();
-            _colliderPositionStash =
-                _world.GetStash<ColliderPositionComponent>();
+            _hitBoxStash = _world.GetStash<HitBoxComponent>();
+            _navigationBoxStash = _world.GetStash<NavigationBoxComponent>();
             _positionStash = _world.GetStash<PositionComponent>();
             _attackStash = _world.GetStash<AttackComponent>();
             _targetStash = _world.GetStash<TargetComponent>();
 
             _colliderFilter = _world.Filter
-                .With<ColliderComponent>()
+                .With<HitBoxComponent>()
+                .Build();
+            _navigationBoxFilter = _world.Filter
+                .With<NavigationBoxComponent>()
                 .Build();
 
             _attackFilter = _world.Filter
@@ -118,6 +126,8 @@ namespace Gameplay
 
             if (ShowColliders)
                 DrawColliders();
+            if (ShowNavigationBoxes)
+                DrawNavigationBoxes();
 
             if (ShowTargetSearchRadius)
                 DrawSearchRadii();
@@ -130,30 +140,37 @@ namespace Gameplay
         {
             foreach (Entity entity in _colliderFilter)
             {
-                ref ColliderComponent collider =
-                    ref _colliderStash.Get(entity);
-
-                Vector3 center;
-
-                if (_colliderPositionStash.Has(entity))
-                {
-                    center = _colliderPositionStash
-                        .Get(entity).CenterPosition;
-                }
-                else if (_positionStash.Has(entity))
-                {
-                    center = _positionStash.Get(entity).Position;
-                }
-                else
-                {
+                if (!_positionStash.Has(entity))
                     continue;
-                }
+
+                ColliderComponent collider =
+                    _hitBoxStash.Get(entity).Collider;
+                Vector3 center = ColliderGeometry.GetColliderWorldCenter(
+                    _positionStash.Get(entity).Position,
+                    collider);
 
                 Gizmos.color = ColliderColor;
                 DrawCollider(center, collider);
             }
         }
 
+        private void DrawNavigationBoxes()
+        {
+            foreach (Entity entity in _navigationBoxFilter)
+            {
+                if (!_positionStash.Has(entity))
+                    continue;
+
+                ColliderComponent collider =
+                    _navigationBoxStash.Get(entity).Collider;
+                Vector3 center = ColliderGeometry.GetColliderWorldCenter(
+                    _positionStash.Get(entity).Position,
+                    collider);
+
+                Gizmos.color = NavigationBoxColor;
+                DrawCollider(center, collider);
+            }
+        }
         private void DrawCollider(
             Vector3 center,
             ColliderComponent collider)
@@ -346,14 +363,13 @@ namespace Gameplay
 
         private Vector3 GetColliderPosition(Entity entity)
         {
-            if (_colliderPositionStash.Has(entity))
-            {
-                return _colliderPositionStash
-                    .Get(entity)
-                    .CenterPosition;
-            }
+            Vector3 position = _positionStash.Get(entity).Position;
+            if (!_hitBoxStash.Has(entity))
+                return position;
 
-            return _positionStash.Get(entity).Position;
+            return ColliderGeometry.GetColliderWorldCenter(
+                position,
+                _hitBoxStash.Get(entity).Collider);
         }
     }
 }

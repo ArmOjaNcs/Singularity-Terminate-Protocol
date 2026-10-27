@@ -15,7 +15,7 @@ namespace ECS.PlayerSystems
         private Stash<MovementComponent> _movementStash;
         private Stash<PositionComponent> _positionStash;
         private Stash<StatsComponent> _statsStash;
-        private Stash<ColliderComponent> _colliderStash;
+        private Stash<NavigationBoxComponent> _navigationBoxStash;
         private Stash<MovementLockComponent> _movementLockStash;
 
         public PlayerMovementSystem(NavigationGrid navigationGrid)
@@ -32,14 +32,14 @@ namespace ECS.PlayerSystems
                 .With<MovementComponent>()
                 .With<PositionComponent>()
                 .With<PlayerStatsComponent>()
-                .With<ColliderComponent>()
+                .With<NavigationBoxComponent>()
                 .Without<DeathComponent>()
                 .Build();
 
             _movementStash = World.GetStash<MovementComponent>();
             _positionStash = World.GetStash<PositionComponent>();
             _statsStash = World.GetStash<StatsComponent>();
-            _colliderStash = World.GetStash<ColliderComponent>();
+            _navigationBoxStash = World.GetStash<NavigationBoxComponent>();
             _movementLockStash = World.GetStash<MovementLockComponent>();
         }
 
@@ -53,14 +53,18 @@ namespace ECS.PlayerSystems
                 ref var movement = ref _movementStash.Get(entity);
                 ref var position = ref _positionStash.Get(entity);
                 ref var stats = ref _statsStash.Get(entity);
-                ref var collider = ref _colliderStash.Get(entity);
+                ref var navigationBox =
+                    ref _navigationBoxStash.Get(entity);
 
                 Vector3 delta = movement.Direction * stats.Speed * deltaTime;
 
                 if (delta.sqrMagnitude <= 0f)
                     continue;
 
-                _movementResolver.Move(ref position.Position, delta, collider);
+                _movementResolver.Move(
+                    ref position.Position,
+                    delta,
+                    navigationBox.Collider);
             }
         }
 

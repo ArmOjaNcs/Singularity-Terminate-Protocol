@@ -1,0 +1,45 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98468977cdcbb8543ab365653bec96f6, type: 3}
+  m_Name: MagnusConfig
+  m_EditorClassIdentifier: 
+  CreatureType: 11
+  Id: Enemy
+  Name: 
+  Prefab: {fileID: 7907244585206537310, guid: 15844f7dae31f2b4b8d7aa5e4b8c47b4, type: 3}
+  Stats:
+    MaxHealth: 150
+    HealthRegeneration: 5
+    Damage: 25
+    Luck: 50
+    Defence: 20
+    Speed: 3
+  WeaponConfig:
+  - {fileID: 11400000, guid: 43f5d5d77c468e341896458f22464919, type: 2}
+  HitBox:
+    Type: 2
+    Radius: 0.9
+    Length: 2.5
+    Size: {x: 0, y: 0}
+    Center: {x: 0, y: 0}
+    CapsuleOrientation: 1
+  NavigationBox:
+    Type: 2
+    Radius: 0.4
+    Length: 1.8
+    Size: {x: 0, y: 0}
+    Center: {x: 0, y: -0.9}
+    CapsuleOrientation: 0
+  PoolCapacity: 30
+  MovePolicy: 0
+  AttackPolicy: 1
+  PreferredAttackDistance: 0

@@ -17,7 +17,7 @@ MonoBehaviour:
   Name: 
   Prefab: {fileID: 3883261473061946788, guid: 40ef8a3ab6175764f9bbbb77fc52942c, type: 3}
   Stats:
-    MaxHealth: 1000
+    MaxHealth: 100000
     HealthRegeneration: 2
     Damage: 5
     Luck: 50
@@ -27,12 +27,20 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5b045256455b0174bba4e60113162d12, type: 2}
   - {fileID: 11400000, guid: 40c5995f08111b64faf0b4cd40275e63, type: 2}
   - {fileID: 11400000, guid: 3795b4760551f8e4ba8994aba673a1ef, type: 2}
-  Collider:
+  HitBox:
     Type: 2
     Radius: 0.35
     Length: 1.25
     Size: {x: 0, y: 0}
+    Center: {x: 0, y: 0}
     CapsuleOrientation: 1
+  NavigationBox:
+    Type: 2
+    Radius: 0.175
+    Length: 0.8
+    Size: {x: 0, y: 0}
+    Center: {x: 0, y: -0.45}
+    CapsuleOrientation: 0
   MaxWeapons: 6
   MaxTurrets: 2
   MaxSkills: 6

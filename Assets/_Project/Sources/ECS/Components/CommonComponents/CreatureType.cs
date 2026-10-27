@@ -1,8 +1,20 @@
 public enum CreatureType
 {
     Player = 0,
-    BasicEnemy = 1,
-    FastEnemy = 2,
-    TankEnemy = 3,
-    Boss = 4
+    Abomination = 1,
+    Assasin = 2,
+    Cleaver = 3,
+    CyberMite = 4,
+    CyberTyrant = 5,
+    DeathRider = 6,
+    Destroyer = 7,
+    Draconid = 8,
+    EvilRobot = 9,
+    Harpy = 10,
+    Magnus = 11,
+    MasterLord = 12,
+    PainLady = 13,
+    TyrantLord = 14,
+    Viper = 15,
+    Boss = 16,
 }

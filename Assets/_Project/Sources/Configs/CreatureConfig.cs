@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 using WeaponConfigs;
 
 namespace Configs
@@ -11,6 +12,8 @@ namespace Configs
         public GameObject Prefab;
         public BaseStats Stats;
         public WeaponConfig[] WeaponConfig;
-        public ColliderConfig Collider;
+        [FormerlySerializedAs("Collider")]
+        public ColliderConfig HitBox;
+        public ColliderConfig NavigationBox;
     }
 }

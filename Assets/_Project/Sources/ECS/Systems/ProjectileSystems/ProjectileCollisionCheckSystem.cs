@@ -27,8 +27,7 @@ namespace ECS.ProjectileSystems
         private Stash<ProjectileComponent> _projectileStash;
         private Stash<WeaponComponent> _weaponStash;
         private Stash<StatsComponent> _statsStash;
-        private Stash<ColliderComponent> _colliderStash;
-        private Stash<ColliderPositionComponent> _colliderPositionStash;
+        private Stash<HitBoxComponent> _hitBoxStash;
         private Stash<PositionComponent> _positionStash;
         private Stash<DamageRequest> _damageRequestStash;
         private Stash<CleanupRequest> _cleanupRequestStash;
@@ -45,7 +44,7 @@ namespace ECS.ProjectileSystems
             _filter = World.Filter
                 .With<ProjectileComponent>()
                 .With<PositionComponent>()
-                .With<ColliderComponent>()
+                .With<HitBoxComponent>()
                 .Build();
 
             _enemyFilter = World.Filter
@@ -61,8 +60,7 @@ namespace ECS.ProjectileSystems
             _projectileStash = World.GetStash<ProjectileComponent>();
             _weaponStash = World.GetStash<WeaponComponent>();
             _statsStash = World.GetStash<StatsComponent>();
-            _colliderStash = World.GetStash<ColliderComponent>();
-            _colliderPositionStash = World.GetStash<ColliderPositionComponent>();
+            _hitBoxStash = World.GetStash<HitBoxComponent>();
             _positionStash = World.GetStash<PositionComponent>();
             _damageRequestStash = World.GetStash<DamageRequest>();
             _cleanupRequestStash = World.GetStash<CleanupRequest>();
@@ -79,7 +77,12 @@ namespace ECS.ProjectileSystems
                 if (projectileComponent.CleanupRequested)
                     continue;
 
-                Vector3 projectilePosition = GetColliderPosition(projectile);
+                ColliderComponent projectileCollider =
+                    _hitBoxStash.Get(projectile).Collider;
+                Vector3 projectilePosition =
+                    ColliderGeometry.GetColliderWorldCenter(
+                        _positionStash.Get(projectile).Position,
+                        projectileCollider);
 
                 float queryRadius = GetQueryRadius(projectile);
 
@@ -191,17 +194,9 @@ namespace ECS.ProjectileSystems
             return true;
         }
 
-        private Vector3 GetColliderPosition(Entity entity)
-        {
-            if (_colliderPositionStash.Has(entity))
-                return _colliderPositionStash.Get(entity).CenterPosition;
-
-            return _positionStash.Get(entity).Position;
-        }
-
         private float GetQueryRadius(Entity entity)
         {
-            ref ColliderComponent collider = ref _colliderStash.Get(entity);
+            ColliderComponent collider = _hitBoxStash.Get(entity).Collider;
 
             switch (collider.Type)
             {
@@ -225,11 +220,14 @@ namespace ECS.ProjectileSystems
 
         private bool CheckCollision(Entity projectile, Entity target)
         {
-            ref ColliderComponent projectileCollider = ref _colliderStash.Get(projectile);
-            ref ColliderComponent targetCollider = ref _colliderStash.Get(target);
+            ColliderComponent projectileCollider =
+                _hitBoxStash.Get(projectile).Collider;
+            ColliderComponent targetCollider =
+                _hitBoxStash.Get(target).Collider;
 
-            Vector3 projectilePosition = GetColliderPosition(projectile);
-            Vector3 targetPosition = GetColliderPosition(target);
+            Vector3 projectilePosition =
+                _positionStash.Get(projectile).Position;
+            Vector3 targetPosition = _positionStash.Get(target).Position;
 
             return ColliderGeometry.Overlaps(
                 projectilePosition,
@@ -243,7 +241,7 @@ namespace ECS.ProjectileSystems
             if (entity == projectile.Weapon)
                 return false;
 
-            if (!_colliderStash.Has(entity))
+            if (!_hitBoxStash.Has(entity))
                 return false;
 
             return projectile.TargetType switch

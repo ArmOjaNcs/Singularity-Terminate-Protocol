@@ -14,8 +14,7 @@ namespace ECS.TrajectorySystems
         private Stash<ProjectileComponent> _projectileStash;
         private Stash<PositionComponent> _positionStash;
         private Stash<RotationComponent> _rotationStash;
-        private Stash<ColliderComponent> _colliderStash;
-        private Stash<ColliderPositionComponent> _colliderPositionStash;
+        private Stash<HitBoxComponent> _hitBoxStash;
 
         public void OnAwake()
         {
@@ -24,16 +23,13 @@ namespace ECS.TrajectorySystems
                 .With<StraightTrajectoryComponent>()
                 .With<PositionComponent>()
                 .With<RotationComponent>()
-                .With<ColliderComponent>()
-                .With<ColliderPositionComponent>()
+                .With<HitBoxComponent>()
                 .Build();
 
             _projectileStash = World.GetStash<ProjectileComponent>();
             _positionStash = World.GetStash<PositionComponent>();
             _rotationStash = World.GetStash<RotationComponent>();
-            _colliderStash = World.GetStash<ColliderComponent>();
-            _colliderPositionStash =
-                World.GetStash<ColliderPositionComponent>();
+            _hitBoxStash = World.GetStash<HitBoxComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -68,14 +64,9 @@ namespace ECS.TrajectorySystems
                 rotation.Angle = angle;
 
                 ref ColliderComponent collider =
-                    ref _colliderStash.Get(entity);
+                    ref _hitBoxStash.Get(entity).Collider;
 
                 collider.Angle = angle;
-
-                ref ColliderPositionComponent colliderPosition =
-                    ref _colliderPositionStash.Get(entity);
-
-                colliderPosition.CenterPosition = position.Position;
             }
         }
 

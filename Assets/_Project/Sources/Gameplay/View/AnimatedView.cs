@@ -74,6 +74,23 @@ namespace Gameplay.View
             StartPauseableRoutine(remainingTime);
         }
 
+        protected void CancelViewRoutines()
+        {
+            if (ViewRoutine != null)
+            {
+                StopCoroutine(ViewRoutine);
+                ViewRoutine = null;
+            }
+
+            if (PauseableRoutine != null)
+            {
+                StopCoroutine(PauseableRoutine);
+                PauseableRoutine = null;
+            }
+
+            OnComplete = null;
+        }
+
         protected virtual void OnRoutineStart() { }
 
         protected virtual void OnRoutineIteration(float elapsedTime, float cycleDuration) { }

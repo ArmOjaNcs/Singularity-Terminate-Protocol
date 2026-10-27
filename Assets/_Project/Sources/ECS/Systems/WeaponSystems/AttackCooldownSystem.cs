@@ -12,6 +12,7 @@ namespace ECS.WeaponSystems
         public World World { get; set; }
 
         private Filter _filter;
+        private Filter _livingPlayerFilter;
 
         private Stash<WeaponComponent> _weaponStash;
         private Stash<AttackComponent> _attackStash;
@@ -29,6 +30,11 @@ namespace ECS.WeaponSystems
                 .With<AttackComponent>()
                 .With<AttackStatusComponent>()
                 .With<TargetComponent>()
+                .Build();
+
+            _livingPlayerFilter = World.Filter
+                .With<PlayerTag>()
+                .Without<DeathComponent>()
                 .Build();
 
             _weaponStash = World.GetStash<WeaponComponent>();
@@ -50,6 +56,14 @@ namespace ECS.WeaponSystems
 
                 if (_deathStash.Has(weaponComponent.Owner))
                     continue;
+
+                if (_enemyTagStash.Has(weaponComponent.Owner) &&
+                    !HasLivingPlayer())
+                {
+                    if (_attackRequestStash.Has(weapon))
+                        _attackRequestStash.Remove(weapon);
+                    continue;
+                }
 
                 ref AttackComponent attack =
                     ref _attackStash.Get(weapon);
@@ -81,6 +95,14 @@ namespace ECS.WeaponSystems
                 _attackRequestStash.Set(weapon, new AttackRequest());
                 attack.CurrentCooldown = attack.AttackCooldown;
             }
+        }
+
+        private bool HasLivingPlayer()
+        {
+            foreach (Entity player in _livingPlayerFilter)
+                return true;
+
+            return false;
         }
 
         private bool IsValidTarget(Entity target, AttackTargetType targetType)

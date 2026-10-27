@@ -27,5 +27,6 @@ namespace Configs
 
         public AttackTargetType TargetType;
         public HitPolicyType HitPolicy;
+        public AttackAnimationPolicyType AnimationPolicy;
     }
 }

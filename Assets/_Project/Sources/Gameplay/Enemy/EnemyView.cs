@@ -26,6 +26,16 @@ namespace Gameplay.Enemy
             StartViewRoutine("Attack", 0.5f);
         }
 
+        public void CancelAttack()
+        {
+            if (!_isAttack)
+                return;
+
+            _isAttack = false;
+            CancelViewRoutines();
+            ResetAnimator();
+        }
+
         protected void PerformAttack()
         {
             OnAttackPerformed?.Invoke(this);

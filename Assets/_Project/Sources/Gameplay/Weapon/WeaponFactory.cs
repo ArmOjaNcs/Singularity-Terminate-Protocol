@@ -70,7 +70,8 @@ namespace ECS.WeaponSystems
                 ShotSpreadAngle = config.AttackConfig.ShotSpreadAngle,
                 TargetType = config.AttackConfig.TargetType,
                 HitPolicy = config.AttackConfig.HitPolicy,
-                HitInterval = config.AttackConfig.HitInterval
+                HitInterval = config.AttackConfig.HitInterval,
+                AnimationPolicy = config.AttackConfig.AnimationPolicy
             });
 
             _attackStatusStash.Set(weapon, new AttackStatusComponent

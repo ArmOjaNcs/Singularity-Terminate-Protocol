@@ -11,6 +11,7 @@ namespace Configs
         public float Radius;
         public float Length;
         public Vector2 Size;
+        public Vector2 Center;
         public CapsuleOrientation CapsuleOrientation;
     }
 }

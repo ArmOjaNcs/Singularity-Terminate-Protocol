@@ -16,7 +16,6 @@ namespace ECS.ProjectileSystems
         private readonly Stash<ProjectileComponent> _projectileStash;
         private readonly Stash<StraightTrajectoryComponent> _trajectoryStash;
         private readonly Stash<RotationComponent> _rotationStash;
-        private readonly Stash<ColliderPositionComponent> _colliderPositionStash;
 
         public StraightProjectileCreator(
             World world,
@@ -29,8 +28,6 @@ namespace ECS.ProjectileSystems
             _projectileStash = world.GetStash<ProjectileComponent>();
             _trajectoryStash = world.GetStash<StraightTrajectoryComponent>();
             _rotationStash = world.GetStash<RotationComponent>();
-            _colliderPositionStash =
-                world.GetStash<ColliderPositionComponent>();
         }
 
         public void Create(Entity weapon, Entity[] projectiles)
@@ -97,12 +94,6 @@ namespace ECS.ProjectileSystems
                                 Mathf.Rad2Deg
                     });
 
-                _colliderPositionStash.Set(
-                    projectile,
-                    new ColliderPositionComponent
-                    {
-                        CenterPosition = _positionStash.Get(projectile).Position
-                    });
             }
         }
 
