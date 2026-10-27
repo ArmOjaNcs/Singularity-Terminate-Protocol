@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3e3760d5970b2240bc64c7fef468807, type: 3}
   m_Name: AssaultRifle Damage
   m_EditorClassIdentifier: 
-  UpgradeId: RifleDamage
+  UpgradeId: AssaultRifleDamage
   Title: "\u0412\u0438\u043D\u0442\u043E\u0432\u043A\u0430"
   Description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
     \u0443\u0440\u043E\u043D \u043D\u0430 5%"
