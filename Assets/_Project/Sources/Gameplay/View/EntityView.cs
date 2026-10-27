@@ -8,6 +8,7 @@ namespace Gameplay.View
         [SerializeField] protected SpriteRenderer Renderer;
 
         public Entity Entity { get; private set; }
+        public bool IsXFlipped => Renderer != null && Renderer.flipX;
 
         public void SetEntity(Entity entity) => Entity = entity;
 
@@ -18,7 +19,15 @@ namespace Gameplay.View
 
         public void SetFacingLeft(bool value)
         {
+            if (Renderer == null || Renderer.flipX == value)
+                return;
+
             Renderer.flipX = value;
+        }
+
+        public void ResetFacing()
+        {
+            SetFacingLeft(false);
         }
 
         public void SetSortingOrder(int sortingOrder)

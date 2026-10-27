@@ -144,6 +144,9 @@ namespace Gameplay.Navigation
             ColliderComponent collider)
         {
             GetColliderExtents(collider, out float extentX, out float extentY);
+            Vector3 colliderCenter = ColliderGeometry.GetColliderWorldCenter(
+                worldPosition,
+                collider);
 
             Vector3 gridPosition = transform.position;
 
@@ -151,15 +154,15 @@ namespace Gameplay.Navigation
             float halfHeight = _cellsY * _cellSize * 0.5f;
 
             // Check whether the collider's bounds fit inside the grid.
-            if (worldPosition.x - extentX < gridPosition.x - halfWidth ||
-                worldPosition.x + extentX > gridPosition.x + halfWidth ||
-                worldPosition.y - extentY < gridPosition.y - halfHeight ||
-                worldPosition.y + extentY > gridPosition.y + halfHeight)
+            if (colliderCenter.x - extentX < gridPosition.x - halfWidth ||
+                colliderCenter.x + extentX > gridPosition.x + halfWidth ||
+                colliderCenter.y - extentY < gridPosition.y - halfHeight ||
+                colliderCenter.y + extentY > gridPosition.y + halfHeight)
             {
                 return false;
             }
 
-            if (!TryGetCell(worldPosition, out int centerX, out int centerY))
+            if (!TryGetCell(colliderCenter, out int centerX, out int centerY))
                 return false;
 
             int radiusX = Mathf.CeilToInt(extentX / _cellSize) + 1;

@@ -12,8 +12,10 @@ namespace Gameplay.View
 
         public override void ResetAnimator()
         {
+            CancelViewRoutines();
             Animator.Rebind();
             Animator.Update(0f);
+            ResetFacing();
         }
 
         public void SetMoving(bool value)

@@ -20,7 +20,7 @@ namespace ECS.CommonSystems
         private Stash<KnockbackComponent> _knockbackStash;
         private Stash<MovementLockComponent> _movementLockStash;
         private Stash<PositionComponent> _positionStash;
-        private Stash<ColliderComponent> _colliderStash;
+        private Stash<NavigationBoxComponent> _navigationBoxStash;
         private Stash<KnockbackRequest> _requestStash;
 
         public KnockbackSystem(NavigationGrid navigationGrid)
@@ -33,7 +33,7 @@ namespace ECS.CommonSystems
             _filter = World.Filter
                 .With<KnockbackComponent>()
                 .With<PositionComponent>()
-                .With<ColliderComponent>()
+                .With<NavigationBoxComponent>()
                 .Build();
 
             _requestFilter = World.Filter
@@ -43,7 +43,8 @@ namespace ECS.CommonSystems
             _knockbackStash = World.GetStash<KnockbackComponent>();
             _movementLockStash = World.GetStash<MovementLockComponent>();
             _positionStash = World.GetStash<PositionComponent>();
-            _colliderStash = World.GetStash<ColliderComponent>();
+            _navigationBoxStash =
+                World.GetStash<NavigationBoxComponent>();
             _requestStash = World.GetStash<KnockbackRequest>();
         }
 
@@ -56,7 +57,7 @@ namespace ECS.CommonSystems
 
                 if (request.Target == default ||
                     !_positionStash.Has(request.Target) ||
-                    !_colliderStash.Has(request.Target))
+                    !_navigationBoxStash.Has(request.Target))
                 {
                     World.RemoveEntity(requestEntity);
                     continue;
@@ -96,8 +97,8 @@ namespace ECS.CommonSystems
                 ref PositionComponent position =
                     ref _positionStash.Get(entity);
 
-                ref ColliderComponent collider =
-                    ref _colliderStash.Get(entity);
+                ref NavigationBoxComponent navigationBox =
+                    ref _navigationBoxStash.Get(entity);
 
                 if (knockback.Duration <= 0f ||
                     knockback.Elapsed >= knockback.Duration)
@@ -121,7 +122,7 @@ namespace ECS.CommonSystems
                 _movementResolver.Move(
                     ref position.Position,
                     delta,
-                    collider);
+                    navigationBox.Collider);
 
                 knockback.Elapsed += deltaTime;
 

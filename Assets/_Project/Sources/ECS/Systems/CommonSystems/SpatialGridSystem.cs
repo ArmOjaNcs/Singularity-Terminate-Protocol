@@ -13,8 +13,7 @@ namespace ECS.CommonSystems
         private Filter _filter;
 
         private Stash<PositionComponent> _positionStash;
-        private Stash<ColliderComponent> _colliderStash;
-        private Stash<ColliderPositionComponent> _colliderPositionStash;
+        private Stash<HitBoxComponent> _hitBoxStash;
 
         public SpatialGridSystem(SpatialGrid grid)
         {
@@ -30,9 +29,7 @@ namespace ECS.CommonSystems
                 .Build();
 
             _positionStash = World.GetStash<PositionComponent>();
-            _colliderStash = World.GetStash<ColliderComponent>();
-            _colliderPositionStash =
-                World.GetStash<ColliderPositionComponent>();
+            _hitBoxStash = World.GetStash<HitBoxComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -43,19 +40,16 @@ namespace ECS.CommonSystems
             {
                 Vector3 position = _positionStash.Get(entity).Position;
 
-                if (_colliderPositionStash.Has(entity))
-                {
-                    position =
-                        _colliderPositionStash.Get(entity).CenterPosition;
-                }
-
                 float boundsRadius = 0f;
 
-                if (_colliderStash.Has(entity))
+                if (_hitBoxStash.Has(entity))
                 {
-                    ref ColliderComponent collider =
-                        ref _colliderStash.Get(entity);
+                    ColliderComponent collider =
+                        _hitBoxStash.Get(entity).Collider;
 
+                    position = ColliderGeometry.GetColliderWorldCenter(
+                        position,
+                        collider);
                     boundsRadius = GetBoundsRadius(collider);
                 }
 

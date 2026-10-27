@@ -7,6 +7,7 @@ namespace ECS.ProjectileComponents
     {
         public Vector3 Direction;
         public Vector3 ColliderOffset;
+        public Vector2 BaseColliderCenter;
         public float DistanceFromSource;
         public float Radius;
         public float StartAngle;

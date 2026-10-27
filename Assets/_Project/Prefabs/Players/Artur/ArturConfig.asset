@@ -12,18 +12,32 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 951adce678c91324396c3327daa789a9, type: 3}
   m_Name: ArturConfig
   m_EditorClassIdentifier: 
+  CreatureType: 0
   Id: 3
-  DisplayName: Artur
+  Name: 
   Prefab: {fileID: 3390881850889633240, guid: 3262540a8de87714483d1316aa9de188, type: 3}
   Stats:
-    BaseStats:
-      MaxHealth: 25
-      HealthRegeneration: 1
-      Damage: 5
-      Luck: 5
-      Defence: 0
-      Speed: 2
-      NavigationRadius: 0
-    MaxWeapons: 0
-    EvasionChance: 0
-    GatheringRadius: 1
+    MaxHealth: 0
+    HealthRegeneration: 0
+    Damage: 0
+    Luck: 0
+    Defence: 0
+    Speed: 0
+  WeaponConfig: []
+  HitBox:
+    Type: 2
+    Radius: 0.3
+    Length: 1.45
+    Size: {x: 0, y: 0}
+    Center: {x: 0, y: 0}
+    CapsuleOrientation: 1
+  NavigationBox:
+    Type: 2
+    Radius: 0.2
+    Length: 0.6
+    Size: {x: 0, y: 0}
+    Center: {x: 0, y: -0.55}
+    CapsuleOrientation: 0
+  MaxWeapons: 0
+  EvasionChance: 0
+  GatheringRadius: 0

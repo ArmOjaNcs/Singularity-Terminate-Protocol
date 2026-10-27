@@ -16,7 +16,7 @@ namespace ECS.ProjectileSystems
         private readonly Stash<ProjectileComponent> _projectileStash;
         private readonly Stash<RotationComponent> _rotationStash;
         private readonly Stash<ArcTrajectoryComponent> _arcTrajectoryStash;
-        private readonly Stash<ColliderPositionComponent> _colliderPositionStash;
+        private readonly Stash<HitBoxComponent> _hitBoxStash;
 
         public AxeProjectileCreator(
             World world,
@@ -29,8 +29,7 @@ namespace ECS.ProjectileSystems
             _projectileStash = world.GetStash<ProjectileComponent>();
             _rotationStash = world.GetStash<RotationComponent>();
             _arcTrajectoryStash = world.GetStash<ArcTrajectoryComponent>();
-            _colliderPositionStash =
-                world.GetStash<ColliderPositionComponent>();
+            _hitBoxStash = world.GetStash<HitBoxComponent>();
         }
 
         public void Create(Entity weapon, Entity[] projectiles)
@@ -75,16 +74,9 @@ namespace ECS.ProjectileSystems
                         StartRotationAngle = _config.StartAngle,
                         EndRotationAngle = _config.EndAngle,
                         Duration = attack.AttackDuration,
-                        CurrentTime = 0f
-                    });
-
-                _colliderPositionStash.Set(
-                    projectile,
-                    new ColliderPositionComponent
-                    {
-                        CenterPosition =
-                            _positionStash.Get(projectile).Position +
-                            colliderOffset
+                        CurrentTime = 0f,
+                        BaseColliderCenter =
+                            _hitBoxStash.Get(projectile).Collider.Center
                     });
             }
         }

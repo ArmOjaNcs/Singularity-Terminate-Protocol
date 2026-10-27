@@ -15,8 +15,7 @@ namespace ECS.TrajectorySystems
         private Stash<ArcTrajectoryComponent> _trajectoryStash;
         private Stash<PositionComponent> _positionStash;
         private Stash<RotationComponent> _rotationStash;
-        private Stash<ColliderComponent> _colliderStash;
-        private Stash<ColliderPositionComponent> _colliderPositionStash;
+        private Stash<HitBoxComponent> _hitBoxStash;
 
         public void OnAwake()
         {
@@ -25,17 +24,14 @@ namespace ECS.TrajectorySystems
                 .With<ArcTrajectoryComponent>()
                 .With<PositionComponent>()
                 .With<RotationComponent>()
-                .With<ColliderComponent>()
-                .With<ColliderPositionComponent>()
+                .With<HitBoxComponent>()
                 .Build();
 
             _projectileStash = World.GetStash<ProjectileComponent>();
             _trajectoryStash = World.GetStash<ArcTrajectoryComponent>();
             _positionStash = World.GetStash<PositionComponent>();
             _rotationStash = World.GetStash<RotationComponent>();
-            _colliderStash = World.GetStash<ColliderComponent>();
-            _colliderPositionStash =
-                World.GetStash<ColliderPositionComponent>();
+            _hitBoxStash = World.GetStash<HitBoxComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -128,19 +124,14 @@ namespace ECS.TrajectorySystems
                 rotation.Angle = rotationAngle;
 
                 ref ColliderComponent collider =
-                    ref _colliderStash.Get(entity);
+                    ref _hitBoxStash.Get(entity).Collider;
 
                 collider.Angle = rotationAngle;
 
-                ref ColliderPositionComponent colliderPosition =
-                    ref _colliderPositionStash.Get(entity);
-
-                Vector3 colliderOffset =
-                    Quaternion.Euler(0f, 0f, rotationAngle) *
-                    trajectory.ColliderOffset;
-
-                colliderPosition.CenterPosition =
-                    position.Position + colliderOffset;
+                collider.Center = trajectory.BaseColliderCenter +
+                                  new Vector2(
+                                      trajectory.ColliderOffset.x,
+                                      trajectory.ColliderOffset.y);
             }
         }
 

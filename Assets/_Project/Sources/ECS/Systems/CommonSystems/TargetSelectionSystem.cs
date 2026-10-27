@@ -21,8 +21,7 @@ namespace ECS.CommonSystems
         private Stash<PositionComponent> _positionStash;
         private Stash<TargetComponent> _targetStash;
         private Stash<AttackComponent> _attackStash;
-        private Stash<ColliderComponent> _colliderStash;
-        private Stash<ColliderPositionComponent> _colliderPositionStash;
+        private Stash<HitBoxComponent> _hitBoxStash;
 
         public TargetSelectionSystem(SpatialGrid grid)
         {
@@ -53,9 +52,7 @@ namespace ECS.CommonSystems
             _positionStash = World.GetStash<PositionComponent>();
             _targetStash = World.GetStash<TargetComponent>();
             _attackStash = World.GetStash<AttackComponent>();
-            _colliderStash = World.GetStash<ColliderComponent>();
-            _colliderPositionStash =
-                World.GetStash<ColliderPositionComponent>();
+            _hitBoxStash = World.GetStash<HitBoxComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -103,20 +100,17 @@ namespace ECS.CommonSystems
                     continue;
 
                 if (!_positionStash.Has(candidate) ||
-                    !_colliderStash.Has(candidate))
+                    !_hitBoxStash.Has(candidate))
                 {
                     continue;
                 }
 
-                Vector3 colliderPosition =
-                    GetColliderPosition(candidate);
-
-                ref ColliderComponent collider =
-                    ref _colliderStash.Get(candidate);
+                ColliderComponent collider =
+                    _hitBoxStash.Get(candidate).Collider;
 
                 float distance = ColliderGeometry.DistanceToCollider(
                     position,
-                    colliderPosition,
+                    _positionStash.Get(candidate).Position,
                     collider);
 
                 if (distance > radius || distance >= closestDistance)
@@ -127,18 +121,6 @@ namespace ECS.CommonSystems
             }
 
             target.Target = closestEntity;
-        }
-
-        private Vector3 GetColliderPosition(Entity entity)
-        {
-            if (_colliderPositionStash.Has(entity))
-            {
-                return _colliderPositionStash
-                    .Get(entity)
-                    .CenterPosition;
-            }
-
-            return _positionStash.Get(entity).Position;
         }
 
         private bool IsValidTarget(

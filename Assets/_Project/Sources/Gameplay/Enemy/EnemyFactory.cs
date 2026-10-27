@@ -1,6 +1,4 @@
-
 using Core.Game;
-using ECS.CommonComponents;
 using ECS.EnemyComponents;
 using ECS.ViewComponents;
 using ECS.WeaponSystems;
@@ -25,6 +23,8 @@ namespace Gameplay.Enemy
         private readonly Stash<EnemyTag> _enemyTagStash;
         private readonly Stash<EnemyMovementVariationComponent>
             _movementVariationStash;
+        private readonly Stash<EnemyNavigationStateComponent>
+            _navigationStateStash;
         private readonly Stash<ViewComponent> _viewStash;
         private readonly Stash<AnimatedCreatureComponent> _animatedCreatureStash;
         private readonly Stash<EnemyViewComponent> _enemyViewStash;
@@ -43,6 +43,8 @@ namespace Gameplay.Enemy
             _enemyTagStash = world.GetStash<EnemyTag>();
             _movementVariationStash =
                 world.GetStash<EnemyMovementVariationComponent>();
+            _navigationStateStash =
+                world.GetStash<EnemyNavigationStateComponent>();
             _viewStash = world.GetStash<ViewComponent>();
             _animatedCreatureStash =
                 world.GetStash<AnimatedCreatureComponent>();
@@ -53,7 +55,7 @@ namespace Gameplay.Enemy
 
         public Entity Create(EnemyConfig config, Vector3 position)
         {
-            if (config == null || config.Collider == null)
+            if (config == null || config.HitBox == null)
             {
                 return default;
             }
@@ -94,6 +96,25 @@ namespace Gameplay.Enemy
                         Random.Range(0.4f, 1.2f)
                 });
 
+            _navigationStateStash.Set(
+                entity,
+                new EnemyNavigationStateComponent
+                {
+                    StuckTime = 0f,
+                    AvoidanceCheckTime = 0f,
+                    AvoidanceSide = 0,
+                    PreferredSide = Random.value < 0.5f ? -1 : 1
+                });
+
+            _world.GetStash<EnemyMovementPolicyComponent>().Set(
+                entity,
+                new EnemyMovementPolicyComponent
+                {
+                    MovePolicy = config.MovePolicy,
+                    AttackPolicy = config.AttackPolicy,
+                    PreferredAttackDistance = Mathf.Max(0f, config.PreferredAttackDistance)
+                });
+
             _viewStash.Set(entity, new ViewComponent
             {
                 View = view
@@ -127,7 +148,7 @@ namespace Gameplay.Enemy
             {
                 if (config == null ||
                     config.Prefab == null ||
-                    config.Collider == null)
+                    config.HitBox == null)
                 {
                     continue;
                 }

@@ -27,12 +27,13 @@ namespace ECS.ProjectileSystems
         private readonly Stash<AttackComponent> _attackStash;
         private readonly Stash<PositionComponent> _positionStash;
         private readonly Stash<ProjectileComponent> _projectileStash;
-        private readonly Stash<ColliderComponent> _colliderStash;
+        private readonly Stash<HitBoxComponent> _hitBoxStash;
         private readonly Stash<ProjectileHitComponent> _projectileHitStash;
         private readonly Stash<ProjectileCreationComponent> _creationStash;
         private readonly Stash<AttackStatusComponent> _attackStatusStash;
         private readonly Stash<ProjectileViewComponent> _projectileViewStash;
         private readonly Stash<TargetComponent> _targetStash;
+        private readonly Stash<DeathComponent> _deathStash;
 
         public ProjectileFactory(
             World world,
@@ -47,12 +48,13 @@ namespace ECS.ProjectileSystems
             _attackStash = world.GetStash<AttackComponent>();
             _positionStash = world.GetStash<PositionComponent>();
             _projectileStash = world.GetStash<ProjectileComponent>();
-            _colliderStash = world.GetStash<ColliderComponent>();
+            _hitBoxStash = world.GetStash<HitBoxComponent>();
             _projectileHitStash = world.GetStash<ProjectileHitComponent>();
             _creationStash = world.GetStash<ProjectileCreationComponent>();
             _attackStatusStash = world.GetStash<AttackStatusComponent>();
             _projectileViewStash = world.GetStash<ProjectileViewComponent>();
             _targetStash = world.GetStash<TargetComponent>();
+            _deathStash = world.GetStash<DeathComponent>();
 
             InitializeConfigs();
         }
@@ -94,7 +96,9 @@ namespace ECS.ProjectileSystems
                 return;
             }
 
-            CreateRelease(weapon);
+            if (!CreateRelease(weapon))
+                return;
+
             creation.RemainingCount--;
 
             if (creation.RemainingCount <= 0)
@@ -137,7 +141,9 @@ namespace ECS.ProjectileSystems
             {
                 while (creation.RemainingCount > 0)
                 {
-                    CreateRelease(weapon);
+                    if (!CreateRelease(weapon))
+                        return;
+
                     creation.RemainingCount--;
                 }
 
@@ -152,7 +158,9 @@ namespace ECS.ProjectileSystems
             {
                 creation.ElapsedTime -= attack.FireRate;
 
-                CreateRelease(weapon);
+                if (!CreateRelease(weapon))
+                    return;
+
                 creation.RemainingCount--;
             }
 
@@ -165,20 +173,30 @@ namespace ECS.ProjectileSystems
             FinishCreation(weapon);
         }
 
-        private void CreateRelease(Entity weapon)
+        private bool CreateRelease(Entity weapon)
         {
             if (!_weaponStash.Has(weapon) ||
                 !_attackStash.Has(weapon) ||
                 !_positionStash.Has(weapon))
             {
-                return;
+                FinishCreation(weapon);
+                return false;
             }
 
             WeaponType weaponType = _weaponStash.Get(weapon).Type;
             ProjectileConfig config = GetConfig(weaponType);
 
             if (config == null || config.Collider == null)
-                return;
+            {
+                FinishCreation(weapon);
+                return false;
+            }
+
+            if (!TryGetDirection(weapon, out Vector3 direction))
+            {
+                FinishCreation(weapon);
+                return false;
+            }
 
             _creators.TryGetValue(
                 weaponType,
@@ -194,21 +212,22 @@ namespace ECS.ProjectileSystems
             Entity[] projectiles = new Entity[projectileCount];
 
             for (int i = 0; i < projectiles.Length; i++)
-                projectiles[i] = CreateProjectile(weapon, config, pool);
+                projectiles[i] = CreateProjectile(weapon, config, pool, direction);
 
             if (creator != null)
                 creator.Create(weapon, projectiles);
+
+            return true;
         }
 
         private Entity CreateProjectile(
             Entity weapon,
             ProjectileConfig config,
-            ObjectPool<AnimatedView> pool)
+            ObjectPool<AnimatedView> pool,
+            Vector3 direction)
         {
             ref WeaponComponent weaponComponent = ref _weaponStash.Get(weapon);
             ref AttackComponent attack = ref _attackStash.Get(weapon);
-
-            Vector3 direction = GetDirection(weapon);
 
             Vector3 spawnPosition =
                 _positionStash.Get(weapon).Position +
@@ -238,14 +257,18 @@ namespace ECS.ProjectileSystems
                 Position = spawnPosition
             });
 
-            _colliderStash.Set(projectile, new ColliderComponent
+            _hitBoxStash.Set(projectile, new HitBoxComponent
             {
-                Type = config.Collider.Type,
-                Radius = config.Collider.Radius,
-                Length = config.Collider.Length,
-                Size = config.Collider.Size,
-                Angle = 0f,
-                CapsuleOrientation = config.Collider.CapsuleOrientation
+                Collider = new ColliderComponent
+                {
+                    Type = config.Collider.Type,
+                    Radius = config.Collider.Radius,
+                    Length = config.Collider.Length,
+                    Size = config.Collider.Size,
+                    Center = config.Collider.Center,
+                    Angle = 0f,
+                    CapsuleOrientation = config.Collider.CapsuleOrientation
+                }
             });
 
             _projectileHitStash.Set(projectile, new ProjectileHitComponent
@@ -333,26 +356,36 @@ namespace ECS.ProjectileSystems
             return config != null && config.Collider != null;
         }
 
-        private Vector3 GetDirection(Entity weapon)
+        private bool TryGetDirection(Entity weapon, out Vector3 direction)
         {
+            direction = Vector3.zero;
+
             if (!_targetStash.Has(weapon))
-                return Vector3.right;
+                return false;
 
             Entity target = _targetStash.Get(weapon).Target;
 
-            if (target == default || !_positionStash.Has(target))
-                return Vector3.right;
+            if (target == default ||
+                !_positionStash.Has(target) ||
+                _deathStash.Has(target))
+            {
+                return false;
+            }
 
-            Vector3 direction =
+            direction =
                 _positionStash.Get(target).Position -
                 _positionStash.Get(weapon).Position;
 
             direction.z = 0f;
 
             if (direction.sqrMagnitude <= 0.0001f)
-                return Vector3.right;
+            {
+                direction = Vector3.zero;
+                return false;
+            }
 
-            return direction.normalized;
+            direction.Normalize();
+            return true;
         }
 
         private void FinishCreation(Entity weapon)

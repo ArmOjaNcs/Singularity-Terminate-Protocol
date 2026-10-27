@@ -14,7 +14,8 @@ namespace Gameplay.Spatial
             ColliderComponent collider)
         {
             Vector2 target = ToVector2(point);
-            Vector2 center = ToVector2(colliderPosition);
+            Vector2 center = ToVector2(
+                GetColliderWorldCenter(colliderPosition, collider));
 
             switch (collider.Type)
             {
@@ -44,8 +45,10 @@ namespace Gameplay.Spatial
             Vector3 secondPosition,
             ColliderComponent secondCollider)
         {
-            Vector2 firstCenter = ToVector2(firstPosition);
-            Vector2 secondCenter = ToVector2(secondPosition);
+            Vector2 firstCenter = ToVector2(
+                GetColliderWorldCenter(firstPosition, firstCollider));
+            Vector2 secondCenter = ToVector2(
+                GetColliderWorldCenter(secondPosition, secondCollider));
 
             switch (firstCollider.Type)
             {
@@ -89,7 +92,8 @@ namespace Gameplay.Spatial
             ColliderComponent targetCollider)
         {
             Vector2 center = ToVector2(circlePosition);
-            Vector2 target = ToVector2(targetPosition);
+            Vector2 target = ToVector2(
+                GetColliderWorldCenter(targetPosition, targetCollider));
 
             return CircleOverlaps(
                 center,
@@ -153,6 +157,21 @@ namespace Gameplay.Spatial
                 default:
                     return false;
             }
+        }
+
+        public static Vector3 GetColliderWorldCenter(
+            Vector3 objectPosition,
+            ColliderComponent collider)
+        {
+            Vector2 localCenter = collider.Center;
+            float radians = collider.Angle * Mathf.Deg2Rad;
+            float cos = Mathf.Cos(radians);
+            float sin = Mathf.Sin(radians);
+            Vector2 rotatedCenter = new Vector2(
+                localCenter.x * cos - localCenter.y * sin,
+                localCenter.x * sin + localCenter.y * cos);
+
+            return objectPosition + (Vector3)rotatedCenter;
         }
 
         private static bool BoxOverlaps(

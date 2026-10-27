@@ -48,7 +48,9 @@ namespace Gameplay.Player
 
         public GameObject Create(PlayerConfig config, Vector3 position)
         {
-            if (config == null || config.Prefab == null)
+            if (config == null ||
+                config.Prefab == null ||
+                config.HitBox == null)
                 return null;
 
             Entity entity = _world.CreateEntity();

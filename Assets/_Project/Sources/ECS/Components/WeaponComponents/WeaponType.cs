@@ -3,8 +3,10 @@ namespace ECS.WeaponComponents
     public enum WeaponType
     {
         MeleeDefault = 0,
-        Axe = 1,
-        AssaultRifle = 2,
-        Shotgun = 3,
+        MeleeSmall = 1,
+        MeleeLarge = 2,
+        Axe = 3,
+        AssaultRifle = 4,
+        Shotgun = 5,
     }
 }

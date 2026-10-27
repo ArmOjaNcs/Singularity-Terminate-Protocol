@@ -17,6 +17,7 @@ namespace ECS.EnemySystems
 
         private Stash<EnemyViewComponent> _enemyViewStash;
         private Stash<WeaponComponent> _weaponStash;
+        private Stash<AttackComponent> _attackStash;
         private Stash<AttackStatusComponent> _attackStatusStash;
         private Stash<ProjectileCreationRequestComponent> _creationRequestStash;
 
@@ -36,6 +37,7 @@ namespace ECS.EnemySystems
 
             _enemyViewStash = World.GetStash<EnemyViewComponent>();
             _weaponStash = World.GetStash<WeaponComponent>();
+            _attackStash = World.GetStash<AttackComponent>();
             _attackStatusStash = World.GetStash<AttackStatusComponent>();
             _creationRequestStash = World.GetStash<ProjectileCreationRequestComponent>();
         }
@@ -44,14 +46,10 @@ namespace ECS.EnemySystems
         {
             foreach (Entity enemy in _enemyFilter)
             {
-                EnemyView view = _enemyViewStash.Get(enemy).View;
-
-                if (view == null)
-                    continue;
-
                 if (!TryGetWeapon(enemy, out Entity weapon))
                 {
-                    Unsubscribe(view);
+                    if (_enemyViewStash.Has(enemy))
+                        Unsubscribe(_enemyViewStash.Get(enemy).View);
                     continue;
                 }
 
@@ -59,9 +57,29 @@ namespace ECS.EnemySystems
 
                 if (!attackStatus.IsAttacking || attackStatus.AnimationFinished)
                 {
-                    Unsubscribe(view);
+                    if (_enemyViewStash.Has(enemy))
+                        Unsubscribe(_enemyViewStash.Get(enemy).View);
                     continue;
                 }
+
+                if (_attackStash.Get(weapon).AnimationPolicy == AttackAnimationPolicyType.Immediate)
+                {
+                    if (_enemyViewStash.Has(enemy))
+                        Unsubscribe(_enemyViewStash.Get(enemy).View);
+                    if (!attackStatus.AttackPerformed)
+                    {
+                        attackStatus.AttackPerformed = true;
+                        attackStatus.AnimationFinished = true;
+                        if (!_creationRequestStash.Has(weapon))
+                            _creationRequestStash.Add(weapon);
+                    }
+                    continue;
+                }
+
+                EnemyView view = _enemyViewStash.Get(enemy).View;
+
+                if (view == null)
+                    continue;
 
                 if (!_subscribedViews.Add(view))
                     continue;
