@@ -138,10 +138,25 @@ namespace Gameplay.Player
 
             foreach (var weapon in weapons)
             {
+                if (weapon == null)
+                {
+                    Debug.LogError("Player config contains an empty weapon reference.");
+                    continue;
+                }
+
                 var initialWeapon = _weaponUpgradeConfigs.Find((item) => item.Type == weapon.Type);
 
-                initialUpgrades.Add(initialWeapon.UpgradeId, 1);
                 currentWeapons++;
+
+                if (initialWeapon == null)
+                {
+                    Debug.LogError(
+                        $"No base weapon upgrade config found for player weapon type {weapon.Type}. " +
+                        "The player will still spawn, but this weapon will not be registered in the upgrade inventory.");
+                    continue;
+                }
+
+                initialUpgrades[initialWeapon.UpgradeId] = 1;
             }
 
             _inventoryStash.Set(entity, new PlayerInventoryComponent
