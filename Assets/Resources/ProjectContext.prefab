@@ -83,6 +83,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d79b09433fe91a044994a1b994de4163, type: 2}
   - {fileID: 11400000, guid: eb3b2abd06df80f448a53d424fbe6480, type: 2}
   - {fileID: 11400000, guid: e5b333155dc04cd4481b5cfcccb93b2d, type: 2}
+  - {fileID: 11400000, guid: 233f66e0b40986449aa2758ce8c4e204, type: 2}
+  - {fileID: 11400000, guid: fa56c415eff28604c976ff2c5929ffd9, type: 2}
   _weaponUpgrades:
   - {fileID: 11400000, guid: 0fe281b0b7f4ca248b07a87ab7aaa192, type: 2}
   - {fileID: 11400000, guid: 883d4c3777bbe1144bd6d74da2461bfa, type: 2}
@@ -91,6 +93,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: d8093d9f339cc0b478b66011e848283f, type: 2}
   - {fileID: 11400000, guid: 2535e7a147200744c936b1199695d136, type: 2}
   - {fileID: 11400000, guid: 099ec186d4d85c9469014736bafb520a, type: 2}
+  - {fileID: 11400000, guid: c4c4753503a2c0841a4452ec0a0473c9, type: 2}
+  - {fileID: 11400000, guid: feeefcd1d5536ce48868788c0f6c9f8d, type: 2}
   _turrets:
   - {fileID: 11400000, guid: e9e7f6c4a48bbbc4e8b56a4f9513a050, type: 2}
   - {fileID: 11400000, guid: 22c84ca074569fa4cac4e43de1486b47, type: 2}
