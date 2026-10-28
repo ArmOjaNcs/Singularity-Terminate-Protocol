@@ -5,6 +5,7 @@ using ECS.PlayerSystems;
 using ECS.ViewComponents;
 using Scellecs.Morpeh;
 using UnityEngine;
+using Zenject;
 
 namespace Gameplay.Items
 {
@@ -19,9 +20,12 @@ namespace Gameplay.Items
 
         private readonly Stash<AddExperienceEvent> _addExperienceEvent;
 
-        public ItemFactory(World world)
+        private List<GemExpConfig> _gemConfigs;
+
+        public ItemFactory(World world, List<GemExpConfig> gemConfigs)
         {
             _world = world;
+            _gemConfigs = gemConfigs;
 
             _itemStash = world.GetStash<ItemPickupComponent>();
 
@@ -30,13 +34,13 @@ namespace Gameplay.Items
             _addExperienceEvent = world.GetStash<AddExperienceEvent>();
         }
 
-        public GameObject Create(List<GemExpConfig> config, Vector3 position)
+        public GameObject Create(Vector3 position)
         {
             Entity entity = _world.CreateEntity();
 
-            // int randomIndex = UnityEngine.Random.Range(0, config.Count);
-            int randomIndex = 2;
-            GemExpConfig itemConfig = config[randomIndex];
+            int randomIndex = UnityEngine.Random.Range(0, _gemConfigs.Count);
+
+            GemExpConfig itemConfig = _gemConfigs[randomIndex];
 
             _itemStash.Set(entity, new ItemPickupComponent
             {
@@ -51,9 +55,7 @@ namespace Gameplay.Items
             _viewStash.Set(entity, new ItemViewComponent { View = itemObject });
 
             if (itemConfig.Type == ItemTypes.ExperienceGem)
-            {
                 _addExperienceEvent.Set(entity, new AddExperienceEvent { Amount = itemConfig.AddExpAmount });
-            }
 
             return itemObject;
         }

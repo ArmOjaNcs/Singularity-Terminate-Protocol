@@ -123,7 +123,6 @@ namespace Core.Game
             CreateFactories();
             CreateSystems();
             CreatePlayer();
-            CreateItems();
             SetUI();
         }
 
@@ -153,7 +152,7 @@ namespace Core.Game
                 _enemyConfigsDatabase,
                 _enemyContainer);
 
-            _itemFactory = new ItemFactory(_world);
+            _itemFactory = new ItemFactory(_world, _itemConfigs);
 
             _projectileFactory = new ProjectileFactory(
                 _world,
@@ -241,8 +240,9 @@ namespace Core.Game
                 _navigationGrid);
 
             _gameplaySystems.AddSystem(_enemySpawnSystem);
-            _gameplaySystems.AddSystem(new CleanupSystem());
+            _gameplaySystems.AddSystem(new GemSpawnSystem(_itemFactory));
             _gameplaySystems.AddSystem(_playerDeathSystem);
+            _gameplaySystems.AddSystem(new CleanupSystem());
             _gameplaySystems.AddSystem(new EnemyDeathSystem());
 
             _gameplaySystems.AddSystem(new ItemScanSystem());
@@ -289,35 +289,9 @@ namespace Core.Game
             if (inventoryStash.Has(playerEntity))
             {
                 PlayerInventoryComponent inventoryComponent = inventoryStash.Get(playerEntity);
+
                 _equipPanel.Setup(inventoryComponent);
             }
-        }
-
-        private void CreateItems()
-        {
-            _itemFactory.Create(
-                _itemConfigs,
-                _playerSpawnPoint + new Vector3(5, 5));
-
-            _itemFactory.Create(
-                _itemConfigs,
-                _playerSpawnPoint + new Vector3(-5, 5));
-
-            _itemFactory.Create(
-                _itemConfigs,
-                _playerSpawnPoint + new Vector3(5, -5));
-
-            _itemFactory.Create(
-                _itemConfigs,
-                _playerSpawnPoint + new Vector3(10, 10));
-
-            _itemFactory.Create(
-                _itemConfigs,
-                _playerSpawnPoint + new Vector3(-10, 10));
-
-            _itemFactory.Create(
-                _itemConfigs,
-                _playerSpawnPoint + new Vector3(10, -10));
         }
 
         private void SetCamera(Transform playerTransform)

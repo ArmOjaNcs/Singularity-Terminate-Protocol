@@ -19,6 +19,8 @@ namespace ECS.EnemySystems
         private Stash<AnimatedCreatureComponent> _animatedCreatureStash;
         private Stash<ViewComponent> _viewStash;
         private Stash<CleanupRequest> _cleanupRequestStash;
+        private Stash<AddExperienceGemEvent> _gemSpawnStash;
+        private Stash<PositionComponent> _positionStash;
 
         public void OnAwake()
         {
@@ -37,6 +39,8 @@ namespace ECS.EnemySystems
             _weaponStash = World.GetStash<WeaponComponent>();
             _viewStash = World.GetStash<ViewComponent>();
             _cleanupRequestStash = World.GetStash<CleanupRequest>();
+            _gemSpawnStash = World.GetStash<AddExperienceGemEvent>();
+            _positionStash = World.GetStash<PositionComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -86,6 +90,14 @@ namespace ECS.EnemySystems
             _cleanupRequestStash.Set(request, new CleanupRequest
             {
                 Candidate = entity
+            });
+
+            Entity gemSpawner = World.CreateEntity();
+            PositionComponent position = _positionStash.Get(entity);
+
+            _gemSpawnStash.Set(gemSpawner, new AddExperienceGemEvent
+            {
+                Position = position.Position,
             });
         }
 
