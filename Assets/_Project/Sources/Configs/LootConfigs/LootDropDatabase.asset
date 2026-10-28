@@ -12,4 +12,132 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7bd8b1ba193e9e14bab93199d5d51296, type: 3}
   m_Name: LootDropDatabase
   m_EditorClassIdentifier: 
-  _tables: []
+  _tables:
+  - EnemyType: 1
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 2
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 3
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 4
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 5
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 6
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 7
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 8
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 9
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 10
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 11
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 12
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 13
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 14
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 15
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1
+  - EnemyType: 16
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 60
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 10
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 1

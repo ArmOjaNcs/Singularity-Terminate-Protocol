@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ed9a4e75f98cff429ca56d12f2f9bdb, type: 3}
   m_Name: RedGem
   m_EditorClassIdentifier: 
-  Id: 
+  Id: RedGem
   Type: 0
-  Prefab: {fileID: 0}
-  DropChance: 0
-  AddExpAmount: 0
+  Prefab: {fileID: 96143945979372624, guid: f71b752c8bdd74947b9a30790b71e5be, type: 3}
+  AddExpAmount: 30

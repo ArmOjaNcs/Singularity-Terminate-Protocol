@@ -12,8 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3ed9a4e75f98cff429ca56d12f2f9bdb, type: 3}
   m_Name: BlueGem
   m_EditorClassIdentifier: 
-  Id: 
+  Id: BlueGem
   Type: 0
-  Prefab: {fileID: 0}
-  DropChance: 0
-  AddExpAmount: 0
+  Prefab: {fileID: 2495518683640908290, guid: ce09d63eef07cd74f8f5cde778cced30, type: 3}
+  AddExpAmount: 5

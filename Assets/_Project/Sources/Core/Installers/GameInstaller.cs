@@ -1,6 +1,4 @@
-using System.Collections.Generic;
 using Cinemachine;
-using Configs;
 using Core.Game;
 using EnemyConfigs;
 using Gameplay.Navigation;
@@ -19,7 +17,6 @@ namespace Core.Installers
 
         [Header("Databases")]
         [SerializeField] private ProjectileDatabase _projectileDatabase;
-        [SerializeField] private List<GemExpConfig> _itemConfigs;
         [SerializeField] private EnemyConfigsDatabase _enemyConfigsDatabase;
         [SerializeField] private EnemySpawnDatabase _enemySpawnDatabase;
 
@@ -59,7 +56,6 @@ namespace Core.Installers
         private void BindDatabases()
         {
             Container.BindInstance(_projectileDatabase).AsSingle();
-            Container.BindInstance(_itemConfigs).AsSingle();
             Container.BindInstance(_enemyConfigsDatabase).AsSingle();
             Container.BindInstance(_enemySpawnDatabase).AsSingle();
         }

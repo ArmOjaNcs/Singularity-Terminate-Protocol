@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3e3760d5970b2240bc64c7fef468807, type: 3}
   m_Name: RocketLauncher_Damage
   m_EditorClassIdentifier: 
-  UpgradeId: AssaultRifleDamage
+  UpgradeId: RocketLauncherDamage
   Title: "\u0420\u0430\u043A\u0435\u0442\u043D\u0438\u0446\u0430"
   Description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
     \u0443\u0440\u043E\u043D \u043D\u0430 5%"
