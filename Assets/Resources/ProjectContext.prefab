@@ -76,25 +76,27 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _audioService: {fileID: 2282444016067818632, guid: 3c815c6697fb7f148819bb31e7ba84dc, type: 3}
   _weapons:
+  - {fileID: 11400000, guid: 233f66e0b40986449aa2758ce8c4e204, type: 2}
   - {fileID: 11400000, guid: f59d1b4ea0c5c66418709d141becd05f, type: 2}
   - {fileID: 11400000, guid: 4d160f7eb1afa1b4bb9cd39bdeddc2b2, type: 2}
+  - {fileID: 11400000, guid: dcfc95bb885ce8e448d4a2f01dd2649f, type: 2}
   - {fileID: 11400000, guid: c0280f925b86a98419e40932ee81a9b1, type: 2}
   - {fileID: 11400000, guid: 4187b81bb035abc4eb78ceb5eb518189, type: 2}
-  - {fileID: 11400000, guid: d79b09433fe91a044994a1b994de4163, type: 2}
   - {fileID: 11400000, guid: eb3b2abd06df80f448a53d424fbe6480, type: 2}
-  - {fileID: 11400000, guid: e5b333155dc04cd4481b5cfcccb93b2d, type: 2}
-  - {fileID: 11400000, guid: 233f66e0b40986449aa2758ce8c4e204, type: 2}
+  - {fileID: 11400000, guid: 9ff44ba013b3ba6479f95a0e9339f1ac, type: 2}
   - {fileID: 11400000, guid: fa56c415eff28604c976ff2c5929ffd9, type: 2}
+  - {fileID: 11400000, guid: e5b333155dc04cd4481b5cfcccb93b2d, type: 2}
   _weaponUpgrades:
+  - {fileID: 11400000, guid: c4c4753503a2c0841a4452ec0a0473c9, type: 2}
   - {fileID: 11400000, guid: 0fe281b0b7f4ca248b07a87ab7aaa192, type: 2}
   - {fileID: 11400000, guid: 883d4c3777bbe1144bd6d74da2461bfa, type: 2}
+  - {fileID: 11400000, guid: 3f1f0cb86c6adcd409a9defd5b0ade11, type: 2}
   - {fileID: 11400000, guid: 27c6821a3a4da6342a35bbc6c0acbb7a, type: 2}
   - {fileID: 11400000, guid: ba97f93638166b347bec3b7c814626b8, type: 2}
-  - {fileID: 11400000, guid: d8093d9f339cc0b478b66011e848283f, type: 2}
   - {fileID: 11400000, guid: 2535e7a147200744c936b1199695d136, type: 2}
-  - {fileID: 11400000, guid: 099ec186d4d85c9469014736bafb520a, type: 2}
-  - {fileID: 11400000, guid: c4c4753503a2c0841a4452ec0a0473c9, type: 2}
+  - {fileID: 11400000, guid: 34e4266aa1a91fd42956b3e01aaa1d03, type: 2}
   - {fileID: 11400000, guid: feeefcd1d5536ce48868788c0f6c9f8d, type: 2}
+  - {fileID: 11400000, guid: 099ec186d4d85c9469014736bafb520a, type: 2}
   _turrets:
   - {fileID: 11400000, guid: e9e7f6c4a48bbbc4e8b56a4f9513a050, type: 2}
   - {fileID: 11400000, guid: 22c84ca074569fa4cac4e43de1486b47, type: 2}
@@ -110,3 +112,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 42e6d42611f25fd45a92eff016c03132, type: 2}
   - {fileID: 11400000, guid: 2195a160e243a46498ccd87656434119, type: 2}
   - {fileID: 11400000, guid: de42a708606f96e47b7698f2739d2ec4, type: 2}
+  _lootDropDatabase: {fileID: 11400000, guid: 83d14253a44a06648b0564ffbe88fefa, type: 2}

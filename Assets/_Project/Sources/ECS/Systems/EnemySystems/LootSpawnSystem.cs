@@ -4,13 +4,13 @@ using Scellecs.Morpeh;
 
 namespace ECS.EnemySystems
 {
-    public sealed class GemSpawnSystem : ISystem
+    public sealed class LootSpawnSystem : ISystem
     {
         private readonly ItemFactory _itemFactory;
         private Filter _filter;
-        private Stash<AddExperienceGemEvent> _addGemStash;
+        private Stash<AddLootDropEvent> _addGemStash;
 
-        public GemSpawnSystem(ItemFactory itemFactory)
+        public LootSpawnSystem(ItemFactory itemFactory)
         {
             _itemFactory = itemFactory;
         }
@@ -20,10 +20,10 @@ namespace ECS.EnemySystems
         public void OnAwake()
         {
             _filter = World.Filter
-                .With<AddExperienceGemEvent>()
+                .With<AddLootDropEvent>()
                 .Build();
 
-            _addGemStash = World.GetStash<AddExperienceGemEvent>();
+            _addGemStash = World.GetStash<AddLootDropEvent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -35,7 +35,7 @@ namespace ECS.EnemySystems
             {
                 ref var addGemEvent = ref _addGemStash.Get(entity);
 
-                _itemFactory.Create(addGemEvent.Position);
+                _itemFactory.Create(addGemEvent.EnemyType, addGemEvent.Position);
 
                 World.RemoveEntity(entity);
             }

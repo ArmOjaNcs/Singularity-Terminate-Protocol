@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Core.Services;
 using ECS.WeaponSystems;
+using LootConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
 using UpgradeConfigs;
@@ -17,6 +18,7 @@ namespace Core.Installers
         [SerializeField] private List<NewTurretUpgradeConfig> _turrets;
         [SerializeField] private List<TurretUpgradeConfig> _turretUpgrades;
         [SerializeField] private List<SkillUpgradeConfig> _skillUpgrades;
+        [SerializeField] private LootDropDatabase _lootDropDatabase;
 
         public override void InstallBindings()
         {
@@ -33,6 +35,7 @@ namespace Core.Installers
             Container.BindInstance(_turrets).AsSingle();
             Container.BindInstance(_turretUpgrades).AsSingle();
             Container.BindInstance(_skillUpgrades).AsSingle();
+            Container.BindInstance(_lootDropDatabase).AsSingle();
         }
 
         private void BindServices()

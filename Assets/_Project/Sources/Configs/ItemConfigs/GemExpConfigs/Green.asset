@@ -15,4 +15,4 @@ MonoBehaviour:
   Id: GreenGem
   Type: 0
   Prefab: {fileID: 1465251683466844845, guid: cb7b470577cdd9a4cbe663a125d02d03, type: 3}
-  AddExpAmount: 150
+  AddExpAmount: 20

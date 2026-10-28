@@ -3,8 +3,9 @@ using UnityEngine;
 
 namespace ECS.EnemyComponents
 {
-    public struct AddExperienceGemEvent : IComponent
+    public struct AddLootDropEvent : IComponent
     {
         public Vector3 Position;
+        public CreatureType EnemyType;
     }
 }

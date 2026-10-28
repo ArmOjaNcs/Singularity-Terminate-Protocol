@@ -15,4 +15,4 @@ MonoBehaviour:
   Id: RedGem
   Type: 0
   Prefab: {fileID: 96143945979372624, guid: f71b752c8bdd74947b9a30790b71e5be, type: 3}
-  AddExpAmount: 500
+  AddExpAmount: 50

@@ -1,7 +1,7 @@
 namespace EnemyConfigs
 {
     [System.Serializable]
-    public class EnemySpawnConfig 
+    public class EnemySpawnConfig
     {
         public CreatureType EnemyType;
         public int Count;

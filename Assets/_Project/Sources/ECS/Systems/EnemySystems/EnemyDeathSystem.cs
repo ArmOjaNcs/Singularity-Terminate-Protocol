@@ -12,15 +12,15 @@ namespace ECS.EnemySystems
         public World World { get; set; }
 
         private Filter _filter;
-        private Filter _weaponFilter;
 
         private Stash<WeaponComponent> _weaponStash;
         private Stash<DeathComponent> _deathStash;
         private Stash<AnimatedCreatureComponent> _animatedCreatureStash;
         private Stash<ViewComponent> _viewStash;
         private Stash<CleanupRequest> _cleanupRequestStash;
-        private Stash<AddExperienceGemEvent> _gemSpawnStash;
+        private Stash<AddLootDropEvent> _lootSpawnStash;
         private Stash<PositionComponent> _positionStash;
+        private Stash<StatsComponent> _statsStash;
 
         public void OnAwake()
         {
@@ -30,31 +30,27 @@ namespace ECS.EnemySystems
                 .With<AnimatedCreatureComponent>()
                 .Build();
 
-            _weaponFilter = World.Filter
-                .With<WeaponComponent>()
-                .Build();
-
             _deathStash = World.GetStash<DeathComponent>();
             _animatedCreatureStash = World.GetStash<AnimatedCreatureComponent>();
             _weaponStash = World.GetStash<WeaponComponent>();
             _viewStash = World.GetStash<ViewComponent>();
             _cleanupRequestStash = World.GetStash<CleanupRequest>();
-            _gemSpawnStash = World.GetStash<AddExperienceGemEvent>();
+            _lootSpawnStash = World.GetStash<AddLootDropEvent>();
             _positionStash = World.GetStash<PositionComponent>();
+            _statsStash = World.GetStash<StatsComponent>();
         }
 
         public void OnUpdate(float deltaTime)
         {
             foreach (Entity entity in _filter)
             {
-                ref DeathComponent death =
-                    ref _deathStash.Get(entity);
+                ref DeathComponent death = ref _deathStash.Get(entity);
+                ref StatsComponent stats = ref _statsStash.Get(entity);
 
                 if (death.AnimationStarted)
                     continue;
 
-                AnimatedCreature view =
-                    _animatedCreatureStash.Get(entity).View;
+                AnimatedCreature view = _animatedCreatureStash.Get(entity).View;
 
                 if (view == null)
                     continue;
@@ -66,6 +62,10 @@ namespace ECS.EnemySystems
 
                 view.SetDeath();
             }
+        }
+
+        public void Dispose()
+        {
         }
 
         private void OnDeathPerformed(AnimatedCreature view)
@@ -85,22 +85,25 @@ namespace ECS.EnemySystems
                     viewComponent.View.SetActive(false);
             }
 
+            if (_statsStash.Has(entity) && _positionStash.Has(entity))
+            {
+                Entity lootSpawner = World.CreateEntity();
+                PositionComponent position = _positionStash.Get(entity);
+                StatsComponent stats = _statsStash.Get(entity);
+
+                _lootSpawnStash.Set(lootSpawner, new AddLootDropEvent
+                {
+                    Position = position.Position,
+                    EnemyType = stats.CreatureType,
+                });
+            }
+
             Entity request = World.CreateEntity();
 
             _cleanupRequestStash.Set(request, new CleanupRequest
             {
-                Candidate = entity
-            });
-
-            Entity gemSpawner = World.CreateEntity();
-            PositionComponent position = _positionStash.Get(entity);
-
-            _gemSpawnStash.Set(gemSpawner, new AddExperienceGemEvent
-            {
-                Position = position.Position,
+                Candidate = entity,
             });
         }
-
-        public void Dispose() { }
     }
 }

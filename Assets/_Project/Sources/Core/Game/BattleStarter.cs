@@ -19,6 +19,7 @@ using Gameplay.Navigation;
 using Gameplay.Player;
 using Gameplay.Spatial;
 using Gameplay.View;
+using LootConfigs;
 using PlayerConfigs;
 using ProjectileConfigs;
 using Scellecs.Morpeh;
@@ -35,7 +36,7 @@ namespace Core.Game
         private ProjectileDatabase _projectileDatabase;
         private EnemyConfigsDatabase _enemyConfigsDatabase;
         private EnemySpawnDatabase _enemySpawnDatabase;
-        private List<GemExpConfig> _itemConfigs;
+        private LootDropDatabase _lootDropDatabase;
         private List<NewWeaponUpgradeConfig> _weaponConfigs;
         private List<NewTurretUpgradeConfig> _turretConfigs;
         private Vector3 _playerSpawnPoint;
@@ -74,7 +75,7 @@ namespace Core.Game
             ProjectileDatabase projectileDatabase,
             EnemyConfigsDatabase enemyConfigsDatabase,
             EnemySpawnDatabase enemySpawnDatabase,
-            List<GemExpConfig> itemConfigs,
+            LootDropDatabase lootDropDatabase,
             Vector3 spawnPoint,
             NavigationGrid navigationGrid,
             [Inject(Id = "ProjectileContainer")]
@@ -94,7 +95,7 @@ namespace Core.Game
             _projectileDatabase = projectileDatabase;
             _enemyConfigsDatabase = enemyConfigsDatabase;
             _enemySpawnDatabase = enemySpawnDatabase;
-            _itemConfigs = itemConfigs;
+            _lootDropDatabase = lootDropDatabase;
 
             _playerSpawnPoint = spawnPoint;
             _navigationGrid = navigationGrid;
@@ -109,7 +110,6 @@ namespace Core.Game
             _enemySpawnPoint = enemySpawnPoint;
             _uiService = uiService;
 
-            _itemConfigs = itemConfigs;
             _weaponConfigs = weaponConfigs;
             _turretConfigs = turretConfigs;
 
@@ -152,7 +152,7 @@ namespace Core.Game
                 _enemyConfigsDatabase,
                 _enemyContainer);
 
-            _itemFactory = new ItemFactory(_world, _itemConfigs);
+            _itemFactory = new ItemFactory(_world, _lootDropDatabase);
 
             _projectileFactory = new ProjectileFactory(
                 _world,
@@ -240,7 +240,7 @@ namespace Core.Game
                 _navigationGrid);
 
             _gameplaySystems.AddSystem(_enemySpawnSystem);
-            _gameplaySystems.AddSystem(new GemSpawnSystem(_itemFactory));
+            _gameplaySystems.AddSystem(new LootSpawnSystem(_itemFactory));
             _gameplaySystems.AddSystem(_playerDeathSystem);
             _gameplaySystems.AddSystem(new CleanupSystem());
             _gameplaySystems.AddSystem(new EnemyDeathSystem());

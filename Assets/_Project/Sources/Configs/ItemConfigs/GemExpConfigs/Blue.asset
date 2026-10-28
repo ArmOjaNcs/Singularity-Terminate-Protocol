@@ -15,4 +15,4 @@ MonoBehaviour:
   Id: BlueGem
   Type: 0
   Prefab: {fileID: 2495518683640908290, guid: ce09d63eef07cd74f8f5cde778cced30, type: 3}
-  AddExpAmount: 50
+  AddExpAmount: 5

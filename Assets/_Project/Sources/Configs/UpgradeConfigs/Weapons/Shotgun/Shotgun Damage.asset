@@ -16,10 +16,10 @@ MonoBehaviour:
   Title: "\u0414\u0440\u043E\u0431\u043E\u0432\u0438\u043A"
   Description: "\u0423\u0432\u0435\u043B\u0438\u0447\u0438\u0432\u0430\u0435\u0442
     \u0443\u0440\u043E\u043D \u043D\u0430 5%"
-  Icon: {fileID: 21300000, guid: b88be7b7c6c1b374abcf5d77360b62cb, type: 3}
+  Icon: {fileID: 21300000, guid: 90658a4a432a386459d3be2d84873443, type: 3}
   UpgradeType: 1
   RequiredUpgradeIds:
-  - {fileID: 11400000, guid: d79b09433fe91a044994a1b994de4163, type: 2}
+  - {fileID: 11400000, guid: fa56c415eff28604c976ff2c5929ffd9, type: 2}
   Type: 13
   Stat: 4
   StatsFactor: 5

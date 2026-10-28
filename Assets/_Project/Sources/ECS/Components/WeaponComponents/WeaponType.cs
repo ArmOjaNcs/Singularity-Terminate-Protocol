@@ -7,14 +7,15 @@ namespace ECS.WeaponComponents
         ElectricRifle = 2,
         GrenadeLauncher = 3,
         Revolver = 4,
-        Rifle = 5,
+        AssaultRifle = 5,
         Ripper = 6,
         Sword = 7,
         Turret = 8,
         ElectricTurret = 9,
         MeleeSmall = 10,
         MeleeLarge = 11,
-        AssaultRifle = 12,
-        Shotgun = 13,
+        Shotgun = 12,
+        FrostRifle = 13,
+        RocketLauncher = 14,
     }
 }

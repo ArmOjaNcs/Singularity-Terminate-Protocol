@@ -6,8 +6,9 @@ namespace Gameplay.View
     public class AnimatedCreature : AnimatedView
     {
         private bool _isDying;
-        
+
         public event Action<AnimatedCreature> OnDeathPerformed;
+
         public event Action<AnimatedCreature> OnWinPerformed;
 
         public override void ResetAnimator()
