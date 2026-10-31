@@ -3,6 +3,7 @@ using ECS.DamageComponents;
 using ECS.EffectComponents;
 using ECS.WeaponComponents;
 using Scellecs.Morpeh;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace ECS.CommonSystems
@@ -25,6 +26,7 @@ namespace ECS.CommonSystems
         private Stash<DamageStatisticComponent> _damageStatisticStash;
         private Stash<EffectRequest> _effectRequestStash;
         private Stash<WeaponComponent> _weaponStash;
+        private Stash<ColorRuntimeComponent> _colorRuntimeStash;
 
         public void OnAwake()
         {
@@ -39,6 +41,7 @@ namespace ECS.CommonSystems
             _damageStatisticStash = World.GetStash<DamageStatisticComponent>();
             _effectRequestStash = World.GetStash<EffectRequest>();
             _weaponStash = World.GetStash<WeaponComponent>();
+            _colorRuntimeStash = World.GetStash<ColorRuntimeComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -83,11 +86,15 @@ namespace ECS.CommonSystems
                 float currentHealth = health.Current;
 
                 health.Current = Mathf.Max(0f, health.Current - damage);
+                float appliedDamage = currentHealth - health.Current;
 
                 if (currentHealth > 0f && health.Current <= 0f)
                     _deathStash.Set(request.Target, new DeathComponent());
 
                 CreateDamageStatistic(request, damage, blockedDamage, isCritical);
+
+                if (request.Context.DamageType == DamageType.Direct && appliedDamage > 0f)
+                    AddDirectDamageFlash(request.Target);
 
                 if (request.Context.DamageType == DamageType.Direct)
                     CreateEffectRequest(request);
@@ -127,6 +134,26 @@ namespace ECS.CommonSystems
                 damage *= CriticalDamageMultiplier;
 
             return damage;
+        }
+
+        private void AddDirectDamageFlash(Entity target)
+        {
+            if (!_colorRuntimeStash.Has(target))
+            {
+                _colorRuntimeStash.Set(target, new ColorRuntimeComponent
+                {
+                    ActiveColors = new List<ColorRuntime>()
+                });
+            }
+
+            ref ColorRuntimeComponent runtime = ref _colorRuntimeStash.Get(target);
+           
+            runtime.ActiveColors.Add(new ColorRuntime
+            {
+                Reference = Color.red,
+                Duration = 0.3f,
+                CurrentTime = 0f
+            });
         }
 
         private void CreateDamageStatistic(

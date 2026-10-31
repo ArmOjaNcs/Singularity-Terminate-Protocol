@@ -212,6 +212,7 @@ namespace Core.Game
         private void AddCombatSystems()
         {
             _gameplaySystems.AddSystem(new DamageSystem());
+            _gameplaySystems.AddSystem(new ColorRuntimeSystem());
             _gameplaySystems.AddSystem(new EffectSystem());
             _gameplaySystems.AddSystem(new KnockbackSystem(_navigationGrid));
         }

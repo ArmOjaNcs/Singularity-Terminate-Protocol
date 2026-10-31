@@ -1811,10 +1811,6 @@ MonoBehaviour:
   _playerConfig: {fileID: 11400000, guid: 8414f36279bd95547858f5b582b5ac65, type: 2}
   _playerSpawnPoint: {x: 0, y: 0, z: 0}
   _projectileDatabase: {fileID: 11400000, guid: 0c6afa97b5b16d448b2487bb4c1de857, type: 2}
-  _itemConfigs:
-  - {fileID: 11400000, guid: f9332ad3e9f9f404eaf9c54398eb3853, type: 2}
-  - {fileID: 11400000, guid: fcb694970eeeaf34d9f11a83b53cbc6f, type: 2}
-  - {fileID: 11400000, guid: 76fed01052e604f4cb447ff1631e5202, type: 2}
   _enemyConfigsDatabase: {fileID: 11400000, guid: fa2219b7a7492894b980d9884d88d121, type: 2}
   _enemySpawnDatabase: {fileID: 11400000, guid: 7bdb6cb467576f448a9070100a9b7f62, type: 2}
   _navigationGrid: {fileID: 1595880376}
