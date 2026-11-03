@@ -694,8 +694,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _newLevelTextColor: {r: 1, g: 0.92941177, b: 0.23921569, a: 1}
   _defaultLevelTextColor: {r: 1, g: 1, b: 1, a: 1}
+  _rectTransform: {fileID: 4885226178263918059}
   _image: {fileID: 8516909990692842386}
   _name: {fileID: 7516119939755614273}
   _description: {fileID: 1815081335150901110}
   _levelText: {fileID: 6748231203420259893}
   _button: {fileID: 1509025920872061799}
+  _scaleDuration: 0.4
+  _scaleEase: 27

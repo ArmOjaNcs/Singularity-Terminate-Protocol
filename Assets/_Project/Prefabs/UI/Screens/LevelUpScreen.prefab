@@ -487,9 +487,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 60feb4a5368fd0e4cb612ec4206b5faf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _rectTransform: {fileID: 2419899188543106542}
   _cardsContainer: {fileID: 3719950325658542489}
   _upgradeItem: {fileID: 5338581829298622714, guid: be9390e8ae1898f4b9e34e8167d00064, type: 3}
   _luckInformationItem: {fileID: 5812220856329346993}
+  _duration: 0.5
+  _easeType: 27
+  _delayBetweenCards: 0.1
 --- !u!1 &4166387661596411264
 GameObject:
   m_ObjectHideFlags: 0
@@ -718,7 +722,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7902342598334527327
 RectTransform:
   m_ObjectHideFlags: 0
@@ -734,9 +738,9 @@ RectTransform:
   - {fileID: 2417252031495581214}
   m_Father: {fileID: 3719950325658542489}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 370, y: -320}
   m_SizeDelta: {x: 720, y: 150}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1358679272877369188

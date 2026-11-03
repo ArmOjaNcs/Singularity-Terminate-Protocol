@@ -1,4 +1,6 @@
+using System;
 using Core.Services;
+using DG.Tweening;
 using ECS.PlayerComponents;
 using Scellecs.Morpeh;
 using TMPro;
@@ -15,11 +17,19 @@ public class UpgradeItem : MonoBehaviour
     [SerializeField] private Color _defaultLevelTextColor = Color.white;
 
     [Header("UIElements")]
+    [SerializeField] private RectTransform _rectTransform;
     [SerializeField] private Image _image;
     [SerializeField] private TextMeshProUGUI _name;
     [SerializeField] private TextMeshProUGUI _description;
     [SerializeField] private TextMeshProUGUI _levelText;
     [SerializeField] private Button _button;
+
+    [Header("Настройки анимации")]
+    [SerializeField] private float _scaleDuration = 0.4f;
+    [SerializeField] private float _scaleFactor = 0.9f;
+    [SerializeField] private Ease _scaleEase = Ease.OutBack;
+
+    private Tween _activeTween;
 
     private UpgradeConfig _config;
     private World _world;
@@ -55,6 +65,18 @@ public class UpgradeItem : MonoBehaviour
         _button.onClick.AddListener(OnCardClicked);
     }
 
+    public void Animate(float showDelay)
+    {
+        _rectTransform.localScale = Vector3.one * _scaleFactor;
+
+        _activeTween?.Kill();
+
+        _activeTween = _rectTransform.DOScale(Vector3.one, _scaleDuration)
+            .SetEase(_scaleEase)
+            .SetDelay(showDelay)
+            .SetUpdate(true);
+    }
+
     private void OnCardClicked()
     {
         Entity eventEntity = _world.CreateEntity();
@@ -64,5 +86,10 @@ public class UpgradeItem : MonoBehaviour
         selectEvent.SelectedUpgrade = _config;
 
         _uiService.HideLevelUpScreen();
+    }
+
+    private void OnDestroy()
+    {
+        _activeTween?.Kill();
     }
 }

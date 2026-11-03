@@ -8,7 +8,7 @@ namespace UI
 
         public override void HandleClick()
         {
-            _screen.UpdateItems();
+            _screen.UpdateForAds();
         }
     }
 }
