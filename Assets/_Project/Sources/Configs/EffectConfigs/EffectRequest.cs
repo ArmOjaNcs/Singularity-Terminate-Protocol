@@ -7,5 +7,6 @@ namespace ECS.EffectComponents
     {
         public Entity Target;
         public DamageContext Context;
+        public float AppliedDamage;
     }
 }

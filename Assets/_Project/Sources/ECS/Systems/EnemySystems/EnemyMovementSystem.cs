@@ -34,6 +34,7 @@ namespace ECS.EnemySystems
         private Stash<MovementComponent> _movementStash;
         private Stash<PositionComponent> _positionStash;
         private Stash<StatsComponent> _statsStash;
+        private Stash<TraumaStatusComponent> _traumaStatusStash;
         private Stash<NavigationBoxComponent> _navigationBoxStash;
         private Stash<MovementLockComponent> _movementLockStash;
         private Stash<EnemyTag> _enemyTagStash;
@@ -41,6 +42,8 @@ namespace ECS.EnemySystems
         private Stash<EnemyNavigationStateComponent> _navigationStateStash;
         private Stash<DeathComponent> _deathStash;
         private Stash<EnemyMovementPolicyComponent> _policyStash;
+        private Stash<EnemyPanicMovementComponent> _panicMovementStash;
+        private Stash<TwistStatusComponent> _twistStatusStash;
         private Stash<TargetComponent> _targetStash;
         private Stash<WeaponComponent> _weaponStash;
         private Stash<AttackStatusComponent> _attackStatusStash;
@@ -81,6 +84,7 @@ namespace ECS.EnemySystems
             _movementStash = World.GetStash<MovementComponent>();
             _positionStash = World.GetStash<PositionComponent>();
             _statsStash = World.GetStash<StatsComponent>();
+            _traumaStatusStash = World.GetStash<TraumaStatusComponent>();
             _navigationBoxStash =
                 World.GetStash<NavigationBoxComponent>();
             _movementLockStash = World.GetStash<MovementLockComponent>();
@@ -91,6 +95,9 @@ namespace ECS.EnemySystems
                 World.GetStash<EnemyNavigationStateComponent>();
             _deathStash = World.GetStash<DeathComponent>();
             _policyStash = World.GetStash<EnemyMovementPolicyComponent>();
+            _panicMovementStash =
+                World.GetStash<EnemyPanicMovementComponent>();
+            _twistStatusStash = World.GetStash<TwistStatusComponent>();
             _targetStash = World.GetStash<TargetComponent>();
             _weaponStash = World.GetStash<WeaponComponent>();
             _attackStatusStash = World.GetStash<AttackStatusComponent>();
@@ -124,6 +131,18 @@ namespace ECS.EnemySystems
                     continue;
                 }
 
+                if (IsTwistActive(entity))
+                {
+                    ref var twistedMovement = ref _movementStash.Get(entity);
+                    twistedMovement.Direction = Vector3.zero;
+                    twistedMovement.ActualDisplacement = Vector3.zero;
+
+                    ref var twistedNavigationState =
+                        ref _navigationStateStash.Get(entity);
+                    ResetNavigationState(ref twistedNavigationState);
+                    continue;
+                }
+
                 ref var movement = ref _movementStash.Get(entity);
                 ref var position = ref _positionStash.Get(entity);
                 ref var stats = ref _statsStash.Get(entity);
@@ -133,8 +152,11 @@ namespace ECS.EnemySystems
                 ref var navigationState =
                     ref _navigationStateStash.Get(entity);
                 ref var policy = ref _policyStash.Get(entity);
+                bool isPanicking = _panicMovementStash.Has(entity) &&
+                                   _panicMovementStash.Get(entity).IsActive;
 
-                if (ShouldStopWhileAttacking(entity, policy.AttackPolicy))
+                if (!isPanicking &&
+                    ShouldStopWhileAttacking(entity, policy.AttackPolicy))
                 {
                     movement.Direction = Vector3.zero;
                     movement.ActualDisplacement = Vector3.zero;
@@ -142,7 +164,8 @@ namespace ECS.EnemySystems
                     continue;
                 }
 
-                if (policy.MovePolicy == MovePolicyType.ApproachTarget &&
+                if (!isPanicking &&
+                    policy.MovePolicy == MovePolicyType.ApproachTarget &&
                     TryGetTarget(entity, out Entity attackTarget) &&
                     attackTarget != default &&
                     !_deathStash.Has(attackTarget))
@@ -153,14 +176,29 @@ namespace ECS.EnemySystems
                     continue;
                 }
 
-                Vector3 targetPosition =
-                    playerPosition + (Vector3)variation.ApproachOffset;
+                float panicSpeedMultiplier = 1f;
+                Vector3 targetPosition;
+                if (isPanicking)
+                {
+                    EnemyPanicMovementComponent panic =
+                        _panicMovementStash.Get(entity);
+                    targetPosition = panic.Destination;
+                    panicSpeedMultiplier = panic.SpeedMultiplier;
+                    ResetNavigationState(ref navigationState);
+                }
+                else
+                {
+                    targetPosition =
+                        playerPosition + (Vector3)variation.ApproachOffset;
+                }
+
                 float desiredAttackDistance = 0f;
 
                 Vector3 toTarget = targetPosition - position.Position;
                 toTarget.z = 0f;
 
-                if (policy.MovePolicy == MovePolicyType.MaintainAttackDistance &&
+                if (!isPanicking &&
+                    policy.MovePolicy == MovePolicyType.MaintainAttackDistance &&
                     policy.PreferredAttackDistance > 0f)
                 {
                     Vector3 rangeTargetPosition = playerPosition;
@@ -194,7 +232,8 @@ namespace ECS.EnemySystems
 
                 Vector3 direction = targetDirection;
 
-                if (navigationState.AvoidanceSide != 0 &&
+                if (!isPanicking &&
+                    navigationState.AvoidanceSide != 0 &&
                     targetDirection.sqrMagnitude > 0f)
                 {
                     Vector3 tangent = new Vector3(
@@ -205,9 +244,11 @@ namespace ECS.EnemySystems
                                  AvoidanceSteeringStrength;
                 }
 
-                Vector3 separation = CalculateSeparation(position.Position);
-
-                direction += separation * SeparationStrength;
+                if (!isPanicking)
+                {
+                    Vector3 separation = CalculateSeparation(position.Position);
+                    direction += separation * SeparationStrength;
+                }
 
                 if (direction.sqrMagnitude <= 0.0001f)
                 {
@@ -222,7 +263,9 @@ namespace ECS.EnemySystems
                 Vector3 delta =
                     direction *
                     stats.Speed *
+                    GetTraumaMovementMultiplier(entity) *
                     variation.SpeedMultiplier *
+                    panicSpeedMultiplier *
                     deltaTime;
 
                 Vector3 previousPosition = position.Position;
@@ -239,16 +282,48 @@ namespace ECS.EnemySystems
                     ? actualDisplacement.normalized
                     : Vector3.zero;
 
-                UpdateNavigationState(
-                    ref navigationState,
-                    position.Position,
-                    targetPosition,
-                    targetDirection,
-                    desiredAttackDistance,
-                    actualDisplacement,
-                    navigationBox.Collider,
-                    deltaTime);
+                if (isPanicking)
+                    ResetNavigationState(ref navigationState);
+                else
+                {
+                    UpdateNavigationState(
+                        ref navigationState,
+                        position.Position,
+                        targetPosition,
+                        targetDirection,
+                        desiredAttackDistance,
+                        actualDisplacement,
+                        navigationBox.Collider,
+                        deltaTime);
+                }
             }
+        }
+
+        private float GetTraumaMovementMultiplier(Entity entity)
+        {
+            if (!_traumaStatusStash.Has(entity))
+                return 1f;
+
+            return TraumaStatusUtility.GetMovementMultiplier(
+                _traumaStatusStash.Get(entity).Instances);
+        }
+
+        private bool IsTwistActive(Entity entity)
+        {
+            if (!_twistStatusStash.Has(entity))
+                return false;
+
+            var instances = _twistStatusStash.Get(entity).Instances;
+            if (instances == null)
+                return false;
+
+            foreach (TwistInstance instance in instances)
+            {
+                if (instance.RemainingDuration > 0f)
+                    return true;
+            }
+
+            return false;
         }
 
         private void UpdateNavigationState(

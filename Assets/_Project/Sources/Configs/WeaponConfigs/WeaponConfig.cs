@@ -10,6 +10,7 @@ namespace WeaponConfigs
     {
         public WeaponType Type;
         public AttackConfig AttackConfig;
+        [Tooltip("Effects applied by this weapon's hits.")]
         public EffectConfig[] Effects;
     }
 }

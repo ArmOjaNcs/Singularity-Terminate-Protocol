@@ -89,7 +89,8 @@ namespace ECS.PlayerSystems
             if (upgrade is not NewWeaponUpgradeConfig config)
                 throw new ArgumentException("Неверный тип апгрейда");
 
-            _factory.Create(config.Config, playerEntity);
+            if (!_factory.Create(config.Config, playerEntity))
+                return;
 
             inventory.ActiveUpgrades.Add(config.UpgradeId, 1);
             inventory.CurrentWeaponsAmount++;
@@ -100,7 +101,8 @@ namespace ECS.PlayerSystems
             if (upgrade is not NewTurretUpgradeConfig config)
                 throw new ArgumentException("Неверный тип апгрейда");
 
-            _factory.Create(config.Config, playerEntity);
+            if (!_factory.Create(config.Config, playerEntity))
+                return;
 
             inventory.ActiveUpgrades.Add(config.UpgradeId, 1);
             inventory.CurrentTurretsAmount++;

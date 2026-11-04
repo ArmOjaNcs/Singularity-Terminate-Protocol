@@ -6,6 +6,8 @@ namespace ECS.ProjectileComponents
     public struct ArcTrajectoryComponent : IComponent
     {
         public Vector3 Direction;
+        public ArcTrajectoryAnchor Anchor;
+        public Entity AnchorTarget;
         public Vector3 ColliderOffset;
         public Vector2 BaseColliderCenter;
         public float DistanceFromSource;

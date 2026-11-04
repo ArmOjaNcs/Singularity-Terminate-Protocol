@@ -5,6 +5,7 @@ using ECS.ProjectileComponents;
 using ECS.WeaponComponents;
 using EffectComponents;
 using Scellecs.Morpeh;
+using UnityEngine;
 using WeaponConfigs;
 
 namespace ECS.WeaponSystems
@@ -36,8 +37,21 @@ namespace ECS.WeaponSystems
             _weaponEffectsStash = world.GetStash<WeaponEffectsComponent>();
         }
 
-        public void Create(WeaponConfig config, Entity owner)
+        public bool Create(WeaponConfig config, Entity owner)
         {
+            if (config == null)
+            {
+                Debug.LogError("Cannot create a weapon because its WeaponConfig is missing.");
+                return false;
+            }
+
+            if (config.AttackConfig == null)
+            {
+                Debug.LogError(
+                    $"Cannot create weapon {config.Type}: its AttackConfig is missing.");
+                return false;
+            }
+
             Entity weapon = _world.CreateEntity();
 
             _weaponTagStash.Set(weapon, new WeaponTag());
@@ -71,7 +85,9 @@ namespace ECS.WeaponSystems
                 TargetType = config.AttackConfig.TargetType,
                 HitPolicy = config.AttackConfig.HitPolicy,
                 HitInterval = config.AttackConfig.HitInterval,
-                AnimationPolicy = config.AttackConfig.AnimationPolicy
+                AnimationPolicy = config.AttackConfig.AnimationPolicy,
+                ProjectileSequencePolicy =
+                    config.AttackConfig.ProjectileSequencePolicy
             });
 
             _attackStatusStash.Set(weapon, new AttackStatusComponent
@@ -89,6 +105,23 @@ namespace ECS.WeaponSystems
                 IsInitialized = false
             });
 
+            _world.GetStash<AttackSequenceComponent>().Set(
+                weapon,
+                new AttackSequenceComponent
+                {
+                    Id = 0,
+                    IsActive = false,
+                    VisitedTargets = new System.Collections.Generic.List<
+                        Scellecs.Morpeh.Entity>()
+                });
+
+            if (config.Type == WeaponType.Ripper)
+            {
+                _world.GetStash<RipperSequenceComponent>().Set(
+                    weapon,
+                    new RipperSequenceComponent());
+            }
+
             EffectCollection effects = new EffectCollection();
 
             if (config.Effects != null)
@@ -99,6 +132,13 @@ namespace ECS.WeaponSystems
 
                     if (effect != null)
                         effects.Add(effect);
+                    else if (effectConfig != null)
+                    {
+                        Debug.LogWarning(
+                            $"Weapon {config.Type} has an unsupported effect config " +
+                            $"'{effectConfig.name}'.",
+                            effectConfig);
+                    }
                 }
             }
 
@@ -109,6 +149,7 @@ namespace ECS.WeaponSystems
 
             _targetStash.Set(weapon, new TargetComponent());
             _positionStash.Set(weapon, new PositionComponent());
+            return true;
         }
     }
 }

@@ -27,6 +27,7 @@ namespace ECS.CommonSystems
         private Stash<EffectRequest> _effectRequestStash;
         private Stash<WeaponComponent> _weaponStash;
         private Stash<ColorRuntimeComponent> _colorRuntimeStash;
+        private Stash<TraumaStatusComponent> _traumaStatusStash;
 
         public void OnAwake()
         {
@@ -42,6 +43,7 @@ namespace ECS.CommonSystems
             _effectRequestStash = World.GetStash<EffectRequest>();
             _weaponStash = World.GetStash<WeaponComponent>();
             _colorRuntimeStash = World.GetStash<ColorRuntimeComponent>();
+            _traumaStatusStash = World.GetStash<TraumaStatusComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -97,7 +99,7 @@ namespace ECS.CommonSystems
                     AddDirectDamageFlash(request.Target);
 
                 if (request.Context.DamageType == DamageType.Direct)
-                    CreateEffectRequest(request);
+                    CreateEffectRequest(request, appliedDamage);
 
                 World.RemoveEntity(requestEntity);
             }
@@ -120,6 +122,12 @@ namespace ECS.CommonSystems
 
                     damage += stats.Damage;
                     luck = Mathf.Max(0f, stats.Luck);
+
+                    if (_traumaStatusStash.Has(owner))
+                    {
+                        damage *= TraumaStatusUtility.GetAttackDamageMultiplier(
+                            _traumaStatusStash.Get(owner).Instances);
+                    }
                 }
             }
 
@@ -176,7 +184,7 @@ namespace ECS.CommonSystems
                 });
         }
 
-        private void CreateEffectRequest(DamageRequest request)
+        private void CreateEffectRequest(DamageRequest request, float appliedDamage)
         {
             Entity effectRequestEntity = World.CreateEntity();
 
@@ -185,7 +193,8 @@ namespace ECS.CommonSystems
                 new EffectRequest
                 {
                     Target = request.Target,
-                    Context = request.Context
+                    Context = request.Context,
+                    AppliedDamage = appliedDamage
                 });
         }
 

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02d2a7b7f9b17fd4d9d2b52c715b2174, type: 3}
+  m_Name: SwordProjectile
+  m_EditorClassIdentifier: 
+  WeaponType: 7
+  Prefab: {fileID: 8479963410642706206, guid: 63d335093e441fb48bc1ee62546ef56c, type: 3}
+  PoolCapacity: 5
+  Collider:
+    Type: 2
+    Radius: 0.03
+    Length: 0.85
+    Size: {x: 38, y: 0}
+    Center: {x: 0, y: 0}
+    CapsuleOrientation: 0
+  ColliderOffset: {x: 0.4, y: -0.025, z: 0}
+  TrajectoryRadius: 0.25
+  StartAngle: 45
+  EndAngle: -45

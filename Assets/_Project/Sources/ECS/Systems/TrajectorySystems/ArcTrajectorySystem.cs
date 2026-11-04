@@ -44,14 +44,26 @@ namespace ECS.TrajectorySystems
                 ref ArcTrajectoryComponent trajectory =
                     ref _trajectoryStash.Get(entity);
 
-                if (!_positionStash.Has(projectile.Weapon))
-                    continue;
-
                 if (trajectory.Duration <= 0f)
                     continue;
 
-                ref PositionComponent ownerPosition =
-                    ref _positionStash.Get(projectile.Weapon);
+                Vector3 anchorPosition;
+                if (trajectory.Anchor == ArcTrajectoryAnchor.Target)
+                {
+                    if (!_positionStash.Has(trajectory.AnchorTarget))
+                        continue;
+
+                    anchorPosition =
+                        _positionStash.Get(trajectory.AnchorTarget).Position;
+                }
+                else
+                {
+                    if (!_positionStash.Has(projectile.Weapon))
+                        continue;
+
+                    anchorPosition =
+                        _positionStash.Get(projectile.Weapon).Position;
+                }
 
                 trajectory.CurrentTime += deltaTime;
 
@@ -89,9 +101,9 @@ namespace ECS.TrajectorySystems
                     direction.x,
                     0f);
 
-                Vector3 origin =
-                    ownerPosition.Position +
-                    direction * trajectory.DistanceFromSource;
+                Vector3 origin = trajectory.Anchor == ArcTrajectoryAnchor.Target
+                    ? anchorPosition - direction * trajectory.DistanceFromSource
+                    : anchorPosition + direction * trajectory.DistanceFromSource;
 
                 Vector3 offset =
                     direction *

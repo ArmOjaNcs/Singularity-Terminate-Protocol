@@ -39,6 +39,14 @@ namespace Gameplay.View
             Renderer.flipX = value;
         }
 
+        public void SetFacingUp(bool value)
+        {
+            if (Renderer == null || Renderer.flipY == value)
+                return;
+
+            Renderer.flipY = value;
+        }
+
         public void ResetFacing()
         {
             SetFacingLeft(false);

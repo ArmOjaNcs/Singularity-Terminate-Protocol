@@ -7,8 +7,8 @@ namespace ECS.EffectComponents
     {
         public EffectType Type => EffectType.Bleed;
 
-        public int BleedStack;
-        public float DamagePerSecond;
+        public int MaxStacks;
+        public float DamagePerStackPerSecond;
         public float Duration;
     }
 }

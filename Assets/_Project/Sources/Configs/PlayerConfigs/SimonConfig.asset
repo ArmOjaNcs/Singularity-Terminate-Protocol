@@ -27,6 +27,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5b045256455b0174bba4e60113162d12, type: 2}
   - {fileID: 11400000, guid: 40c5995f08111b64faf0b4cd40275e63, type: 2}
   - {fileID: 11400000, guid: 3795b4760551f8e4ba8994aba673a1ef, type: 2}
+  - {fileID: 11400000, guid: 529e24ad84668fa4893008b69767caaa, type: 2}
+  - {fileID: 11400000, guid: 5bdc017a743442c69a3a2e2ef3f2190b, type: 2}
   HitBox:
     Type: 2
     Radius: 0.35

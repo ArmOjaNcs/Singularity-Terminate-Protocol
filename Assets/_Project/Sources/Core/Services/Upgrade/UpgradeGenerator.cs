@@ -83,6 +83,16 @@ public class UpgradeGenerator
     {
         foreach (var upgrade in upgrades)
         {
+            if (upgrade == null)
+                continue;
+
+            if (upgrade is NewWeaponUpgradeConfig weaponUpgrade &&
+                (weaponUpgrade.Config == null ||
+                 weaponUpgrade.Config.AttackConfig == null))
+            {
+                continue;
+            }
+
             bool hasUpgrade = inventory.ActiveUpgrades.TryGetValue(upgrade.UpgradeId, out int currentLevel);
 
             if (hasUpgrade)

@@ -25,6 +25,8 @@ namespace ECS.ProjectileSystems
 
         private readonly Stash<WeaponComponent> _weaponStash;
         private readonly Stash<AttackComponent> _attackStash;
+        private readonly Stash<AttackSequenceComponent> _sequenceStash;
+        private readonly Stash<RipperSequenceComponent> _ripperSequenceStash;
         private readonly Stash<PositionComponent> _positionStash;
         private readonly Stash<ProjectileComponent> _projectileStash;
         private readonly Stash<HitBoxComponent> _hitBoxStash;
@@ -46,6 +48,8 @@ namespace ECS.ProjectileSystems
 
             _weaponStash = world.GetStash<WeaponComponent>();
             _attackStash = world.GetStash<AttackComponent>();
+            _sequenceStash = world.GetStash<AttackSequenceComponent>();
+            _ripperSequenceStash = world.GetStash<RipperSequenceComponent>();
             _positionStash = world.GetStash<PositionComponent>();
             _projectileStash = world.GetStash<ProjectileComponent>();
             _hitBoxStash = world.GetStash<HitBoxComponent>();
@@ -79,6 +83,8 @@ namespace ECS.ProjectileSystems
             }
 
             ref AttackComponent attack = ref _attackStash.Get(weapon);
+            ref AttackSequenceComponent sequence =
+                ref _sequenceStash.Get(weapon);
             ref ProjectileCreationComponent creation =
                 ref _creationStash.Get(weapon);
             ref AttackStatusComponent attackStatus =
@@ -88,11 +94,28 @@ namespace ECS.ProjectileSystems
             creation.RemainingCount = Mathf.Max(0, attack.ProjectileCount);
             creation.IsInitialized = true;
 
+            sequence.Id++;
+            sequence.IsActive = true;
+            sequence.LockedTarget = default;
+            sequence.ReleasesCreated = 0;
+            sequence.OutstandingProjectiles = 0;
+            sequence.RicochetsCount = 0;
+            sequence.RicochetPending = false;
+            sequence.PendingTarget = default;
+            if (sequence.VisitedTargets == null)
+                sequence.VisitedTargets = new List<Entity>();
+            else
+                sequence.VisitedTargets.Clear();
+
             attackStatus.CreationFinished = false;
 
             if (creation.RemainingCount <= 0)
             {
-                FinishCreation(weapon);
+                if (attack.ProjectileSequencePolicy ==
+                    ProjectileSequencePolicy.ComboOnTarget)
+                    FinishCombo(weapon);
+                else
+                    FinishCreation(weapon);
                 return;
             }
 
@@ -102,7 +125,11 @@ namespace ECS.ProjectileSystems
             creation.RemainingCount--;
 
             if (creation.RemainingCount <= 0)
-                FinishCreation(weapon);
+            {
+                if (attack.ProjectileSequencePolicy !=
+                    ProjectileSequencePolicy.ComboOnTarget)
+                    FinishCreation(weapon);
+            }
         }
 
         public void Update(Entity weapon, float deltaTime)
@@ -122,18 +149,22 @@ namespace ECS.ProjectileSystems
             if (!creation.IsInitialized || attackStatus.CreationFinished)
                 return;
 
+            ref AttackComponent attack = ref _attackStash.Get(weapon);
+
             if (!_weaponStash.Has(weapon) ||
                 !HasProjectileConfig(_weaponStash.Get(weapon).Type))
             {
-                FinishCreation(weapon);
+                if (attack.ProjectileSequencePolicy !=
+                    ProjectileSequencePolicy.ComboOnTarget)
+                    FinishCreation(weapon);
                 return;
             }
 
-            ref AttackComponent attack = ref _attackStash.Get(weapon);
-
             if (creation.RemainingCount <= 0)
             {
-                FinishCreation(weapon);
+                if (attack.ProjectileSequencePolicy !=
+                    ProjectileSequencePolicy.ComboOnTarget)
+                    FinishCreation(weapon);
                 return;
             }
 
@@ -147,7 +178,9 @@ namespace ECS.ProjectileSystems
                     creation.RemainingCount--;
                 }
 
-                FinishCreation(weapon);
+                if (attack.ProjectileSequencePolicy !=
+                    ProjectileSequencePolicy.ComboOnTarget)
+                    FinishCreation(weapon);
                 return;
             }
 
@@ -165,7 +198,11 @@ namespace ECS.ProjectileSystems
             }
 
             if (creation.RemainingCount <= 0)
-                FinishCreation(weapon);
+            {
+                if (attack.ProjectileSequencePolicy !=
+                    ProjectileSequencePolicy.ComboOnTarget)
+                    FinishCreation(weapon);
+            }
         }
 
         public void Cancel(Entity weapon)
@@ -192,10 +229,47 @@ namespace ECS.ProjectileSystems
                 return false;
             }
 
-            if (!TryGetDirection(weapon, out Vector3 direction))
+            ref AttackComponent attack = ref _attackStash.Get(weapon);
+
+            ref AttackSequenceComponent sequence =
+                ref _sequenceStash.Get(weapon);
+            ref ProjectileCreationComponent creation =
+                ref _creationStash.Get(weapon);
+
+            Entity target = sequence.LockedTarget;
+            if (attack.ProjectileSequencePolicy !=
+                    ProjectileSequencePolicy.ComboOnTarget ||
+                target == default)
             {
-                FinishCreation(weapon);
-                return false;
+                target = _targetStash.Has(weapon)
+                    ? _targetStash.Get(weapon).Target
+                    : default;
+            }
+
+            if (!TryGetDirection(weapon, target, out Vector3 direction))
+            {
+                bool hasCachedRipperDirection =
+                    weaponType == WeaponType.Ripper &&
+                    _ripperSequenceStash.Has(weapon) &&
+                    _ripperSequenceStash.Get(weapon).IsInitialized &&
+                    _ripperSequenceStash.Get(weapon).SequenceId == sequence.Id;
+
+                if (!hasCachedRipperDirection)
+                {
+                    if (attack.ProjectileSequencePolicy ==
+                            ProjectileSequencePolicy.ComboOnTarget &&
+                        sequence.LockedTarget != default)
+                    {
+                        creation.RemainingCount = 0;
+                        return false;
+                    }
+
+                    FinishCreation(weapon);
+                    return false;
+                }
+
+                direction =
+                    _ripperSequenceStash.Get(weapon).AttackDirection;
             }
 
             _creators.TryGetValue(
@@ -206,16 +280,43 @@ namespace ECS.ProjectileSystems
                 weaponType,
                 out ObjectPool<AnimatedView> pool);
 
-            ref AttackComponent attack = ref _attackStash.Get(weapon);
-
-            int projectileCount = Mathf.Max(1, attack.ShotsInAttack);
+            int projectileCount = weaponType == WeaponType.Sword ||
+                                  weaponType == WeaponType.Ripper
+                ? 1
+                : Mathf.Max(1, attack.ShotsInAttack);
             Entity[] projectiles = new Entity[projectileCount];
 
+            if (attack.ProjectileSequencePolicy ==
+                    ProjectileSequencePolicy.ComboOnTarget &&
+                sequence.LockedTarget == default)
+            {
+                sequence.LockedTarget = target;
+            }
+
             for (int i = 0; i < projectiles.Length; i++)
-                projectiles[i] = CreateProjectile(weapon, config, pool, direction);
+            {
+                projectiles[i] = CreateProjectile(
+                    weapon,
+                    config,
+                    pool,
+                    direction,
+                    sequence.Id,
+                    sequence.ReleasesCreated);
+            }
 
             if (creator != null)
                 creator.Create(weapon, projectiles);
+
+            if (target != default &&
+                !sequence.VisitedTargets.Contains(target))
+                sequence.VisitedTargets.Add(target);
+
+            sequence.ReleasesCreated++;
+            if (attack.ProjectileSequencePolicy ==
+                ProjectileSequencePolicy.ComboOnTarget)
+            {
+                sequence.OutstandingProjectiles += projectiles.Length;
+            }
 
             return true;
         }
@@ -224,7 +325,9 @@ namespace ECS.ProjectileSystems
             Entity weapon,
             ProjectileConfig config,
             ObjectPool<AnimatedView> pool,
-            Vector3 direction)
+            Vector3 direction,
+            int sequenceId,
+            int swingIndex)
         {
             ref WeaponComponent weaponComponent = ref _weaponStash.Get(weapon);
             ref AttackComponent attack = ref _attackStash.Get(weapon);
@@ -245,6 +348,12 @@ namespace ECS.ProjectileSystems
                 Damage = attack.Damage,
                 Pierce = attack.Pierce,
                 RicochetsCount = 0,
+                MaxRicochets = attack.MaxRicochets,
+                RicochetChance = attack.RicochetChance,
+                TargetSearchRadius = attack.TargetSearchRadius,
+                SequencePolicy = attack.ProjectileSequencePolicy,
+                SequenceId = sequenceId,
+                SwingIndex = swingIndex,
                 Direction = direction,
                 TargetType = attack.TargetType,
                 HitInterval = attack.HitInterval,
@@ -332,6 +441,18 @@ namespace ECS.ProjectileSystems
 
         private IProjectileCreator CreateCreator(ProjectileConfig config)
         {
+            if (config is RipperProjectileConfig ripperConfig &&
+                config.WeaponType == WeaponType.Ripper)
+            {
+                return new RipperProjectileCreator(_world, ripperConfig);
+            }
+
+            if (config is ArcProjectileConfig swordArcConfig &&
+                config.WeaponType == WeaponType.Sword)
+            {
+                return new SwordProjectileCreator(_world, swordArcConfig);
+            }
+
             if (config is ArcProjectileConfig arcConfig)
                 return new AxeProjectileCreator(_world, arcConfig);
 
@@ -356,14 +477,12 @@ namespace ECS.ProjectileSystems
             return config != null && config.Collider != null;
         }
 
-        private bool TryGetDirection(Entity weapon, out Vector3 direction)
+        private bool TryGetDirection(
+            Entity weapon,
+            Entity target,
+            out Vector3 direction)
         {
             direction = Vector3.zero;
-
-            if (!_targetStash.Has(weapon))
-                return false;
-
-            Entity target = _targetStash.Get(weapon).Target;
 
             if (target == default ||
                 !_positionStash.Has(target) ||
@@ -402,6 +521,19 @@ namespace ECS.ProjectileSystems
 
             if (_attackStatusStash.Has(weapon))
                 _attackStatusStash.Get(weapon).CreationFinished = true;
+
+            if (_sequenceStash.Has(weapon))
+                _sequenceStash.Get(weapon).IsActive = false;
+        }
+
+        private void FinishCombo(Entity weapon)
+        {
+            if (_creationStash.Has(weapon))
+            {
+                ref ProjectileCreationComponent creation =
+                    ref _creationStash.Get(weapon);
+                creation.RemainingCount = 0;
+            }
         }
     }
 }

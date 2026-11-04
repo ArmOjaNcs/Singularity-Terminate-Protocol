@@ -181,6 +181,7 @@ namespace Core.Game
             _gameplaySystems.AddSystem(new PlayerInputSystem());
             _gameplaySystems.AddSystem(new PlayerMovementSystem(_navigationGrid));
             _gameplaySystems.AddSystem(new WeaponPositionSystem());
+            _gameplaySystems.AddSystem(new EnemyPanicSystem(_navigationGrid));
             _gameplaySystems.AddSystem(new EnemyMovementSystem(_navigationGrid, _spatialGrid));
         }
 
@@ -204,6 +205,7 @@ namespace Core.Game
             _gameplaySystems.AddSystem(new ProjectileCreationSystem(_projectileFactory));
             _gameplaySystems.AddSystem(new StraightTrajectorySystem());
             _gameplaySystems.AddSystem(new ArcTrajectorySystem());
+            _gameplaySystems.AddSystem(new RipperTrajectorySystem());
             _gameplaySystems.AddSystem(new ProjectileViewSystem());
             _gameplaySystems.AddSystem(new ProjectileCollisionCheckSystem(_spatialGrid));
             _gameplaySystems.AddSystem(new ProjectileLifeTimeSystem());
@@ -211,10 +213,16 @@ namespace Core.Game
 
         private void AddCombatSystems()
         {
+            _gameplaySystems.AddSystem(new BurnStatusSystem());
+            _gameplaySystems.AddSystem(new BleedStatusSystem());
             _gameplaySystems.AddSystem(new DamageSystem());
             _gameplaySystems.AddSystem(new ColorRuntimeSystem());
             _gameplaySystems.AddSystem(new EffectSystem());
+            _gameplaySystems.AddSystem(new RicochetSystem(_spatialGrid));
+            _gameplaySystems.AddSystem(new ProjectileSequenceSystem());
+            _gameplaySystems.AddSystem(new TraumaStatusSystem());
             _gameplaySystems.AddSystem(new KnockbackSystem(_navigationGrid));
+            _gameplaySystems.AddSystem(new TwistStatusSystem());
         }
 
         private void AddViewSystems()

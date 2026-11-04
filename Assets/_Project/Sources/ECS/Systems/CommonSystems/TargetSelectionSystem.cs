@@ -21,6 +21,7 @@ namespace ECS.CommonSystems
         private Stash<PositionComponent> _positionStash;
         private Stash<TargetComponent> _targetStash;
         private Stash<AttackComponent> _attackStash;
+        private Stash<AttackSequenceComponent> _sequenceStash;
         private Stash<HitBoxComponent> _hitBoxStash;
 
         public TargetSelectionSystem(SpatialGrid grid)
@@ -52,6 +53,7 @@ namespace ECS.CommonSystems
             _positionStash = World.GetStash<PositionComponent>();
             _targetStash = World.GetStash<TargetComponent>();
             _attackStash = World.GetStash<AttackComponent>();
+            _sequenceStash = World.GetStash<AttackSequenceComponent>();
             _hitBoxStash = World.GetStash<HitBoxComponent>();
         }
 
@@ -68,10 +70,33 @@ namespace ECS.CommonSystems
                 ref TargetComponent target =
                     ref _targetStash.Get(entity);
 
+                AttackSequenceComponent sequence = _sequenceStash.Has(entity)
+                    ? _sequenceStash.Get(entity)
+                    : default;
+
+                if (sequence.IsActive &&
+                    attack.ProjectileSequencePolicy ==
+                    ProjectileSequencePolicy.ComboOnTarget)
+                {
+                    if (IsValidTarget(sequence.LockedTarget, attack.TargetType) &&
+                        _positionStash.Has(sequence.LockedTarget) &&
+                        _hitBoxStash.Has(sequence.LockedTarget))
+                    {
+                        target.Target = sequence.LockedTarget;
+                    }
+                    else
+                    {
+                        target.Target = default;
+                    }
+
+                    continue;
+                }
+
                 FindTarget(
                     position.Position,
                     attack.TargetSearchRadius,
                     attack.TargetType,
+                    sequence.IsActive ? sequence.VisitedTargets : null,
                     ref target);
             }
         }
@@ -80,6 +105,7 @@ namespace ECS.CommonSystems
             Vector3 position,
             float radius,
             AttackTargetType targetType,
+            List<Entity> excludedTargets,
             ref TargetComponent target)
         {
             target.Target = default;
@@ -95,6 +121,12 @@ namespace ECS.CommonSystems
             for (int i = 0; i < _candidates.Count; i++)
             {
                 Entity candidate = _candidates[i];
+
+                if (excludedTargets != null &&
+                    excludedTargets.Contains(candidate))
+                {
+                    continue;
+                }
 
                 if (!IsValidTarget(candidate, targetType))
                     continue;

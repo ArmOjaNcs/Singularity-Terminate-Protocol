@@ -17,6 +17,7 @@ namespace ECS.ProjectileSystems
         private readonly Stash<RotationComponent> _rotationStash;
         private readonly Stash<ArcTrajectoryComponent> _arcTrajectoryStash;
         private readonly Stash<HitBoxComponent> _hitBoxStash;
+        private readonly Stash<ProjectileVisualFlipComponent> _visualFlipStash;
 
         public AxeProjectileCreator(
             World world,
@@ -30,6 +31,7 @@ namespace ECS.ProjectileSystems
             _rotationStash = world.GetStash<RotationComponent>();
             _arcTrajectoryStash = world.GetStash<ArcTrajectoryComponent>();
             _hitBoxStash = world.GetStash<HitBoxComponent>();
+            _visualFlipStash = world.GetStash<ProjectileVisualFlipComponent>();
         }
 
         public void Create(Entity weapon, Entity[] projectiles)
@@ -53,6 +55,14 @@ namespace ECS.ProjectileSystems
 
                 Vector3 direction =
                     _projectileStash.Get(projectile).Direction;
+                direction.z = 0f;
+                if (direction.sqrMagnitude > 0.0001f)
+                    direction.Normalize();
+
+                _visualFlipStash.Set(projectile, new ProjectileVisualFlipComponent
+                {
+                    FlipY = direction.x < 0f
+                });
 
                 Vector3 colliderOffset = _config.ColliderOffset;
 

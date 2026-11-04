@@ -33,6 +33,7 @@ namespace ECS.ProjectileSystems
         private Stash<CleanupRequest> _cleanupRequestStash;
         private Stash<ProjectileViewComponent> _projectileViewStash;
         private Stash<ProjectileHitComponent> _projectileHitStash;
+        private Stash<RicochetRequest> _ricochetRequestStash;
 
         public ProjectileCollisionCheckSystem(SpatialGrid grid)
         {
@@ -66,6 +67,7 @@ namespace ECS.ProjectileSystems
             _cleanupRequestStash = World.GetStash<CleanupRequest>();
             _projectileViewStash = World.GetStash<ProjectileViewComponent>();
             _projectileHitStash = World.GetStash<ProjectileHitComponent>();
+            _ricochetRequestStash = World.GetStash<RicochetRequest>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -103,6 +105,8 @@ namespace ECS.ProjectileSystems
 
                     CreateDamageRequest(projectile, target);
 
+                    CreateRicochetRequest(projectile, target);
+
                     if (projectileComponent.HitPolicy != HitPolicyType.Pierce)
                         continue;
 
@@ -115,6 +119,25 @@ namespace ECS.ProjectileSystems
                     projectileComponent.Pierce--;
                 }
             }
+        }
+
+        private void CreateRicochetRequest(Entity projectile, Entity hitTarget)
+        {
+            ProjectileComponent projectileComponent =
+                _projectileStash.Get(projectile);
+            Entity request = World.CreateEntity();
+
+            _ricochetRequestStash.Set(request, new RicochetRequest
+            {
+                Projectile = projectile,
+                Weapon = projectileComponent.Weapon,
+                HitTarget = hitTarget,
+                SequenceId = projectileComponent.SequenceId,
+                SequencePolicy = projectileComponent.SequencePolicy,
+                HitPosition = _positionStash.Has(hitTarget)
+                    ? _positionStash.Get(hitTarget).Position
+                    : _positionStash.Get(projectile).Position
+            });
         }
 
         private bool TryRegisterHit(Entity projectile, Entity target)

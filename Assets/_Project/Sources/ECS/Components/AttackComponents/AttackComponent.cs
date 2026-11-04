@@ -28,5 +28,6 @@ namespace ECS.AttackComponents
         public AttackTargetType TargetType;
         public HitPolicyType HitPolicy;
         public AttackAnimationPolicyType AnimationPolicy;
+        public ProjectileSequencePolicy ProjectileSequencePolicy;
     }
 }

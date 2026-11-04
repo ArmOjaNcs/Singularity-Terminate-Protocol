@@ -11,9 +11,23 @@ namespace ECS.EffectComponents
             {
                 BleedConfig bleedConfig => new BleedEffectRuntime
                 {
-                    BleedStack = bleedConfig.BleedStack,
-                    DamagePerSecond = bleedConfig.DamagePerSecond,
+                    MaxStacks = bleedConfig.MaxStacks,
+                    DamagePerStackPerSecond =
+                        bleedConfig.DamagePerStackPerSecond,
                     Duration = bleedConfig.Duration
+                },
+
+                BurnConfig burnConfig => new BurnEffectRuntime
+                {
+                    MaxStacks = burnConfig.MaxStacks,
+                    DamagePerStackPerSecond =
+                        burnConfig.DamagePerStackPerSecond,
+                    Duration = burnConfig.Duration,
+                    BasePanicInterval = burnConfig.BasePanicInterval,
+                    MinPanicInterval = burnConfig.MinPanicInterval,
+                    PanicDistance = burnConfig.PanicDistance,
+                    PanicSpeedMultiplier = burnConfig.PanicSpeedMultiplier,
+                    PanicBurstDuration = burnConfig.PanicBurstDuration
                 },
 
                 KnockbackEffectConfig knockbackConfig =>
@@ -21,6 +35,20 @@ namespace ECS.EffectComponents
                     {
                         Force = knockbackConfig.Force
                     },
+
+                TraumaEffectConfig traumaConfig => new TraumaEffectRuntime
+                {
+                    Duration = traumaConfig.Duration,
+                    MovementSlowPercent = traumaConfig.MovementSlowPercent,
+                    AttackDamageReductionPercent = traumaConfig.AttackDamageReductionPercent
+                },
+
+                TwistEffectConfig twistConfig => new TwistEffectRuntime
+                {
+                    ShakeAmplitude = twistConfig.ShakeAmplitude,
+                    ShakeFrequency = twistConfig.ShakeFrequency,
+                    RefreshDuration = twistConfig.RefreshDuration
+                },
 
                 _ => null
             };

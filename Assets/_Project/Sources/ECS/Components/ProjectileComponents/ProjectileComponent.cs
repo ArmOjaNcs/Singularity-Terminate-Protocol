@@ -16,7 +16,13 @@ namespace ECS.ProjectileComponents
         public float Damage;
         public int Pierce;
         public int RicochetsCount;
+        public int MaxRicochets;
         public float HitInterval;
+        public float RicochetChance;
+        public float TargetSearchRadius;
+        public ProjectileSequencePolicy SequencePolicy;
+        public int SequenceId;
+        public int SwingIndex;
 
         public Vector3 Direction;
         public AttackTargetType TargetType;

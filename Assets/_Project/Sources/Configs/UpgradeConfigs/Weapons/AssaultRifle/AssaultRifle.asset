@@ -20,5 +20,5 @@ MonoBehaviour:
   Icon: {fileID: 21300000, guid: b88be7b7c6c1b374abcf5d77360b62cb, type: 3}
   UpgradeType: 0
   RequiredUpgradeIds: []
-  Type: 12
+  Type: 5
   Config: {fileID: 11400000, guid: 40c5995f08111b64faf0b4cd40275e63, type: 2}

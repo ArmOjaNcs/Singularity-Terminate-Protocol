@@ -13,9 +13,11 @@ MonoBehaviour:
   m_Name: AxeAttack
   m_EditorClassIdentifier: 
   ProjectileCount: 1
+  ShotsInAttack: 0
   Pierce: 1
+  MaxRicochets: 0
   AttackDuration: 0.35
-  FireRate: 1
+  FireRate: 0.35
   Damage: 10
   AttackCooldown: 2
   DistanceFromSource: 0.45
@@ -23,6 +25,10 @@ MonoBehaviour:
   TargetSearchRadius: 2
   ProjectileSpeed: 10
   ProjectileLifetime: 0.35
+  RicochetChance: 0
+  ShotSpreadAngle: 0
+  HitInterval: 0
   TargetType: 0
   HitPolicy: 1
-  HitInterval: 0
+  AnimationPolicy: 1
+  ProjectileSequencePolicy: 0

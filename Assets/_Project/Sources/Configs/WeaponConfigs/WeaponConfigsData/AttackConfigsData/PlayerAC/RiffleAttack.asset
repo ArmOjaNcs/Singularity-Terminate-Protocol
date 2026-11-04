@@ -23,10 +23,11 @@ MonoBehaviour:
   DistanceFromSource: 0.45
   AttackRadius: 0.5
   TargetSearchRadius: 5
-  ProjectileSpeed: 20
-  ProjectileLifetime: 1
-  RicochetChance: 5
+  ProjectileSpeed: 18
+  ProjectileLifetime: 1.5
+  RicochetChance: 100
   ShotSpreadAngle: 0
   HitInterval: 0
   TargetType: 0
   HitPolicy: 0
+  AnimationPolicy: 1
