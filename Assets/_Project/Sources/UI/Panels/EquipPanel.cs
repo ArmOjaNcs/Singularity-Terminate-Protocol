@@ -15,13 +15,6 @@ namespace UI
         [SerializeField] private EquipItemsPanel _itemsPanel;
         [SerializeField] private EquipItemsPanel _turretsPanel;
 
-        private CompositeDisposable _disposables = new CompositeDisposable();
-
-        private void OnDestroy()
-        {
-            _disposables.Dispose();
-        }
-
         public void Setup(PlayerInventoryComponent inventory)
         {
             InitializePanel(inventory);
@@ -54,9 +47,9 @@ namespace UI
         {
             _weaponsPanel.UpdateCount(inventory.MaxWeapons.Value);
             _turretsPanel.UpdateCount(inventory.MaxTurrets.Value);
-            _weaponsPanel.UpdateCount(inventory.MaxItems.Value);
+            _weaponsPanel.UpdateCount(inventory.MaxSkills.Value);
 
-            foreach (var upgrade in inventory.ActiveUpgrades)
+            foreach (var upgrade in inventory.ActiveWeapons)
             {
                 UpgradeConfig config = _storage.GetConfig(upgrade.Key);
 
@@ -67,9 +60,7 @@ namespace UI
 
         private void SubscribeOnInventoryChanges(PlayerInventoryComponent inventory)
         {
-            _disposables.Clear();
-
-            inventory.ActiveUpgrades.ObserveAdd()
+            inventory.ActiveSkills.ObserveAdd()
                 .Subscribe(upgrade =>
                 {
                     UpgradeConfig config = _storage.GetConfig(upgrade.Key);
@@ -78,19 +69,19 @@ namespace UI
                        (config.UpgradeType == UpgradeType.Item && upgrade.Value == 1))
                         UpdateItem(config);
                 })
-                .AddTo(_disposables);
+                .AddTo(this);
 
             inventory.MaxWeapons
                 .Subscribe(amount => _weaponsPanel.UpdateCount(amount))
-                .AddTo(_disposables);
+                .AddTo(this);
 
             inventory.MaxTurrets
                 .Subscribe(amount => _turretsPanel.UpdateCount(amount))
-                .AddTo(_disposables);
+                .AddTo(this);
 
-            inventory.MaxItems
+            inventory.MaxSkills
                 .Subscribe(amount => _itemsPanel.UpdateCount(amount))
-                .AddTo(_disposables);
+                .AddTo(this);
         }
     }
 }

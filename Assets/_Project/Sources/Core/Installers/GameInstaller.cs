@@ -1,5 +1,6 @@
 using Cinemachine;
 using Core.Game;
+using ECS.CommonComponents;
 using EnemyConfigs;
 using Gameplay.Navigation;
 using PlayerConfigs;
@@ -35,6 +36,7 @@ namespace Core.Installers
         {
             BindInstances();
 
+            Container.Bind<BattleStatistics>().AsSingle().NonLazy();
             Container.Bind<BattleStarter>().AsSingle().NonLazy();
         }
 

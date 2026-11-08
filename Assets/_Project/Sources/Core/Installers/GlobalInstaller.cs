@@ -14,9 +14,9 @@ namespace Core.Installers
     {
         [SerializeField] private AudioService _audioService;
         [SerializeField] private List<NewWeaponUpgradeConfig> _weapons;
-        [SerializeField] private List<WeaponUpgradeConfig> _weaponUpgrades;
+        [SerializeField] private List<WeaponStatUpgradeConfig> _weaponUpgrades;
         [SerializeField] private List<NewTurretUpgradeConfig> _turrets;
-        [SerializeField] private List<TurretUpgradeConfig> _turretUpgrades;
+        [SerializeField] private List<TurretStatUpgradeConfig> _turretUpgrades;
         [SerializeField] private List<SkillUpgradeConfig> _skillUpgrades;
         [SerializeField] private LootDropDatabase _lootDropDatabase;
 
@@ -48,10 +48,9 @@ namespace Core.Installers
             Container.Bind<UpgradeGenerator>().AsSingle();
             Container.Bind<WeaponFactory>().AsSingle();
 
-            List<UpgradeConfig> upgradeConfigsList = _weapons
-                .Concat<UpgradeConfig>(_weaponUpgrades)
+            List<UpgradeConfig> upgradeConfigsList =
+                _weapons
                 .Concat<UpgradeConfig>(_turrets)
-                .Concat<UpgradeConfig>(_turretUpgrades)
                 .Concat<UpgradeConfig>(_skillUpgrades)
                 .ToList();
 

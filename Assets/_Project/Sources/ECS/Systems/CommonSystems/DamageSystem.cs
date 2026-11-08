@@ -23,7 +23,7 @@ namespace ECS.CommonSystems
         private Stash<HealthComponent> _healthStash;
         private Stash<StatsComponent> _statsStash;
         private Stash<DeathComponent> _deathStash;
-        private Stash<DamageStatisticComponent> _damageStatisticStash;
+        private Stash<BattleStatisticComponent> _battleStatisticStash;
         private Stash<EffectRequest> _effectRequestStash;
         private Stash<WeaponComponent> _weaponStash;
         private Stash<ColorRuntimeComponent> _colorRuntimeStash;
@@ -39,7 +39,7 @@ namespace ECS.CommonSystems
             _healthStash = World.GetStash<HealthComponent>();
             _statsStash = World.GetStash<StatsComponent>();
             _deathStash = World.GetStash<DeathComponent>();
-            _damageStatisticStash = World.GetStash<DamageStatisticComponent>();
+            _battleStatisticStash = World.GetStash<BattleStatisticComponent>();
             _effectRequestStash = World.GetStash<EffectRequest>();
             _weaponStash = World.GetStash<WeaponComponent>();
             _colorRuntimeStash = World.GetStash<ColorRuntimeComponent>();
@@ -172,9 +172,9 @@ namespace ECS.CommonSystems
         {
             Entity statisticEntity = World.CreateEntity();
 
-            _damageStatisticStash.Set(
+            _battleStatisticStash.Set(
                 statisticEntity,
-                new DamageStatisticComponent
+                new BattleStatisticComponent
                 {
                     Target = request.Target,
                     Context = request.Context,

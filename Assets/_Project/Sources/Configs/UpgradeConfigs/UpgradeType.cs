@@ -1,8 +1,8 @@
 public enum UpgradeType
 {
     NewWeapon,
-    Weapon,
+    WeaponStats,
     Item,
     NewTurret,
-    Turret,
+    TurretStats,
 }

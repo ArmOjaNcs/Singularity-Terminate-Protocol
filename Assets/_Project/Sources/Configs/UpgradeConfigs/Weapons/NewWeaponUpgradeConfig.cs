@@ -1,10 +1,6 @@
-using ECS.PlayerComponents;
 using ECS.WeaponComponents;
-using ECS.WeaponSystems;
-using Scellecs.Morpeh;
 using UnityEngine;
 using WeaponConfigs;
-using Zenject;
 
 namespace UpgradeConfigs
 {

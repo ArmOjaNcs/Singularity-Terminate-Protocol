@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Cinemachine;
-using Configs;
 using Core.Services;
+using ECS.CommonComponents;
 using ECS.CommonSystems;
-using ECS.DamageComponents;
 using ECS.DamageSystems;
 using ECS.EnemySystems;
 using ECS.PlayerComponents;
@@ -62,7 +61,7 @@ namespace Core.Game
         private EnemySpawnSystem _enemySpawnSystem;
 
         private GameObject _playerGameObject;
-        private DamageStatistics _damageStatistics;
+        private BattleStatistics _battleStatistics;
 
         private LevelBar _levelBar;
         private EquipPanel _equipPanel;
@@ -88,6 +87,7 @@ namespace Core.Game
             EquipPanel equipPanel,
             Vector3 enemySpawnPoint,
             UIService uiService,
+            BattleStatistics battleStatistics,
             List<NewWeaponUpgradeConfig> weaponConfigs,
             List<NewTurretUpgradeConfig> turretConfigs)
         {
@@ -109,6 +109,7 @@ namespace Core.Game
             _equipPanel = equipPanel;
             _enemySpawnPoint = enemySpawnPoint;
             _uiService = uiService;
+            _battleStatistics = battleStatistics;
 
             _weaponConfigs = weaponConfigs;
             _turretConfigs = turretConfigs;
@@ -264,10 +265,7 @@ namespace Core.Game
 
         private void AddStatisticSystems()
         {
-            _damageStatistics = new DamageStatistics();
-
-            _gameplaySystems.AddSystem(
-                new DamageStatisticsSystem(_damageStatistics));
+            _gameplaySystems.AddSystem(new BattleStatisticsSystem(_battleStatistics));
         }
 
         private void CreatePlayer()

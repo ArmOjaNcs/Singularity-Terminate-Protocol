@@ -1,4 +1,6 @@
+using System;
 using ECS.CommonComponents;
+using ECS.DamageComponents;
 using ECS.EnemyComponents;
 using ECS.ViewComponents;
 using ECS.WeaponComponents;
@@ -21,6 +23,7 @@ namespace ECS.EnemySystems
         private Stash<AddLootDropEvent> _lootSpawnStash;
         private Stash<PositionComponent> _positionStash;
         private Stash<StatsComponent> _statsStash;
+        private Stash<BattleStatisticComponent> _battleStatsStash;
 
         public void OnAwake()
         {
@@ -38,6 +41,8 @@ namespace ECS.EnemySystems
             _lootSpawnStash = World.GetStash<AddLootDropEvent>();
             _positionStash = World.GetStash<PositionComponent>();
             _statsStash = World.GetStash<StatsComponent>();
+            _battleStatsStash = World.GetStash<BattleStatisticComponent>();
+
         }
 
         public void OnUpdate(float deltaTime)
@@ -85,6 +90,33 @@ namespace ECS.EnemySystems
                     viewComponent.View.SetActive(false);
             }
 
+            AddKilledStatistics(entity);
+            SpawnLoot(entity);
+            CreateCleanupRequest(entity);
+        }
+
+        private void AddKilledStatistics(Entity entity)
+        {
+            Entity battleStats = World.CreateEntity();
+
+            _battleStatsStash.Set(battleStats, new BattleStatisticComponent
+            {
+                IsKilledEnemy = true,
+            });
+        }
+
+        private void CreateCleanupRequest(Entity entity)
+        {
+            Entity request = World.CreateEntity();
+
+            _cleanupRequestStash.Set(request, new CleanupRequest
+            {
+                Candidate = entity,
+            });
+        }
+
+        private void SpawnLoot(Entity entity)
+        {
             if (_statsStash.Has(entity) && _positionStash.Has(entity))
             {
                 Entity lootSpawner = World.CreateEntity();
@@ -97,13 +129,6 @@ namespace ECS.EnemySystems
                     EnemyType = stats.CreatureType,
                 });
             }
-
-            Entity request = World.CreateEntity();
-
-            _cleanupRequestStash.Set(request, new CleanupRequest
-            {
-                Candidate = entity,
-            });
         }
     }
 }

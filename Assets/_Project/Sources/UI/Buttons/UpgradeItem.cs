@@ -2,6 +2,7 @@ using System;
 using Core.Services;
 using DG.Tweening;
 using ECS.PlayerComponents;
+using ECS.WeaponComponents;
 using Scellecs.Morpeh;
 using TMPro;
 using UI;
@@ -35,6 +36,9 @@ public class UpgradeItem : MonoBehaviour
     private World _world;
     private UIService _uiService;
 
+    private string _baseWeaponId;
+    private WeaponType _baseWeaponType;
+
     private void OnDisable()
     {
         _button.onClick.RemoveListener(OnCardClicked);
@@ -49,15 +53,16 @@ public class UpgradeItem : MonoBehaviour
 
     public void Setup(UpgradeState item)
     {
-        UpgradeConfig config = item.Config;
         bool isNew = item.CurrentLevel == 0;
         int newLevel = item.CurrentLevel += 1;
 
-        _config = config;
+        _config = item.Config;
+        _baseWeaponId = item.BaseWeaponId;
+        _baseWeaponType = item.BaseWeaponType;
 
-        _image.sprite = config.Icon;
-        _name.text = config.Title;
-        _description.text = config.Description;
+        _image.sprite = item.Icon;
+        _name.text = item.Title;
+        _description.text = item.Description;
 
         _levelText.color = isNew ? _newLevelTextColor : _defaultLevelTextColor;
         _levelText.text = isNew ? "Новое!" : $"Уровень {newLevel}";
@@ -84,6 +89,8 @@ public class UpgradeItem : MonoBehaviour
         ref var selectEvent = ref upgradeStash.Add(eventEntity);
 
         selectEvent.SelectedUpgrade = _config;
+        selectEvent.BaseWeaponId = _baseWeaponId;
+        selectEvent.BaseWeaponType = _baseWeaponType;
 
         _uiService.HideLevelUpScreen();
     }

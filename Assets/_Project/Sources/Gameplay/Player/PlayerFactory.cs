@@ -122,15 +122,14 @@ namespace Gameplay.Player
             {
                 PickupRadius = config.GatheringRadius,
             });
+
             InitializeInventory(config, entity);
         }
 
         private void InitializeInventory(PlayerConfig config, Entity entity)
         {
             WeaponConfig[] weapons = config.WeaponConfig;
-            Dictionary<string, int> initialUpgrades = new Dictionary<string, int>();
-            int currentTurrets = 0;
-            int currentWeapons = 0;
+            Dictionary<string, int> initialWeapons = new Dictionary<string, int>();
 
             foreach (var weapon in weapons)
             {
@@ -142,8 +141,6 @@ namespace Gameplay.Player
 
                 var initialWeapon = _weaponUpgradeConfigs.Find((item) => item.Type == weapon.Type);
 
-                currentWeapons++;
-
                 if (initialWeapon == null)
                 {
                     Debug.LogError(
@@ -152,17 +149,17 @@ namespace Gameplay.Player
                     continue;
                 }
 
-                initialUpgrades[initialWeapon.UpgradeId] = 1;
+                initialWeapons[initialWeapon.UpgradeId] = 1;
             }
 
             _inventoryStash.Set(entity, new PlayerInventoryComponent
             {
-                ActiveUpgrades = new ReactiveDictionary<string, int>(initialUpgrades),
-                CurrentTurretsAmount = currentTurrets,
+                ActiveWeapons = new ReactiveDictionary<string, int>(initialWeapons),
+                ActiveTurrets = new ReactiveDictionary<string, int>(),
+                ActiveSkills = new ReactiveDictionary<string, int>(),
                 MaxTurrets = new ReactiveProperty<int>(config.MaxTurrets),
-                CurrentWeaponsAmount = currentWeapons,
                 MaxWeapons = new ReactiveProperty<int>(config.MaxWeapons),
-                MaxItems = new ReactiveProperty<int>(config.MaxSkills),
+                MaxSkills = new ReactiveProperty<int>(config.MaxSkills),
             });
         }
 

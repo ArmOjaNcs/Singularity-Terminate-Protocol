@@ -1,6 +1,4 @@
 using System.Collections.Generic;
-using ECS.PlayerComponents;
-using Scellecs.Morpeh;
 using UnityEngine;
 
 namespace UpgradeConfigs
@@ -13,6 +11,7 @@ namespace UpgradeConfigs
         public string Description;
         public Sprite Icon;
         public UpgradeType UpgradeType;
+        public int MaxLevel = 5;
         public List<UpgradeConfig> RequiredUpgradeIds;
     }
 }
