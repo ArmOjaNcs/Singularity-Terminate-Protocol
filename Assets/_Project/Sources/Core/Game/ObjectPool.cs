@@ -9,9 +9,12 @@ namespace Core.Game
         private readonly List<T> _pool;
         private readonly T _prefab;
 
+        private Vector3 _initScale;
+
         public ObjectPool(T prefab, int maxCapacity, Transform container)
         {
             _prefab = prefab;
+            _initScale = prefab.transform.localScale;
             Container = container;
 
             maxCapacity = Mathf.Max(maxCapacity, CombatSettings.MinPoolCapacity);
@@ -22,6 +25,10 @@ namespace Core.Game
         }
 
         public Transform Container { get; }
+
+        public T Prefab => _prefab;
+
+        public Vector3 InitScale => _initScale;
 
         public bool TryGetFreeElement(out T element)
         {

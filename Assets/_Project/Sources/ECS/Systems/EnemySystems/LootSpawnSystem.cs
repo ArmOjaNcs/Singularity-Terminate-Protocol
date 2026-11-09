@@ -6,13 +6,13 @@ namespace ECS.EnemySystems
 {
     public sealed class LootSpawnSystem : ISystem
     {
-        private readonly ItemFactory _itemFactory;
+        private readonly LootFactory _lootFactory;
         private Filter _filter;
         private Stash<AddLootDropEvent> _addGemStash;
 
-        public LootSpawnSystem(ItemFactory itemFactory)
+        public LootSpawnSystem(LootFactory lootFactory)
         {
-            _itemFactory = itemFactory;
+            _lootFactory = lootFactory;
         }
 
         public World World { get; set; }
@@ -28,14 +28,14 @@ namespace ECS.EnemySystems
 
         public void OnUpdate(float deltaTime)
         {
-            if (_itemFactory == null)
+            if (_lootFactory == null)
                 return;
 
             foreach (Entity entity in _filter)
             {
                 ref var addGemEvent = ref _addGemStash.Get(entity);
 
-                _itemFactory.Create(addGemEvent.EnemyType, addGemEvent.Position);
+                _lootFactory.Create(addGemEvent.EnemyType, addGemEvent.Position);
 
                 World.RemoveEntity(entity);
             }

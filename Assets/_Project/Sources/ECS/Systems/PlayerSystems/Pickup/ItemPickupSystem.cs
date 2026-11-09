@@ -2,6 +2,8 @@ using DG.Tweening;
 using ECS.PlayerComponents;
 using ECS.PlayerSystems;
 using ECS.ViewComponents;
+using Gameplay.Items;
+using Gameplay.View;
 using Scellecs.Morpeh;
 using UnityEngine;
 
@@ -15,6 +17,12 @@ public sealed class ItemPickupSystem : ISystem
     private Stash<PlayerViewComponent> _playerViewStash;
 
     private Stash<AddExperienceEvent> _addXpStash;
+    private LootFactory _lootFactory;
+
+    public ItemPickupSystem(LootFactory lootFactory)
+    {
+        _lootFactory = lootFactory;
+    }
 
     public World World { get; set; }
 
@@ -65,7 +73,8 @@ public sealed class ItemPickupSystem : ISystem
         int xpAmount = _addXpStash.Has(item) ? _addXpStash.Get(item).Amount : 0;
         Transform targetTransform = _playerViewStash.Get(looter).View.transform;
         Vector3 targetPosition = targetTransform.position;
-        Transform itemTransform = _itemViewStash.Get(item).View.transform;
+        AnimatedView view = _itemViewStash.Get(item).View;
+        Transform itemTransform = view.transform;
         Vector3 itemPosition = itemTransform.position;
         Vector3 bounceDirection = targetTransform.right;
 
@@ -98,7 +107,7 @@ public sealed class ItemPickupSystem : ISystem
                 flyTween.OnComplete(() =>
                 {
                     if (itemTransform != null)
-                        Object.Destroy(itemTransform.gameObject);
+                        _lootFactory.Release(view);
 
                     if (World.IsDisposed(looter) == false && xpAmount > 0)
                     {

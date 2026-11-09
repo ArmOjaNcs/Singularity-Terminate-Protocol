@@ -1,3 +1,4 @@
+using Gameplay.View;
 using UnityEngine;
 
 [CreateAssetMenu(fileName = "LootDropItem", menuName = "Game/Loot/Loot Drop Item")]
@@ -7,5 +8,6 @@ public class LootDropItem : ScriptableObject
 
     public ItemTypes Type;
 
-    public GameObject Prefab;
+    public AnimatedView Prefab;
+    public int PoolCapacity;
 }

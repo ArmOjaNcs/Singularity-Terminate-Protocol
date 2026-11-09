@@ -36,13 +36,14 @@ namespace Core.Game
         private EnemyConfigsDatabase _enemyConfigsDatabase;
         private EnemySpawnDatabase _enemySpawnDatabase;
         private LootDropDatabase _lootDropDatabase;
+        private LootDatabase _lootDatabase;
         private List<NewWeaponUpgradeConfig> _weaponConfigs;
         private List<NewTurretUpgradeConfig> _turretConfigs;
         private Vector3 _playerSpawnPoint;
         private NavigationGrid _navigationGrid;
         private Transform _projectileContainer;
         private Transform _enemyContainer;
-
+        private Transform _lootContainer;
         private CinemachineVirtualCamera _camera;
         private PolygonCollider2D _cameraBounds;
 
@@ -54,7 +55,7 @@ namespace Core.Game
         private PlayerFactory _playerFactory;
         private EnemyFactory _enemyFactory;
         private ProjectileFactory _projectileFactory;
-        private ItemFactory _itemFactory;
+        private LootFactory _lootFactory;
 
         private ViewPauseSystem _viewPauseSystem;
         private PlayerDeathSystem _playerDeathSystem;
@@ -76,12 +77,15 @@ namespace Core.Game
             EnemyConfigsDatabase enemyConfigsDatabase,
             EnemySpawnDatabase enemySpawnDatabase,
             LootDropDatabase lootDropDatabase,
+            LootDatabase lootDatabase,
             Vector3 spawnPoint,
             NavigationGrid navigationGrid,
             [Inject(Id = "ProjectileContainer")]
             Transform projectileContainer,
             [Inject(Id = "EnemyContainer")]
             Transform enemyContainer,
+            [Inject(Id = "LootContainer")]
+            Transform lootContainer,
             CinemachineVirtualCamera camera,
             PolygonCollider2D cameraBounds,
             LevelBar levelBar,
@@ -100,11 +104,13 @@ namespace Core.Game
             _enemyConfigsDatabase = enemyConfigsDatabase;
             _enemySpawnDatabase = enemySpawnDatabase;
             _lootDropDatabase = lootDropDatabase;
+            _lootDatabase = lootDatabase;
 
             _playerSpawnPoint = spawnPoint;
             _navigationGrid = navigationGrid;
             _projectileContainer = projectileContainer;
             _enemyContainer = enemyContainer;
+            _lootContainer = lootContainer;
 
             _camera = camera;
             _cameraBounds = cameraBounds;
@@ -161,7 +167,7 @@ namespace Core.Game
                 _enemyConfigsDatabase,
                 _enemyContainer);
 
-            _itemFactory = new ItemFactory(_world, _lootDropDatabase);
+            _lootFactory = new LootFactory(_world, _lootDropDatabase, _lootDatabase, _lootContainer);
 
             _projectileFactory = new ProjectileFactory(
                 _world,
@@ -258,13 +264,13 @@ namespace Core.Game
                 _navigationGrid);
 
             _gameplaySystems.AddSystem(_enemySpawnSystem);
-            _gameplaySystems.AddSystem(new LootSpawnSystem(_itemFactory));
+            _gameplaySystems.AddSystem(new LootSpawnSystem(_lootFactory));
             _gameplaySystems.AddSystem(_playerDeathSystem);
             _gameplaySystems.AddSystem(new CleanupSystem());
             _gameplaySystems.AddSystem(new EnemyDeathSystem());
 
             _gameplaySystems.AddSystem(new ItemScanSystem());
-            _gameplaySystems.AddSystem(new ItemPickupSystem());
+            _gameplaySystems.AddSystem(new ItemPickupSystem(_lootFactory));
 
             _gameplaySystems.AddSystem(new PlayerExperienceSystem());
             _gameplaySystems.AddSystem(new LevelUpSystem(_uiService));

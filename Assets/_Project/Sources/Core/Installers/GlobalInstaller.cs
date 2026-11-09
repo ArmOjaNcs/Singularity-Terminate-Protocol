@@ -29,6 +29,7 @@ namespace Core.Installers
         [SerializeField] private EnemyConfigsDatabase _enemyConfigsDatabase;
         [SerializeField] private EnemySpawnDatabase _enemySpawnDatabase;
         [SerializeField] private LootDropDatabase _lootDropDatabase;
+        [SerializeField] private LootDatabase _lootDatabase;
 
         public override void InstallBindings()
         {
@@ -46,6 +47,7 @@ namespace Core.Installers
             Container.BindInstance(_turretUpgrades).AsSingle();
             Container.BindInstance(_skillUpgrades).AsSingle();
             Container.BindInstance(_lootDropDatabase).AsSingle();
+            Container.BindInstance(_lootDatabase).AsSingle();
 
             Container.BindInstance(_projectileDatabase).AsSingle();
             Container.BindInstance(_enemyConfigsDatabase).AsSingle();
