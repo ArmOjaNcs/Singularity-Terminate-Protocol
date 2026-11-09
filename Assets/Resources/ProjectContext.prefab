@@ -92,7 +92,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: e9e7f6c4a48bbbc4e8b56a4f9513a050, type: 2}
   - {fileID: 11400000, guid: 22c84ca074569fa4cac4e43de1486b47, type: 2}
   _turretUpgrades:
-  - {fileID: 0}
+  - {fileID: 11400000, guid: 9dbf7247c15840b4ca8260ff409c5bb6, type: 2}
   _skillUpgrades:
   - {fileID: 11400000, guid: 12a1b069a12b1df4c96ee0e4721fe0b1, type: 2}
   - {fileID: 11400000, guid: fd05b22469e94d44980fbba9f24dd99a, type: 2}
@@ -102,4 +102,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 42e6d42611f25fd45a92eff016c03132, type: 2}
   - {fileID: 11400000, guid: 2195a160e243a46498ccd87656434119, type: 2}
   - {fileID: 11400000, guid: de42a708606f96e47b7698f2739d2ec4, type: 2}
+  _projectileDatabase: {fileID: 11400000, guid: 0c6afa97b5b16d448b2487bb4c1de857, type: 2}
+  _enemyConfigsDatabase: {fileID: 11400000, guid: fa2219b7a7492894b980d9884d88d121, type: 2}
+  _enemySpawnDatabase: {fileID: 11400000, guid: 7bdb6cb467576f448a9070100a9b7f62, type: 2}
   _lootDropDatabase: {fileID: 11400000, guid: 83d14253a44a06648b0564ffbe88fefa, type: 2}

@@ -10,6 +10,7 @@ namespace Core.Installers
         [Header("Objects")]
         [SerializeField] private LevelBar _levelBar;
         [SerializeField] private EquipPanel _equipPanel;
+        [SerializeField] private TimerPanel _timerPanel;
 
         [Header("Prefabs")]
         [SerializeField] private LevelUpScreen _levelUpScreenPrefab;
@@ -28,6 +29,7 @@ namespace Core.Installers
         {
             Container.BindInstance(_levelBar).AsSingle();
             Container.BindInstance(_equipPanel).AsSingle();
+            Container.BindInstance(_timerPanel).AsSingle();
         }
     }
 }

@@ -2,7 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Core.Services;
 using ECS.WeaponSystems;
+using EnemyConfigs;
 using LootConfigs;
+using ProjectileConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
 using UpgradeConfigs;
@@ -12,12 +14,20 @@ namespace Core.Installers
 {
     public class GlobalInstaller : MonoInstaller
     {
+        [Header("Services")]
         [SerializeField] private AudioService _audioService;
+
+        [Header("UpgradeDatabases")]
         [SerializeField] private List<NewWeaponUpgradeConfig> _weapons;
         [SerializeField] private List<WeaponStatUpgradeConfig> _weaponUpgrades;
         [SerializeField] private List<NewTurretUpgradeConfig> _turrets;
         [SerializeField] private List<TurretStatUpgradeConfig> _turretUpgrades;
         [SerializeField] private List<SkillUpgradeConfig> _skillUpgrades;
+
+        [Header("Databases")]
+        [SerializeField] private ProjectileDatabase _projectileDatabase;
+        [SerializeField] private EnemyConfigsDatabase _enemyConfigsDatabase;
+        [SerializeField] private EnemySpawnDatabase _enemySpawnDatabase;
         [SerializeField] private LootDropDatabase _lootDropDatabase;
 
         public override void InstallBindings()
@@ -36,6 +46,10 @@ namespace Core.Installers
             Container.BindInstance(_turretUpgrades).AsSingle();
             Container.BindInstance(_skillUpgrades).AsSingle();
             Container.BindInstance(_lootDropDatabase).AsSingle();
+
+            Container.BindInstance(_projectileDatabase).AsSingle();
+            Container.BindInstance(_enemyConfigsDatabase).AsSingle();
+            Container.BindInstance(_enemySpawnDatabase).AsSingle();
         }
 
         private void BindServices()

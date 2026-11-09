@@ -62,9 +62,10 @@ namespace Core.Game
 
         private GameObject _playerGameObject;
         private BattleStatistics _battleStatistics;
-
+        private float _maxBattleTime;
         private LevelBar _levelBar;
         private EquipPanel _equipPanel;
+        private TimerPanel _timerPanel;
         private Vector3 _enemySpawnPoint;
         private UIService _uiService;
 
@@ -85,9 +86,12 @@ namespace Core.Game
             PolygonCollider2D cameraBounds,
             LevelBar levelBar,
             EquipPanel equipPanel,
+            TimerPanel timerPanel,
             Vector3 enemySpawnPoint,
             UIService uiService,
             BattleStatistics battleStatistics,
+            [Inject(Id = "MaxBattleTime")]
+            float maxBattleTime,
             List<NewWeaponUpgradeConfig> weaponConfigs,
             List<NewTurretUpgradeConfig> turretConfigs)
         {
@@ -107,9 +111,13 @@ namespace Core.Game
 
             _levelBar = levelBar;
             _equipPanel = equipPanel;
+            _timerPanel = timerPanel;
+
             _enemySpawnPoint = enemySpawnPoint;
             _uiService = uiService;
             _battleStatistics = battleStatistics;
+
+            _maxBattleTime = maxBattleTime;
 
             _weaponConfigs = weaponConfigs;
             _turretConfigs = turretConfigs;
@@ -172,7 +180,7 @@ namespace Core.Game
             AddCombatSystems();
             AddViewSystems();
             AddLifecycleSystems();
-            AddStatisticSystems();
+            AddBattleSystems();
 
             _world.AddSystemsGroup(0, _gameplaySystems);
         }
@@ -263,8 +271,9 @@ namespace Core.Game
             _gameplaySystems.AddSystem(new PlayerUpgradeSystem(_weaponFactory, _equipPanel));
         }
 
-        private void AddStatisticSystems()
+        private void AddBattleSystems()
         {
+            _gameplaySystems.AddSystem(new BattleTimerSystem(_maxBattleTime, _timerPanel));
             _gameplaySystems.AddSystem(new BattleStatisticsSystem(_battleStatistics));
         }
 

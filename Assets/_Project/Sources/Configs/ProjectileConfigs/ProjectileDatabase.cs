@@ -1,5 +1,5 @@
-using ECS.WeaponComponents;
 using System.Collections.Generic;
+using ECS.WeaponComponents;
 using UnityEngine;
 
 namespace ProjectileConfigs

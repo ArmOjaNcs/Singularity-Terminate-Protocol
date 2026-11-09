@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Core.Game;
 using ECS.EnemyComponents;
 using ECS.ViewComponents;
@@ -5,7 +6,6 @@ using ECS.WeaponSystems;
 using EnemyConfigs;
 using Gameplay.Creatures;
 using Scellecs.Morpeh;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace Gameplay.Enemy
@@ -21,10 +21,8 @@ namespace Gameplay.Enemy
             new Dictionary<CreatureType, ObjectPool<EnemyView>>();
 
         private readonly Stash<EnemyTag> _enemyTagStash;
-        private readonly Stash<EnemyMovementVariationComponent>
-            _movementVariationStash;
-        private readonly Stash<EnemyNavigationStateComponent>
-            _navigationStateStash;
+        private readonly Stash<EnemyMovementVariationComponent> _movementVariationStash;
+        private readonly Stash<EnemyNavigationStateComponent> _navigationStateStash;
         private readonly Stash<ViewComponent> _viewStash;
         private readonly Stash<AnimatedCreatureComponent> _animatedCreatureStash;
         private readonly Stash<EnemyViewComponent> _enemyViewStash;

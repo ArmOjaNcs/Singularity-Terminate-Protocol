@@ -12,14 +12,12 @@ namespace Core.Installers
 {
     public class GameInstaller : MonoInstaller
     {
+        [Header("Timer")]
+        [SerializeField] private float _maxBattleTime = 30000f;
+
         [Header("Player")]
         [SerializeField] private PlayerConfig _playerConfig;
         [SerializeField] private Vector3 _playerSpawnPoint;
-
-        [Header("Databases")]
-        [SerializeField] private ProjectileDatabase _projectileDatabase;
-        [SerializeField] private EnemyConfigsDatabase _enemyConfigsDatabase;
-        [SerializeField] private EnemySpawnDatabase _enemySpawnDatabase;
 
         [Header("Arena")]
         [SerializeField] private NavigationGrid _navigationGrid;
@@ -31,11 +29,13 @@ namespace Core.Installers
         [Header("Containers")]
         [SerializeField] private Transform _projectileContainer;
         [SerializeField] private Transform _enemyContainer;
+        [SerializeField] private Transform _lootContainer;
 
         public override void InstallBindings()
         {
             BindInstances();
 
+            Container.Bind<float>().WithId("MaxBattleTime").FromInstance(_maxBattleTime);
             Container.Bind<BattleStatistics>().AsSingle().NonLazy();
             Container.Bind<BattleStarter>().AsSingle().NonLazy();
         }
@@ -43,7 +43,6 @@ namespace Core.Installers
         private void BindInstances()
         {
             BindPlayerInstances();
-            BindDatabases();
             BindArenaInstances();
             BindCameraInstances();
             BindContainerInstances();
@@ -53,13 +52,6 @@ namespace Core.Installers
         {
             Container.BindInstance(_playerConfig).AsSingle();
             Container.BindInstance(_playerSpawnPoint).AsSingle();
-        }
-
-        private void BindDatabases()
-        {
-            Container.BindInstance(_projectileDatabase).AsSingle();
-            Container.BindInstance(_enemyConfigsDatabase).AsSingle();
-            Container.BindInstance(_enemySpawnDatabase).AsSingle();
         }
 
         private void BindArenaInstances()
@@ -80,6 +72,9 @@ namespace Core.Installers
 
             Container.BindInstance(_enemyContainer)
                 .WithId("EnemyContainer");
+
+            Container.BindInstance(_lootContainer)
+                .WithId("LootContainer");
         }
     }
 }

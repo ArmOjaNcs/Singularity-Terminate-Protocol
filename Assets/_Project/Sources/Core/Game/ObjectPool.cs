@@ -3,7 +3,8 @@ using UnityEngine;
 
 namespace Core.Game
 {
-    public class ObjectPool<T> where T : MonoBehaviour
+    public class ObjectPool<T>
+        where T : MonoBehaviour
     {
         private readonly List<T> _pool;
         private readonly T _prefab;

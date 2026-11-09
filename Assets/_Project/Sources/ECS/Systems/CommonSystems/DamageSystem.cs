@@ -155,7 +155,7 @@ namespace ECS.CommonSystems
             }
 
             ref ColorRuntimeComponent runtime = ref _colorRuntimeStash.Get(target);
-           
+
             runtime.ActiveColors.Add(new ColorRuntime
             {
                 Reference = Color.red,
