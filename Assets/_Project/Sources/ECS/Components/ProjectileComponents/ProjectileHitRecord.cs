@@ -6,5 +6,6 @@ namespace ECS.ProjectileComponents
     {
         public Entity Target;
         public float NextHitTime;
+        public int LastHitLeg;
     }
 }

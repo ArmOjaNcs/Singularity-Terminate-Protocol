@@ -1,3 +1,4 @@
+using ECS.CommonComponents;
 using ECS.WeaponComponents;
 using System.Collections.Generic;
 
@@ -15,6 +16,9 @@ namespace ECS.DamageComponents
         private readonly Dictionary<WeaponType, float> _damageByWeapon =
             new Dictionary<WeaponType, float>();
 
+        private readonly Dictionary<EffectType, float> _damageByEffect =
+            new Dictionary<EffectType, float>();
+
         public void Add(DamageStatisticComponent statistic)
         {
             TotalDamage += statistic.Damage;
@@ -24,6 +28,9 @@ namespace ECS.DamageComponents
             AddDamage(_damageByCreature, statistic.Context.SourceType, statistic.Damage);
 
             AddDamage(_damageByWeapon, statistic.Context.WeaponType, statistic.Damage);
+
+            if (statistic.Context.EffectType != EffectType.None)
+                AddDamage(_damageByEffect, statistic.Context.EffectType, statistic.Damage);
         }
 
         public float GetDamage(CreatureType type)
@@ -34,6 +41,11 @@ namespace ECS.DamageComponents
         public float GetDamage(WeaponType type)
         {
             return GetDamage(_damageByWeapon, type);
+        }
+
+        public float GetDamage(EffectType type)
+        {
+            return GetDamage(_damageByEffect, type);
         }
 
         private void AddDamage<T>(Dictionary<T, float> dictionary, T key, float damage)
@@ -57,6 +69,7 @@ namespace ECS.DamageComponents
 
             _damageByCreature.Clear();
             _damageByWeapon.Clear();
+            _damageByEffect.Clear();
         }
     }
 }

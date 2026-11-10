@@ -17,6 +17,21 @@ namespace ECS.EffectComponents
                     Duration = bleedConfig.Duration
                 },
 
+                ShockEffectConfig shockConfig => new ShockEffectRuntime
+                {
+                    MaxStacks = shockConfig.MaxStacks,
+                    DamagePerStackPerSecond = shockConfig.DamagePerStackPerSecond,
+                    Duration = shockConfig.Duration,
+                    TwistOnDamage = shockConfig.TwistOnDamage == null
+                        ? null
+                        : new TwistEffectRuntime
+                        {
+                            ShakeAmplitude = shockConfig.TwistOnDamage.ShakeAmplitude,
+                            ShakeFrequency = shockConfig.TwistOnDamage.ShakeFrequency,
+                            RefreshDuration = shockConfig.TwistOnDamage.RefreshDuration
+                        }
+                },
+
                 BurnConfig burnConfig => new BurnEffectRuntime
                 {
                     MaxStacks = burnConfig.MaxStacks,

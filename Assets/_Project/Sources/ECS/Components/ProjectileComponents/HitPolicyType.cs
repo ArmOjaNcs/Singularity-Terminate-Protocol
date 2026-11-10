@@ -5,5 +5,6 @@ namespace ECS.ProjectileComponents
         Pierce = 0,
         OncePerTarget = 1,
         PeriodicPerTarget = 2,
+        OncePerTargetPerLeg = 3,
     }
 }

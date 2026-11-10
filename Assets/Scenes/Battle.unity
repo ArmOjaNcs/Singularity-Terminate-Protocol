@@ -2244,7 +2244,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1301171113
 Transform:
   m_ObjectHideFlags: 0
@@ -2272,7 +2272,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83a7988b58c449b7893b8c8b8b446d40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Config: {fileID: 11400000, guid: eedc3b2cb68c4a20b591e14fbb08a209, type: 2}
+  Config: {fileID: 11400000, guid: b3a5e9706385495b9c1b46885d4cc72a, type: 2}
   PreviewDirection: {x: 1, y: 0}
   ShowCollider: 1
   ShowTrajectory: 0
@@ -3424,7 +3424,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2042253599
 Transform:
   m_ObjectHideFlags: 0
@@ -3517,6 +3517,67 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0c9529f3e4226394a8c6db24f5057e51, type: 3}
+--- !u!1001 &7457431734108923066
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2009242143176424538, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -2.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 2009242143176424538, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2009242143176424538, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2009242143176424538, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2009242143176424538, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2009242143176424538, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2009242143176424538, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2009242143176424538, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2009242143176424538, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2009242143176424538, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4107408448160355448, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
+      propertyPath: m_Name
+      value: ElectricRifleProjectile
+      objectReference: {fileID: 0}
+    - target: {fileID: 4107408448160355448, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 1e20078d766b465aa69e31f8ca9a83ea, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -3532,3 +3593,4 @@ SceneRoots:
   - {fileID: 312493328}
   - {fileID: 254815818}
   - {fileID: 2735545192952493629}
+  - {fileID: 7457431734108923066}

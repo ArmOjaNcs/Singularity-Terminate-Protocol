@@ -76,8 +76,13 @@ namespace ECS.ProjectileSystems
             {
                 ref ProjectileComponent projectileComponent = ref _projectileStash.Get(projectile);
 
-                if (projectileComponent.CleanupRequested)
+                if (projectileComponent.CleanupRequested ||
+                    projectileComponent.RicochetPending)
                     continue;
+
+                bool suppressHitRegistration =
+                    projectileComponent.CurrentLifetime <
+                    projectileComponent.HitSuppressionUntilTime;
 
                 ColliderComponent projectileCollider =
                     _hitBoxStash.Get(projectile).Collider;
@@ -85,6 +90,10 @@ namespace ECS.ProjectileSystems
                     ColliderGeometry.GetColliderWorldCenter(
                         _positionStash.Get(projectile).Position,
                         projectileCollider);
+
+                ClearIgnoredTargetAfterSeparation(
+                    projectile,
+                    ref projectileComponent);
 
                 float queryRadius = GetQueryRadius(projectile);
 
@@ -97,7 +106,21 @@ namespace ECS.ProjectileSystems
                     if (!IsValidTarget(target, projectileComponent))
                         continue;
 
-                    if (!CheckCollision(projectile, target))
+                    bool overlaps = CheckCollision(projectile, target);
+                    if (target == projectileComponent.TemporarilyIgnoredTarget)
+                    {
+                        if (overlaps)
+                            continue;
+
+                        projectileComponent.TemporarilyIgnoredTarget = default;
+                    }
+
+                    if (!overlaps)
+                        continue;
+
+                    // Keep all overlap detection in this system, but don't
+                    // register a hit until the ricochet grace window ends.
+                    if (suppressHitRegistration)
                         continue;
 
                     if (!TryRegisterHit(projectile, target))
@@ -106,9 +129,15 @@ namespace ECS.ProjectileSystems
                     CreateDamageRequest(projectile, target);
 
                     CreateRicochetRequest(projectile, target);
+                    projectileComponent.RicochetPending =
+                        projectileComponent.RicochetChance > 0f;
 
                     if (projectileComponent.HitPolicy != HitPolicyType.Pierce)
+                    {
+                        if (projectileComponent.RicochetPending)
+                            break;
                         continue;
+                    }
 
                     if (projectileComponent.Pierce <= 0)
                     {
@@ -117,7 +146,26 @@ namespace ECS.ProjectileSystems
                     }
 
                     projectileComponent.Pierce--;
+                    if (projectileComponent.RicochetPending)
+                        break;
                 }
+            }
+        }
+
+        private void ClearIgnoredTargetAfterSeparation(
+            Entity projectile,
+            ref ProjectileComponent projectileComponent)
+        {
+            Entity ignoredTarget = projectileComponent.TemporarilyIgnoredTarget;
+            if (ignoredTarget == default)
+                return;
+
+            if (World.IsDisposed(ignoredTarget) ||
+                !_hitBoxStash.Has(ignoredTarget) ||
+                !_positionStash.Has(ignoredTarget) ||
+                !CheckCollision(projectile, ignoredTarget))
+            {
+                projectileComponent.TemporarilyIgnoredTarget = default;
             }
         }
 
@@ -125,6 +173,8 @@ namespace ECS.ProjectileSystems
         {
             ProjectileComponent projectileComponent =
                 _projectileStash.Get(projectile);
+            if (projectileComponent.RicochetChance <= 0f)
+                return;
             Entity request = World.CreateEntity();
 
             _ricochetRequestStash.Set(request, new RicochetRequest
@@ -173,7 +223,8 @@ namespace ECS.ProjectileSystems
                         records.Add(new ProjectileHitRecord
                         {
                             Target = target,
-                            NextHitTime = 0f
+                            NextHitTime = 0f,
+                            LastHitLeg = projectileComponent.RicochetLeg
                         });
 
                         break;
@@ -204,7 +255,27 @@ namespace ECS.ProjectileSystems
 
                         record.NextHitTime = currentTime + hitInterval;
                         records[recordIndex] = record;
+                        break;
+                    }
 
+                case HitPolicyType.OncePerTargetPerLeg:
+                    {
+                        if (recordIndex < 0)
+                        {
+                            records.Add(new ProjectileHitRecord
+                            {
+                                Target = target,
+                                LastHitLeg = projectileComponent.RicochetLeg
+                            });
+                            break;
+                        }
+
+                        ProjectileHitRecord record = records[recordIndex];
+                        if (record.LastHitLeg == projectileComponent.RicochetLeg)
+                            return false;
+
+                        record.LastHitLeg = projectileComponent.RicochetLeg;
+                        records[recordIndex] = record;
                         break;
                     }
 

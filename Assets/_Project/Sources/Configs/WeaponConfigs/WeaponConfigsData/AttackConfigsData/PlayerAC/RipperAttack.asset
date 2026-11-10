@@ -21,7 +21,8 @@ MonoBehaviour:
   Damage: 10
   AttackCooldown: 2
   DistanceFromSource: 0.75
-  AttackRadius: 0.5
+  ProjectileScale: 1
+  RicochetTargetSearchRadius: 1
   TargetSearchRadius: 2
   ProjectileSpeed: 10
   ProjectileLifetime: 1

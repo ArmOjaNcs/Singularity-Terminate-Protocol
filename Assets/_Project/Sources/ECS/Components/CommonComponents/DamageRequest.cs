@@ -8,5 +8,9 @@ namespace ECS.DamageComponents
         public Entity Target;
         public float Damage;
         public DamageContext Context;
+        public bool ApplyTwistOnDamage;
+        public float TwistShakeAmplitude;
+        public float TwistShakeFrequency;
+        public float TwistDuration;
     }
 }

@@ -22,3 +22,4 @@ MonoBehaviour:
   RequiredUpgradeIds: []
   Type: 2
   IsBaseWeapon: 1
+  Config: {fileID: 11400000, guid: 14dab66088d449cd8f09e53dafe32f50, type: 2}

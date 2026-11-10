@@ -20,7 +20,7 @@ namespace ECS.CommonSystems
         private Stash<PositionComponent> _positionStash;
         private Stash<KnockbackRequest> _knockbackRequestStash;
         private Stash<TraumaStatusComponent> _traumaStatusStash;
-        private Stash<BleedStatusComponent> _bleedStatusStash;
+        private Stash<DamageOverTimeStatusComponent> _damageOverTimeStatusStash;
         private Stash<BurnStatusComponent> _burnStatusStash;
         private Stash<TwistStatusComponent> _twistStatusStash;
         private Stash<EnemyTag> _enemyTagStash;
@@ -47,7 +47,7 @@ namespace ECS.CommonSystems
             _knockbackRequestStash =
                 World.GetStash<KnockbackRequest>();
             _traumaStatusStash = World.GetStash<TraumaStatusComponent>();
-            _bleedStatusStash = World.GetStash<BleedStatusComponent>();
+            _damageOverTimeStatusStash = World.GetStash<DamageOverTimeStatusComponent>();
             _burnStatusStash = World.GetStash<BurnStatusComponent>();
             _twistStatusStash = World.GetStash<TwistStatusComponent>();
             _enemyTagStash = World.GetStash<EnemyTag>();
@@ -99,7 +99,20 @@ namespace ECS.CommonSystems
                     effects.TryGet<BleedEffectRuntime>(
                         out BleedEffectRuntime bleed))
                 {
-                    ApplyBleed(request.Target, weapon, request.Context, bleed);
+                    ApplyDamageOverTime(request.Target, weapon, request.Context,
+                        EffectType.Bleed, bleed.MaxStacks,
+                        bleed.DamagePerStackPerSecond, bleed.Duration, null);
+                }
+
+                if (request.AppliedDamage > 0f &&
+                    _enemyTagStash.Has(request.Target) &&
+                    !_deathStash.Has(request.Target) &&
+                    effects.TryGet<ShockEffectRuntime>(out ShockEffectRuntime shock))
+                {
+                    ApplyDamageOverTime(request.Target, weapon, request.Context,
+                        EffectType.Shock, shock.MaxStacks,
+                        shock.DamagePerStackPerSecond, shock.Duration,
+                        shock.TwistOnDamage);
                 }
 
                 if (request.AppliedDamage > 0f &&
@@ -111,7 +124,8 @@ namespace ECS.CommonSystems
                     ApplyBurn(request.Target, weapon, request.Context, burn);
                 }
 
-                if (_enemyTagStash.Has(request.Target) &&
+                if (request.AppliedDamage > 0f &&
+                    _enemyTagStash.Has(request.Target) &&
                     !_deathStash.Has(request.Target) &&
                     effects.TryGet<TwistEffectRuntime>(
                         out TwistEffectRuntime twist))
@@ -123,52 +137,51 @@ namespace ECS.CommonSystems
             }
         }
 
-        private void ApplyBleed(
+        private void ApplyDamageOverTime(
             Entity target,
             Entity sourceWeapon,
             DamageContext sourceContext,
-            BleedEffectRuntime bleed)
+            EffectType effectType,
+            int maxStacks,
+            float damagePerStackPerSecond,
+            float duration,
+            TwistEffectRuntime twistOnDamage)
         {
-            int maxStacks = Mathf.Max(1, bleed.MaxStacks);
-            if (bleed.Duration <= 0f ||
-                bleed.DamagePerStackPerSecond <= 0f)
-            {
+            maxStacks = Mathf.Max(1, maxStacks);
+            if (duration <= 0f || damagePerStackPerSecond <= 0f)
                 return;
-            }
 
-            if (!_bleedStatusStash.Has(target))
+            if (!_damageOverTimeStatusStash.Has(target))
             {
-                _bleedStatusStash.Set(target, new BleedStatusComponent
+                _damageOverTimeStatusStash.Set(target, new DamageOverTimeStatusComponent
                 {
-                    Instances = new System.Collections.Generic.List<BleedInstance>()
+                    Instances = new System.Collections.Generic.List<DamageOverTimeInstance>()
                 });
             }
 
-            ref BleedStatusComponent status =
-                ref _bleedStatusStash.Get(target);
-
+            ref DamageOverTimeStatusComponent status = ref _damageOverTimeStatusStash.Get(target);
             if (status.Instances == null)
-                status.Instances = new System.Collections.Generic.List<BleedInstance>();
+                status.Instances = new System.Collections.Generic.List<DamageOverTimeInstance>();
 
-            int index = status.Instances.FindIndex(
-                instance => instance.SourceWeapon == sourceWeapon);
-
-            BleedInstance instance = index >= 0
+            int index = status.Instances.FindIndex(instance =>
+                instance.SourceWeapon == sourceWeapon && instance.EffectType == effectType);
+            DamageOverTimeInstance instance = index >= 0
                 ? status.Instances[index]
-                : new BleedInstance
-                {
-                    SourceWeapon = sourceWeapon,
-                    Stacks = 0,
-                    TickElapsed = 0f,
-                    PendingDamage = 0f
-                };
+                : new DamageOverTimeInstance { SourceWeapon = sourceWeapon };
 
+            instance.EffectType = effectType;
             instance.MaxStacks = maxStacks;
             instance.Stacks = Mathf.Min(maxStacks, instance.Stacks + 1);
-            instance.DamagePerStackPerSecond =
-                bleed.DamagePerStackPerSecond;
-            instance.RemainingDuration = bleed.Duration;
+            instance.DamagePerStackPerSecond = damagePerStackPerSecond;
+            instance.RemainingDuration = duration;
             instance.SourceContext = sourceContext;
+            instance.ApplyTwistOnDamage = effectType == EffectType.Shock && twistOnDamage != null;
+            if (twistOnDamage != null)
+            {
+                instance.TwistShakeAmplitude = twistOnDamage.ShakeAmplitude;
+                instance.TwistShakeFrequency = twistOnDamage.ShakeFrequency;
+                instance.TwistDuration = twistOnDamage.RefreshDuration;
+            }
 
             if (index >= 0)
                 status.Instances[index] = instance;

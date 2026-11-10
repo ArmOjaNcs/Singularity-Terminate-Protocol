@@ -9,5 +9,6 @@ namespace ECS.CommonComponents
         public DamageType DamageType;
         public CreatureType SourceType;
         public WeaponType WeaponType;
+        public EffectType EffectType;
     }
 }

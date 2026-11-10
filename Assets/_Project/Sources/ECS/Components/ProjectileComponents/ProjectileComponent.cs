@@ -13,12 +13,16 @@ namespace ECS.ProjectileComponents
         public float Speed;
         public float Lifetime;
         public float CurrentLifetime;
+        public float HitSuppressionUntilTime;
         public float Damage;
         public int Pierce;
         public int RicochetsCount;
+        public int RicochetLeg;
         public int MaxRicochets;
         public float HitInterval;
         public float RicochetChance;
+        public bool AllowRicochetRepeatTargets;
+        public Entity TemporarilyIgnoredTarget;
         public float TargetSearchRadius;
         public ProjectileSequencePolicy SequencePolicy;
         public int SequenceId;
@@ -29,5 +33,6 @@ namespace ECS.ProjectileComponents
         public HitPolicyType HitPolicy;
 
         public bool CleanupRequested;
+        public bool RicochetPending;
     }
 }

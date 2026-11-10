@@ -140,6 +140,7 @@ namespace ECS.CommonSystems
 
             DamageContext context = instance.SourceContext;
             context.DamageType = DamageType.Effect;
+            context.EffectType = EffectType.Burn;
 
             Entity request = World.CreateEntity();
             _damageRequestStash.Set(request, new DamageRequest
