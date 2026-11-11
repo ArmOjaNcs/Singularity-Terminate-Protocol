@@ -1,4 +1,3 @@
-using ECS.CommonComponents;
 using System.Collections.Generic;
 using ECS.WeaponComponents;
 using UniRx;
@@ -16,7 +15,6 @@ namespace ECS.CommonComponents
         private readonly Dictionary<EffectType, float> _damageByEffect =
             new Dictionary<EffectType, float>();
 
-        public void Add(DamageStatisticComponent statistic)
         private readonly ReactiveProperty<int> _totalKilled = new ReactiveProperty<int>(0);
         private readonly ReactiveProperty<int> _totalCredits = new ReactiveProperty<int>(0);
 
