@@ -14,5 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   Id: GreenGem
   Type: 0
-  Prefab: {fileID: 1465251683466844845, guid: cb7b470577cdd9a4cbe663a125d02d03, type: 3}
+  Prefab: {fileID: 7132208515612357968, guid: cb7b470577cdd9a4cbe663a125d02d03, type: 3}
+  PoolCapacity: 10
   AddExpAmount: 10
