@@ -446,6 +446,12 @@ namespace ECS.ProjectileSystems
 
         private IProjectileCreator CreateCreator(ProjectileConfig config)
         {
+            if (config is RocketLauncherProjectileConfig rocketConfig &&
+                config.WeaponType == WeaponType.RocketLauncher)
+            {
+                return new RocketLauncherProjectileCreator(_world, rocketConfig);
+            }
+
             if (config is GrenadeLauncherProjectileConfig grenadeConfig &&
                 config.WeaponType == WeaponType.GrenadeLauncher)
             {

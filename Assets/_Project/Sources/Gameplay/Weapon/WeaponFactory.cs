@@ -80,6 +80,7 @@ namespace ECS.WeaponSystems
                 ProjectileScale = config.AttackConfig.ProjectileScale,
                 ProjectileFlightDistance = config.AttackConfig.ProjectileFlightDistance,
                 ProjectileFlightDistanceTolerance = config.AttackConfig.ProjectileFlightDistanceTolerance,
+                HomingEnabled = config.AttackConfig.HomingEnabled,
                 RicochetTargetSearchRadius = config.AttackConfig.RicochetTargetSearchRadius,
                 ProjectileSpeed = config.AttackConfig.ProjectileSpeed,
                 ProjectileLifetime = config.AttackConfig.ProjectileLifetime,

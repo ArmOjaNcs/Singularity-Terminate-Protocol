@@ -22,6 +22,7 @@ namespace Configs
         [Min(0f)] public float ProjectileFlightDistance;
         [Tooltip("Targets are selected within this radius of the fixed landing range.")]
         [Min(0f)] public float ProjectileFlightDistanceTolerance;
+        public bool HomingEnabled;
         public float RicochetTargetSearchRadius;
         public float TargetSearchRadius;
         public float ProjectileSpeed;

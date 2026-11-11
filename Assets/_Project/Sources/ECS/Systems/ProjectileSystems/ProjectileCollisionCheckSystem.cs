@@ -370,6 +370,8 @@ namespace ECS.ProjectileSystems
                 {
                     Target = target,
                     Damage = projectileComponent.Damage,
+                    ImpactPosition = _positionStash.Get(projectile).Position,
+                    HasImpactPosition = true,
                     Context = new DamageContext
                     {
                         Weapon = weapon,

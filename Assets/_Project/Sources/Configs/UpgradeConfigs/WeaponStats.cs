@@ -14,5 +14,6 @@ namespace UpgradeConfigs
         ProjectileSpeed,
         ProjectileLifetime,
         ProjectileScale,
+        Homing,
     }
 }

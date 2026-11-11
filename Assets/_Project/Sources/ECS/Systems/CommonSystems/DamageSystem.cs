@@ -204,7 +204,9 @@ namespace ECS.CommonSystems
                 {
                     Target = request.Target,
                     Context = request.Context,
-                    AppliedDamage = appliedDamage
+                    AppliedDamage = appliedDamage,
+                    ImpactPosition = request.ImpactPosition,
+                    HasImpactPosition = request.HasImpactPosition
                 });
         }
 

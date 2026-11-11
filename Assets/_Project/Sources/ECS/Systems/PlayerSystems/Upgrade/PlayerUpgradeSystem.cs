@@ -180,6 +180,9 @@ namespace ECS.PlayerSystems
                 case WeaponStats.ProjectileScale:
                     attack.ProjectileScale += (float)Math.Round(attack.ProjectileScale * (statsFactor / 100f), 2);
                     break;
+                case WeaponStats.Homing:
+                    attack.HomingEnabled = true;
+                    break;
                 default:
                     break;
             }
