@@ -18,11 +18,18 @@ namespace ECS.AttackComponents
         public float CurrentCooldown;
         public float TargetSearchRadius;
         public float DistanceFromSource;
-        public float AttackRadius;
+        public float ProjectileScale;
+        public float ProjectileFlightDistance;
+        public float ProjectileFlightDistanceTolerance;
+        public bool HomingEnabled;
+        public float RicochetTargetSearchRadius;
         public float ProjectileSpeed;
         public float ProjectileLifetime;
         public float HitInterval;
         public float RicochetChance;
+        public bool AllowRicochetRepeatTargets;
+        public float ZigZagAmplitude;
+        public float ZigZagFrequency;
         public float ShotSpreadAngle;
 
         public AttackTargetType TargetType;

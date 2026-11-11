@@ -5,6 +5,7 @@ using ECS.CommonComponents;
 using ECS.ProjectileComponents;
 using ECS.WeaponComponents;
 using Gameplay.View;
+using Gameplay.Spatial;
 using ProjectileConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
@@ -348,9 +349,11 @@ namespace ECS.ProjectileSystems
                 Damage = attack.Damage,
                 Pierce = attack.Pierce,
                 RicochetsCount = 0,
+                RicochetLeg = 0,
                 MaxRicochets = attack.MaxRicochets,
                 RicochetChance = attack.RicochetChance,
-                TargetSearchRadius = attack.TargetSearchRadius,
+                AllowRicochetRepeatTargets = attack.AllowRicochetRepeatTargets,
+                TargetSearchRadius = attack.RicochetTargetSearchRadius,
                 SequencePolicy = attack.ProjectileSequencePolicy,
                 SequenceId = sequenceId,
                 SwingIndex = swingIndex,
@@ -358,6 +361,7 @@ namespace ECS.ProjectileSystems
                 TargetType = attack.TargetType,
                 HitInterval = attack.HitInterval,
                 HitPolicy = attack.HitPolicy,
+                CollisionEnabled = true,
                 CleanupRequested = false
             });
 
@@ -368,7 +372,7 @@ namespace ECS.ProjectileSystems
 
             _hitBoxStash.Set(projectile, new HitBoxComponent
             {
-                Collider = new ColliderComponent
+                Collider = ColliderScaler.Scale(new ColliderComponent
                 {
                     Type = config.Collider.Type,
                     Radius = config.Collider.Radius,
@@ -377,7 +381,7 @@ namespace ECS.ProjectileSystems
                     Center = config.Collider.Center,
                     Angle = 0f,
                     CapsuleOrientation = config.Collider.CapsuleOrientation
-                }
+                }, attack.ProjectileScale)
             });
 
             _projectileHitStash.Set(projectile, new ProjectileHitComponent
@@ -393,6 +397,7 @@ namespace ECS.ProjectileSystems
                 if (view != null)
                 {
                     view.SetEntity(projectile);
+                    view.SetScaleMultiplier(attack.ProjectileScale);
 
                     _projectileViewStash.Set(
                         projectile,
@@ -441,6 +446,21 @@ namespace ECS.ProjectileSystems
 
         private IProjectileCreator CreateCreator(ProjectileConfig config)
         {
+            if (config is RocketLauncherProjectileConfig rocketConfig &&
+                config.WeaponType == WeaponType.RocketLauncher)
+            {
+                return new RocketLauncherProjectileCreator(_world, rocketConfig);
+            }
+
+            if (config is GrenadeLauncherProjectileConfig grenadeConfig &&
+                config.WeaponType == WeaponType.GrenadeLauncher)
+            {
+                return new GrenadeLauncherProjectileCreator(_world, grenadeConfig);
+            }
+
+            if (config.WeaponType == WeaponType.ElectricRifle)
+                return new ElectricRifleProjectileCreator(_world);
+
             if (config is RipperProjectileConfig ripperConfig &&
                 config.WeaponType == WeaponType.Ripper)
             {

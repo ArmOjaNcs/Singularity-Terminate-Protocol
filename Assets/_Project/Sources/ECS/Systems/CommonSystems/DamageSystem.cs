@@ -28,6 +28,7 @@ namespace ECS.CommonSystems
         private Stash<WeaponComponent> _weaponStash;
         private Stash<ColorRuntimeComponent> _colorRuntimeStash;
         private Stash<TraumaStatusComponent> _traumaStatusStash;
+        private Stash<TwistStatusRequest> _twistStatusRequestStash;
 
         public void OnAwake()
         {
@@ -44,6 +45,7 @@ namespace ECS.CommonSystems
             _weaponStash = World.GetStash<WeaponComponent>();
             _colorRuntimeStash = World.GetStash<ColorRuntimeComponent>();
             _traumaStatusStash = World.GetStash<TraumaStatusComponent>();
+            _twistStatusRequestStash = World.GetStash<TwistStatusRequest>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -100,6 +102,9 @@ namespace ECS.CommonSystems
 
                 if (request.Context.DamageType == DamageType.Direct)
                     CreateEffectRequest(request, appliedDamage);
+                else if (request.Context.EffectType == EffectType.Shock &&
+                         request.ApplyTwistOnDamage && appliedDamage > 0f)
+                    CreateTwistStatusRequest(request);
 
                 World.RemoveEntity(requestEntity);
             }
@@ -170,6 +175,11 @@ namespace ECS.CommonSystems
             float blockedDamage,
             bool isCritical)
         {
+            DamageContext context = request.Context;
+
+            if (context.DamageType == DamageType.Direct)
+                context.EffectType = EffectType.None;
+
             Entity statisticEntity = World.CreateEntity();
 
             _battleStatisticStash.Set(
@@ -177,7 +187,7 @@ namespace ECS.CommonSystems
                 new BattleStatisticComponent
                 {
                     Target = request.Target,
-                    Context = request.Context,
+                    Context = context,
                     Damage = damage,
                     BlockedDamage = blockedDamage,
                     IsCritical = isCritical
@@ -194,8 +204,23 @@ namespace ECS.CommonSystems
                 {
                     Target = request.Target,
                     Context = request.Context,
-                    AppliedDamage = appliedDamage
+                    AppliedDamage = appliedDamage,
+                    ImpactPosition = request.ImpactPosition,
+                    HasImpactPosition = request.HasImpactPosition
                 });
+        }
+
+        private void CreateTwistStatusRequest(DamageRequest request)
+        {
+            Entity requestEntity = World.CreateEntity();
+            _twistStatusRequestStash.Set(requestEntity, new TwistStatusRequest
+            {
+                Target = request.Target,
+                SourceWeapon = request.Context.Weapon,
+                ShakeAmplitude = request.TwistShakeAmplitude,
+                ShakeFrequency = request.TwistShakeFrequency,
+                Duration = request.TwistDuration
+            });
         }
 
         public void Dispose() { }

@@ -35,6 +35,7 @@ namespace ECS.ProjectileSystems
             float radius,
             List<Entity> candidates,
             IList<Entity> excludedTargets,
+            bool allowPreviouslyHitTargets,
             out Entity selectedTarget,
             out Vector3 direction)
         {
@@ -55,12 +56,15 @@ namespace ECS.ProjectileSystems
             {
                 Entity candidate = candidates[i];
 
+                // Never bounce straight back to the target just hit when a
+                // different living target is available. Repeat selection
+                // applies only to other targets hit on previous legs.
                 if (candidate == hitTarget ||
                     !_enemyFilter.Has(candidate) ||
                     !_hitBoxStash.Has(candidate) ||
                     !_positionStash.Has(candidate) ||
                     IsExcluded(excludedTargets, candidate) ||
-                    WasAlreadyHit(records, candidate))
+                    (!allowPreviouslyHitTargets && WasAlreadyHit(records, candidate)))
                 {
                     continue;
                 }

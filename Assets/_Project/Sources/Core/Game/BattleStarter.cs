@@ -219,7 +219,11 @@ namespace Core.Game
         {
             _gameplaySystems.AddSystem(new ProjectileCreationSystem(_projectileFactory));
             _gameplaySystems.AddSystem(new StraightTrajectorySystem());
+            _gameplaySystems.AddSystem(new ElectricTrajectorySystem(_spatialGrid));
             _gameplaySystems.AddSystem(new ArcTrajectorySystem());
+            _gameplaySystems.AddSystem(new GrenadeLauncherFlightSystem());
+            _gameplaySystems.AddSystem(new RocketLauncherFlightSystem());
+            _gameplaySystems.AddSystem(new AreaExpansionSystem());
             _gameplaySystems.AddSystem(new RipperTrajectorySystem());
             _gameplaySystems.AddSystem(new ProjectileViewSystem());
             _gameplaySystems.AddSystem(new ProjectileCollisionCheckSystem(_spatialGrid));
@@ -229,7 +233,7 @@ namespace Core.Game
         private void AddCombatSystems()
         {
             _gameplaySystems.AddSystem(new BurnStatusSystem());
-            _gameplaySystems.AddSystem(new BleedStatusSystem());
+            _gameplaySystems.AddSystem(new DamageOverTimeStatusSystem());
             _gameplaySystems.AddSystem(new DamageSystem());
             _gameplaySystems.AddSystem(new ColorRuntimeSystem());
             _gameplaySystems.AddSystem(new EffectSystem());

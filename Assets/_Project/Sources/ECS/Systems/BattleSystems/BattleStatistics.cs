@@ -1,3 +1,4 @@
+using ECS.CommonComponents;
 using System.Collections.Generic;
 using ECS.WeaponComponents;
 using UniRx;
@@ -12,6 +13,10 @@ namespace ECS.CommonComponents
         private readonly Dictionary<WeaponType, float> _damageByWeapon =
             new Dictionary<WeaponType, float>();
 
+        private readonly Dictionary<EffectType, float> _damageByEffect =
+            new Dictionary<EffectType, float>();
+
+        public void Add(DamageStatisticComponent statistic)
         private readonly ReactiveProperty<int> _totalKilled = new ReactiveProperty<int>(0);
         private readonly ReactiveProperty<int> _totalCredits = new ReactiveProperty<int>(0);
 
@@ -33,6 +38,9 @@ namespace ECS.CommonComponents
 
             AddDamage(_damageByCreature, statistic.Context.SourceType, statistic.Damage);
             AddDamage(_damageByWeapon, statistic.Context.WeaponType, statistic.Damage);
+
+            if (statistic.Context.EffectType != EffectType.None)
+                AddDamage(_damageByEffect, statistic.Context.EffectType, statistic.Damage);
         }
 
         public void AddKilledEnemy()
@@ -53,6 +61,11 @@ namespace ECS.CommonComponents
         public float GetDamage(WeaponType type)
         {
             return GetDamage(_damageByWeapon, type);
+        }
+
+        public float GetDamage(EffectType type)
+        {
+            return GetDamage(_damageByEffect, type);
         }
 
         public void Clear()

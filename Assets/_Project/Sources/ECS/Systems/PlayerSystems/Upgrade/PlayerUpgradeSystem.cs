@@ -181,6 +181,8 @@ namespace ECS.PlayerSystems
                 case WeaponStats.DistanceFromSource:
                     attack.DistanceFromSource += (float)Math.Round(attack.DistanceFromSource * (amount / 100f), 2);
                     break;
+                case WeaponStats.RicochetTargetSearchRadius:
+                    attack.RicochetTargetSearchRadius += (float)Math.Round(attack.RicochetTargetSearchRadius * (statsFactor / 100f), 2);
                 case WeaponStats.AttackRadius:
                     attack.AttackRadius += (float)Math.Round(attack.AttackRadius * (amount / 100f), 2);
                     break;
@@ -192,6 +194,12 @@ namespace ECS.PlayerSystems
                     break;
                 case WeaponStats.ProjectileLifetime:
                     attack.ProjectileLifetime += (float)Math.Round(attack.ProjectileLifetime * (amount / 100f), 2);
+                    break;
+                case WeaponStats.ProjectileScale:
+                    attack.ProjectileScale += (float)Math.Round(attack.ProjectileScale * (statsFactor / 100f), 2);
+                    break;
+                case WeaponStats.Homing:
+                    attack.HomingEnabled = true;
                     break;
                 default:
                     break;

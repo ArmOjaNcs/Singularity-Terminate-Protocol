@@ -7,6 +7,7 @@ namespace Gameplay.View
     {
         [SerializeField] protected SpriteRenderer Renderer;
         private Color _baseColor = Color.white;
+        private Vector3 _baseLocalScale;
 
         public Entity Entity { get; private set; }
         public Color BaseColor => _baseColor;
@@ -14,8 +15,14 @@ namespace Gameplay.View
 
         protected virtual void Awake()
         {
+            _baseLocalScale = transform.localScale;
             if (Renderer != null)
                 _baseColor = Renderer.color;
+        }
+
+        public void SetScaleMultiplier(float multiplier)
+        {
+            transform.localScale = _baseLocalScale * multiplier;
         }
 
         public void SetColor(Color color)
@@ -52,9 +59,10 @@ namespace Gameplay.View
             SetFacingLeft(false);
         }
 
-        public void SetSortingOrder(int sortingOrder)
+        public virtual void SetSortingOrder(int sortingOrder)
         {
-            Renderer.sortingOrder = sortingOrder;
+            if (Renderer != null)
+                Renderer.sortingOrder = sortingOrder;
         }
     }
 }

@@ -9,9 +9,11 @@ namespace UpgradeConfigs
         Damage,
         AttackCooldown,
         DistanceFromSource,
-        AttackRadius,
+        RicochetTargetSearchRadius,
         TargetSearchRadius,
         ProjectileSpeed,
         ProjectileLifetime,
+        ProjectileScale,
+        Homing,
     }
 }
