@@ -361,6 +361,7 @@ namespace ECS.ProjectileSystems
                 TargetType = attack.TargetType,
                 HitInterval = attack.HitInterval,
                 HitPolicy = attack.HitPolicy,
+                CollisionEnabled = true,
                 CleanupRequested = false
             });
 
@@ -445,6 +446,12 @@ namespace ECS.ProjectileSystems
 
         private IProjectileCreator CreateCreator(ProjectileConfig config)
         {
+            if (config is GrenadeLauncherProjectileConfig grenadeConfig &&
+                config.WeaponType == WeaponType.GrenadeLauncher)
+            {
+                return new GrenadeLauncherProjectileCreator(_world, grenadeConfig);
+            }
+
             if (config.WeaponType == WeaponType.ElectricRifle)
                 return new ElectricRifleProjectileCreator(_world);
 

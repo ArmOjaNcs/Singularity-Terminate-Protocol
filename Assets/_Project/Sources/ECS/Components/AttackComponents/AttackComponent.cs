@@ -19,6 +19,8 @@ namespace ECS.AttackComponents
         public float TargetSearchRadius;
         public float DistanceFromSource;
         public float ProjectileScale;
+        public float ProjectileFlightDistance;
+        public float ProjectileFlightDistanceTolerance;
         public float RicochetTargetSearchRadius;
         public float ProjectileSpeed;
         public float ProjectileLifetime;

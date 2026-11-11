@@ -95,6 +95,10 @@ namespace ECS.CommonSystems
                 FindTarget(
                     position.Position,
                     attack.TargetSearchRadius,
+                    attack.ProjectileFlightDistance > 0f
+                        ? attack.DistanceFromSource + attack.ProjectileFlightDistance
+                        : 0f,
+                    attack.ProjectileFlightDistanceTolerance,
                     attack.TargetType,
                     sequence.IsActive ? sequence.VisitedTargets : null,
                     ref target);
@@ -104,6 +108,8 @@ namespace ECS.CommonSystems
         private void FindTarget(
             Vector3 position,
             float radius,
+            float preferredDistance,
+            float distanceTolerance,
             AttackTargetType targetType,
             List<Entity> excludedTargets,
             ref TargetComponent target)
@@ -140,10 +146,32 @@ namespace ECS.CommonSystems
                 ColliderComponent collider =
                     _hitBoxStash.Get(candidate).Collider;
 
-                float distance = ColliderGeometry.DistanceToCollider(
-                    position,
-                    _positionStash.Get(candidate).Position,
-                    collider);
+                Vector3 candidatePosition =
+                    _positionStash.Get(candidate).Position;
+
+                float distance = preferredDistance > 0f
+                    ? Vector3.Distance(position, candidatePosition)
+                    : ColliderGeometry.DistanceToCollider(
+                        position,
+                        candidatePosition,
+                        collider);
+
+                if (preferredDistance > 0f)
+                {
+                    if (distance > radius)
+                        continue;
+
+                    float distanceError = Mathf.Abs(distance - preferredDistance);
+                    if (distanceError > distanceTolerance ||
+                        distanceError >= closestDistance)
+                    {
+                        continue;
+                    }
+
+                    closestDistance = distanceError;
+                    closestEntity = candidate;
+                    continue;
+                }
 
                 if (distance > radius || distance >= closestDistance)
                     continue;

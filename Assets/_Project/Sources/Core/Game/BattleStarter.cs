@@ -206,6 +206,8 @@ namespace Core.Game
             _gameplaySystems.AddSystem(new StraightTrajectorySystem());
             _gameplaySystems.AddSystem(new ElectricTrajectorySystem(_spatialGrid));
             _gameplaySystems.AddSystem(new ArcTrajectorySystem());
+            _gameplaySystems.AddSystem(new GrenadeLauncherFlightSystem());
+            _gameplaySystems.AddSystem(new AreaExpansionSystem());
             _gameplaySystems.AddSystem(new RipperTrajectorySystem());
             _gameplaySystems.AddSystem(new ProjectileViewSystem());
             _gameplaySystems.AddSystem(new ProjectileCollisionCheckSystem(_spatialGrid));

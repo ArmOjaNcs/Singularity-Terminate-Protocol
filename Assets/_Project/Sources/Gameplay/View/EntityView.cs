@@ -59,9 +59,10 @@ namespace Gameplay.View
             SetFacingLeft(false);
         }
 
-        public void SetSortingOrder(int sortingOrder)
+        public virtual void SetSortingOrder(int sortingOrder)
         {
-            Renderer.sortingOrder = sortingOrder;
+            if (Renderer != null)
+                Renderer.sortingOrder = sortingOrder;
         }
     }
 }

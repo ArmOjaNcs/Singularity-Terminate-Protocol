@@ -78,6 +78,8 @@ namespace ECS.WeaponSystems
                 TargetSearchRadius = config.AttackConfig.TargetSearchRadius,
                 DistanceFromSource = config.AttackConfig.DistanceFromSource,
                 ProjectileScale = config.AttackConfig.ProjectileScale,
+                ProjectileFlightDistance = config.AttackConfig.ProjectileFlightDistance,
+                ProjectileFlightDistanceTolerance = config.AttackConfig.ProjectileFlightDistanceTolerance,
                 RicochetTargetSearchRadius = config.AttackConfig.RicochetTargetSearchRadius,
                 ProjectileSpeed = config.AttackConfig.ProjectileSpeed,
                 ProjectileLifetime = config.AttackConfig.ProjectileLifetime,

@@ -76,7 +76,8 @@ namespace ECS.ProjectileSystems
             {
                 ref ProjectileComponent projectileComponent = ref _projectileStash.Get(projectile);
 
-                if (projectileComponent.CleanupRequested ||
+                if (!projectileComponent.CollisionEnabled ||
+                    projectileComponent.CleanupRequested ||
                     projectileComponent.RicochetPending)
                     continue;
 

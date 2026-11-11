@@ -18,6 +18,10 @@ namespace Configs
         public float AttackCooldown;
         public float DistanceFromSource;
         public float ProjectileScale = 1f;
+        [Tooltip("Fixed forward distance from launch to landing for arcing projectiles.")]
+        [Min(0f)] public float ProjectileFlightDistance;
+        [Tooltip("Targets are selected within this radius of the fixed landing range.")]
+        [Min(0f)] public float ProjectileFlightDistanceTolerance;
         public float RicochetTargetSearchRadius;
         public float TargetSearchRadius;
         public float ProjectileSpeed;
