@@ -2155,15 +2155,13 @@ MonoBehaviour:
   _maxBattleTime: 900
   _playerConfig: {fileID: 11400000, guid: 8414f36279bd95547858f5b582b5ac65, type: 2}
   _playerSpawnPoint: {x: 0, y: 0, z: 0}
-  _projectileDatabase: {fileID: 11400000, guid: 0c6afa97b5b16d448b2487bb4c1de857, type: 2}
-  _enemyConfigsDatabase: {fileID: 11400000, guid: fa2219b7a7492894b980d9884d88d121, type: 2}
-  _enemySpawnDatabase: {fileID: 11400000, guid: 7bdb6cb467576f448a9070100a9b7f62, type: 2}
   _navigationGrid: {fileID: 1595880376}
   _camera: {fileID: 715547805}
   _cameraBounds: {fileID: 1257684186}
   _projectileContainer: {fileID: 112758161}
   _enemyContainer: {fileID: 1062700734}
   _lootContainer: {fileID: 2008333914}
+  _damageableContainer: {fileID: 1577764905}
 --- !u!1 &958263484
 GameObject:
   m_ObjectHideFlags: 0
@@ -2802,6 +2800,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 312493328}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1577764904
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1577764905}
+  m_Layer: 0
+  m_Name: DamageableItems
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1577764905
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1577764904}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1908665405}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1582652335
 GameObject:
@@ -3503,6 +3532,7 @@ Transform:
   - {fileID: 112758161}
   - {fileID: 1062700734}
   - {fileID: 2008333914}
+  - {fileID: 1577764905}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1967238263

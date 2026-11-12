@@ -107,3 +107,4 @@ MonoBehaviour:
   _enemySpawnDatabase: {fileID: 11400000, guid: 7bdb6cb467576f448a9070100a9b7f62, type: 2}
   _lootDropDatabase: {fileID: 11400000, guid: 83d14253a44a06648b0564ffbe88fefa, type: 2}
   _lootDatabase: {fileID: 11400000, guid: 5e7464a7cc3f93d4ca8cf79f1f80bf1e, type: 2}
+  _damageableItemsDatabase: {fileID: 11400000, guid: 199e07a5a5f3bdd4da7f7e16ed57c2bf, type: 2}

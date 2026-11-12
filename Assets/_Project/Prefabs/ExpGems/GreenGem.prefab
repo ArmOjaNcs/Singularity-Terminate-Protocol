@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5570448055741013266}
   - component: {fileID: 8803775648269264468}
-  - component: {fileID: 7132208515612357968}
+  - component: {fileID: -848737512566383975}
   m_Layer: 0
   m_Name: GreenGem
   m_TagString: Untagged
@@ -85,7 +85,7 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
---- !u!114 &7132208515612357968
+--- !u!114 &-848737512566383975
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -94,8 +94,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1465251683466844845}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c76d8b73dae9e7545b136d448232ad75, type: 3}
+  m_Script: {fileID: 11500000, guid: e19d3667a32cf7342950ca9f27ba52c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Renderer: {fileID: 8803775648269264468}
-  Animator: {fileID: 0}

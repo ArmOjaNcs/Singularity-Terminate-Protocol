@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using Cinemachine;
 using Core.Services;
+using DamageableConfigs;
 using ECS.CommonComponents;
 using ECS.CommonSystems;
+using ECS.DamageableItemSystems;
 using ECS.DamageSystems;
 using ECS.EnemySystems;
 using ECS.PlayerComponents;
@@ -32,18 +34,25 @@ namespace Core.Game
     public sealed class BattleStarter
     {
         private PlayerConfig _playerConfig;
+
         private ProjectileDatabase _projectileDatabase;
         private EnemyConfigsDatabase _enemyConfigsDatabase;
         private EnemySpawnDatabase _enemySpawnDatabase;
         private LootDropDatabase _lootDropDatabase;
         private LootDatabase _lootDatabase;
+        private DamageableItemsDatabase _damageableItemsDatabase;
+
         private List<NewWeaponUpgradeConfig> _weaponConfigs;
         private List<NewTurretUpgradeConfig> _turretConfigs;
+
         private Vector3 _playerSpawnPoint;
         private NavigationGrid _navigationGrid;
+
         private Transform _projectileContainer;
         private Transform _enemyContainer;
         private Transform _lootContainer;
+        private Transform _damageableContainer;
+
         private CinemachineVirtualCamera _camera;
         private PolygonCollider2D _cameraBounds;
 
@@ -56,11 +65,12 @@ namespace Core.Game
         private EnemyFactory _enemyFactory;
         private ProjectileFactory _projectileFactory;
         private LootFactory _lootFactory;
+        private DamageableItemsFactory _damageableItemsFactory;
 
         private ViewPauseSystem _viewPauseSystem;
         private PlayerDeathSystem _playerDeathSystem;
         private EnemySpawnSystem _enemySpawnSystem;
-
+        private DamageableItemsSpawnSystem _damageableSpawnSystem;
         private GameObject _playerGameObject;
         private BattleStatistics _battleStatistics;
         private float _maxBattleTime;
@@ -76,6 +86,7 @@ namespace Core.Game
             ProjectileDatabase projectileDatabase,
             EnemyConfigsDatabase enemyConfigsDatabase,
             EnemySpawnDatabase enemySpawnDatabase,
+            DamageableItemsDatabase damageableItemsDatabase,
             LootDropDatabase lootDropDatabase,
             LootDatabase lootDatabase,
             Vector3 spawnPoint,
@@ -86,6 +97,8 @@ namespace Core.Game
             Transform enemyContainer,
             [Inject(Id = "LootContainer")]
             Transform lootContainer,
+            [Inject(Id = "DamageableContainer")]
+            Transform damageableContainer,
             CinemachineVirtualCamera camera,
             PolygonCollider2D cameraBounds,
             LevelBar levelBar,
@@ -105,12 +118,14 @@ namespace Core.Game
             _enemySpawnDatabase = enemySpawnDatabase;
             _lootDropDatabase = lootDropDatabase;
             _lootDatabase = lootDatabase;
+            _damageableItemsDatabase = damageableItemsDatabase;
 
             _playerSpawnPoint = spawnPoint;
             _navigationGrid = navigationGrid;
             _projectileContainer = projectileContainer;
             _enemyContainer = enemyContainer;
             _lootContainer = lootContainer;
+            _damageableContainer = damageableContainer;
 
             _camera = camera;
             _cameraBounds = cameraBounds;
@@ -173,6 +188,11 @@ namespace Core.Game
                 _world,
                 _projectileDatabase,
                 _projectileContainer);
+
+            _damageableItemsFactory = new DamageableItemsFactory(
+                _world,
+                _damageableItemsDatabase,
+                _damageableContainer);
         }
 
         private void CreateSystems()
@@ -267,8 +287,15 @@ namespace Core.Game
                 _enemySpawnDatabase,
                 _navigationGrid);
 
+            _damageableSpawnSystem = new DamageableItemsSpawnSystem(
+                _damageableItemsFactory,
+                _damageableItemsDatabase,
+                _navigationGrid);
+
             _gameplaySystems.AddSystem(_enemySpawnSystem);
+            _gameplaySystems.AddSystem(_damageableSpawnSystem);
             _gameplaySystems.AddSystem(new LootSpawnSystem(_lootFactory));
+
             _gameplaySystems.AddSystem(_playerDeathSystem);
             _gameplaySystems.AddSystem(new CleanupSystem());
             _gameplaySystems.AddSystem(new EnemyDeathSystem());

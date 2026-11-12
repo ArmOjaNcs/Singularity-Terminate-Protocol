@@ -30,6 +30,7 @@ namespace Core.Installers
         [SerializeField] private Transform _projectileContainer;
         [SerializeField] private Transform _enemyContainer;
         [SerializeField] private Transform _lootContainer;
+        [SerializeField] private Transform _damageableContainer;
 
         public override void InstallBindings()
         {
@@ -75,6 +76,9 @@ namespace Core.Installers
 
             Container.BindInstance(_lootContainer)
                 .WithId("LootContainer");
+
+            Container.BindInstance(_damageableContainer)
+                .WithId("DamageableContainer");
         }
     }
 }

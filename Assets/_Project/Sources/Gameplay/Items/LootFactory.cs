@@ -15,8 +15,8 @@ namespace Gameplay.Items
     public sealed class LootFactory
     {
         private readonly World _world;
-        private readonly Dictionary<string, ObjectPool<AnimatedView>> _poolMap = new ();
-        private readonly List<ObjectPool<AnimatedView>> _pools = new ();
+        private readonly Dictionary<string, ObjectPool<EntityView>> _poolMap = new ();
+        private readonly List<ObjectPool<EntityView>> _pools = new ();
         private readonly Transform _container;
 
         private readonly Stash<ItemPickupComponent> _itemStash;
@@ -51,7 +51,7 @@ namespace Gameplay.Items
             InitializeConfigs();
         }
 
-        public AnimatedView Create(CreatureType enemyType, Vector3 position)
+        public EntityView Create(CreatureType enemyType, Vector3 position)
         {
             Entity entity = _world.CreateEntity();
 
@@ -79,7 +79,7 @@ namespace Gameplay.Items
 
                     _positionStash.Set(entity, new PositionComponent { Position = position });
 
-                    AnimatedView itemObject = GetItem(item.Prefab, position);
+                    EntityView itemObject = GetItem(item.Prefab, position);
 
                     _viewStash.Set(entity, new ItemViewComponent { View = itemObject });
 
@@ -93,7 +93,7 @@ namespace Gameplay.Items
             return null;
         }
 
-        public void Release(AnimatedView view)
+        public void Release(EntityView view)
         {
             string cleanName = view.name.Replace("(Clone)", string.Empty).Trim();
 
@@ -109,7 +109,7 @@ namespace Gameplay.Items
             foreach (LootDropItem config in _lootDatabase.LootItems)
             {
                 _pools.Add(
-                    new ObjectPool<AnimatedView>(
+                    new ObjectPool<EntityView>(
                         config.Prefab,
                         config.PoolCapacity,
                         _container));
@@ -119,11 +119,11 @@ namespace Gameplay.Items
                 _poolMap.Add(pool.Prefab.name, pool);
         }
 
-        private AnimatedView GetItem(AnimatedView prefab, Vector3 position)
+        private EntityView GetItem(EntityView prefab, Vector3 position)
         {
-            ObjectPool<AnimatedView> pool = _pools.Find(item => item.Prefab == prefab);
+            ObjectPool<EntityView> pool = _pools.Find(item => item.Prefab == prefab);
 
-            AnimatedView itemObject = pool.GetElement();
+            EntityView itemObject = pool.GetElement();
 
             itemObject.transform.position = position;
             itemObject.transform.rotation = Quaternion.identity;
