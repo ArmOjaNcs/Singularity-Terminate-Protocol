@@ -10,7 +10,7 @@ namespace Core.Game
         public const float MinProjectileLifetime = 1f;
         public const float MinProjectileRadius = 0.01f;
 
-        public const int MinProjectileCount = 1;
+        public const int MinCyclesPerAttack = 1;
         public const int MinPoolCapacity = 1;
 
         public static float GetSafeAttackCooldown(float value)
@@ -58,9 +58,9 @@ namespace Core.Game
             return Mathf.Max(value, 0f);
         }
 
-        public static int GetSafeProjectileCount(int value)
+        public static int GetSafeCyclesPerAttack(int value)
         {
-            return Mathf.Max(value, MinProjectileCount);
+            return Mathf.Max(value, MinCyclesPerAttack);
         }
 
         public static int GetSafePierce(int value)

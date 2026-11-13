@@ -2,10 +2,10 @@ namespace UpgradeConfigs
 {
     public enum WeaponStats
     {
-        ProjectileCount,
+        CyclesPerAttack,
         Pierce,
         AttackDuration,
-        FireRate,
+        CycleInterval,
         Damage,
         AttackCooldown,
         DistanceFromSource,
@@ -15,5 +15,6 @@ namespace UpgradeConfigs
         ProjectileLifetime,
         ProjectileScale,
         Homing,
+        ShotsPerCycle,
     }
 }

@@ -8,6 +8,7 @@ namespace ECS.ProjectileComponents
         public Vector3 Direction;
         public ArcTrajectoryAnchor Anchor;
         public Entity AnchorTarget;
+        public Vector3 AnchorPosition;
         public Vector3 ColliderOffset;
         public Vector2 BaseColliderCenter;
         public float DistanceFromSource;

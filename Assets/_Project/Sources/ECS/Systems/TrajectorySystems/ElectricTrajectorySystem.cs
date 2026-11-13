@@ -51,6 +51,13 @@ namespace ECS.TrajectorySystems
             {
                 ref ProjectileComponent projectile = ref _projectiles.Get(entity);
                 ref ElectricTrajectoryComponent trajectory = ref _trajectories.Get(entity);
+                if (projectile.CurrentLifetime < 0f)
+                {
+                    projectile.CollisionEnabled = false;
+                    continue;
+                }
+
+                projectile.CollisionEnabled = true;
                 if (projectile.CleanupRequested)
                     continue;
 

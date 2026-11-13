@@ -13,6 +13,7 @@ namespace ECS.ProjectileSystems
         private readonly Stash<AttackComponent> _attackStash;
         private readonly Stash<TargetComponent> _targetStash;
         private readonly Stash<PositionComponent> _positionStash;
+        private readonly Stash<DeathComponent> _deathStash;
         private readonly Stash<ProjectileComponent> _projectileStash;
         private readonly Stash<GrenadeFlightComponent> _flightStash;
         private readonly Stash<RotationComponent> _rotationStash;
@@ -27,6 +28,7 @@ namespace ECS.ProjectileSystems
             _attackStash = world.GetStash<AttackComponent>();
             _targetStash = world.GetStash<TargetComponent>();
             _positionStash = world.GetStash<PositionComponent>();
+            _deathStash = world.GetStash<DeathComponent>();
             _projectileStash = world.GetStash<ProjectileComponent>();
             _flightStash = world.GetStash<GrenadeFlightComponent>();
             _rotationStash = world.GetStash<RotationComponent>();
@@ -45,21 +47,33 @@ namespace ECS.ProjectileSystems
             }
 
             Entity target = _targetStash.Get(weapon).Target;
-            if (!_positionStash.Has(target))
-                return;
-
+            bool hasTarget = target != default &&
+                             _positionStash.Has(target) &&
+                             !_deathStash.Has(target);
             AttackComponent attack = _attackStash.Get(weapon);
             Vector3 weaponPosition = _positionStash.Get(weapon).Position;
-            Vector3 targetPosition = _positionStash.Get(target).Position;
-            Vector3 aimDirection = targetPosition - weaponPosition;
-            aimDirection.z = 0f;
-            if (aimDirection.sqrMagnitude <= 0.0001f)
-                return;
-            aimDirection.Normalize();
+            Vector3 targetDirection = hasTarget
+                ? _positionStash.Get(target).Position - weaponPosition
+                : Vector3.zero;
+            targetDirection.z = 0f;
+            hasTarget = hasTarget && targetDirection.sqrMagnitude > 0.0001f;
 
             float flightDistance = Mathf.Max(
                 0.1f,
-                attack.ProjectileFlightDistance);
+                attack.Trajectory.FlightDistance);
+
+            if (targetDirection.sqrMagnitude <= 0.0001f &&
+                projectiles != null && projectiles.Length > 0 &&
+                _projectileStash.Has(projectiles[0]))
+            {
+                targetDirection = _projectileStash.Get(projectiles[0]).Direction;
+                targetDirection.z = 0f;
+            }
+
+            if (targetDirection.sqrMagnitude <= 0.0001f)
+                return;
+
+            Vector3 aimDirection = targetDirection.normalized;
             float flightDuration = GetFlightDuration(
                 flightDistance,
                 _config.ArcOffset,

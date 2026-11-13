@@ -10,6 +10,9 @@ namespace ECS.ProjectileSystems
 {
     public sealed class RipperProjectileCreator : IProjectileCreator
     {
+        public const float MotionDurationMultiplier = 1.25f;
+
+        private readonly World _world;
         private readonly RipperProjectileConfig _config;
         private readonly Stash<AttackComponent> _attackStash;
         private readonly Stash<AttackSequenceComponent> _sequenceStash;
@@ -25,6 +28,7 @@ namespace ECS.ProjectileSystems
             World world,
             RipperProjectileConfig config)
         {
+            _world = world;
             _config = config;
             _attackStash = world.GetStash<AttackComponent>();
             _sequenceStash = world.GetStash<AttackSequenceComponent>();
@@ -60,12 +64,23 @@ namespace ECS.ProjectileSystems
                 if (target == default && _targetStash.Has(weapon))
                     target = _targetStash.Get(weapon).Target;
 
-                if (!_positionStash.Has(target))
+                Vector3 targetOffset;
+                if (target != default &&
+                    !_world.IsDisposed(target) &&
+                    _positionStash.Has(target))
+                {
+                    targetOffset = _positionStash.Get(target).Position -
+                                   _positionStash.Get(weapon).Position;
+                }
+                else if (projectiles.Length > 0 &&
+                         _projectileStash.Has(projectiles[0]))
+                {
+                    targetOffset = _projectileStash.Get(projectiles[0]).Direction;
+                }
+                else
+                {
                     return;
-
-                Vector3 targetOffset =
-                    _positionStash.Get(target).Position -
-                    _positionStash.Get(weapon).Position;
+                }
                 targetOffset.z = 0f;
 
                 ripperSequence = new RipperSequenceComponent
@@ -77,9 +92,7 @@ namespace ECS.ProjectileSystems
             }
 
             float apothem = Mathf.Max(0.01f, attack.DistanceFromSource);
-            float sweepLength = apothem * 2f / Mathf.Sqrt(3f);
-            Vector3 railCenterOffset =
-                ripperSequence.AttackDirection * apothem;
+            float sweepLength = apothem * 2f;
 
             foreach (Entity projectileEntity in projectiles)
             {
@@ -93,29 +106,23 @@ namespace ECS.ProjectileSystems
                 ref ProjectileComponent projectile =
                     ref _projectileStash.Get(projectileEntity);
 
-                bool reverseSweep = projectile.SwingIndex % 2 != 0;
                 Vector3 attackDirection = ripperSequence.AttackDirection;
-                // Each selected attack direction is a hexagon face normal.
-                // The saw travels along that face, perpendicular to the normal.
-                Vector3 sweepDirection = new Vector3(
-                    -attackDirection.y,
-                    attackDirection.x,
-                    0f);
-                if (sweepDirection.y > 0f)
-                    sweepDirection = -sweepDirection;
+                for (int turn = 0; turn < projectile.SwingIndex % 4; turn++)
+                {
+                    attackDirection = new Vector3(
+                        -attackDirection.y,
+                        attackDirection.x,
+                        0f);
+                }
+                Vector3 railCenterOffset = attackDirection * apothem;
 
-                Vector3 direction = sweepDirection;
-                if (reverseSweep)
-                    direction = -direction;
-
-                // The left-facing orientation reverses local Y relative to the
-                // right-facing orientation, so compensate the visual flip.
-                bool mirrorY = reverseSweep ^ (attackDirection.x < 0f);
+                // The saw advances along its local X axis, then returns along it.
+                Vector3 direction = attackDirection;
+                bool mirrorY = attackDirection.x < 0f;
 
                 projectile.Direction = direction;
 
-                // Local X faces the selected attack direction; local Y follows
-                // the perpendicular hexagon face.
+                // Local X faces along the selected diagonal from the player.
                 float angle = Mathf.Atan2(
                     attackDirection.y,
                     attackDirection.x) * Mathf.Rad2Deg;
@@ -130,11 +137,15 @@ namespace ECS.ProjectileSystems
                         SequencePolicy = projectile.SequencePolicy,
                         AttackDirection = attackDirection,
                         Direction = direction,
-                        StartOffset = railCenterOffset -
-                                      direction * (sweepLength * 0.5f),
+                        StartOffset = railCenterOffset,
                         SweepLength = sweepLength,
-                        Duration = Mathf.Max(0.01f, attack.AttackDuration),
+                        Duration = Mathf.Max(
+                            0.01f,
+                            attack.Trajectory.Duration *
+                            MotionDurationMultiplier),
                         CurrentTime = 0f,
+                        ShakeAmplitude = attack.Trajectory.ShakeAmplitude,
+                        ShakeFrequency = attack.Trajectory.ShakeFrequency,
                         MirrorY = mirrorY,
                         CompletionReported = false
                     });

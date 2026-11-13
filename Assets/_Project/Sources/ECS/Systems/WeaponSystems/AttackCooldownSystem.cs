@@ -89,7 +89,10 @@ namespace ECS.WeaponSystems
 
                 ref TargetComponent target = ref _targetStash.Get(weapon);
 
-                if (!IsValidTarget(target.Target, attack.TargetType))
+                bool hasValidTarget =
+                    IsValidTarget(target.Target, attack.TargetType);
+                if (!hasValidTarget &&
+                    !attack.Pattern.RandomDirectionFallback)
                     continue;
 
                 _attackRequestStash.Set(weapon, new AttackRequest());

@@ -14,6 +14,7 @@ namespace ECS.ProjectileSystems
         private readonly Stash<AttackComponent> _attackStash;
         private readonly Stash<TargetComponent> _targetStash;
         private readonly Stash<PositionComponent> _positionStash;
+        private readonly Stash<DeathComponent> _deathStash;
         private readonly Stash<ProjectileComponent> _projectileStash;
         private readonly Stash<RocketFlightComponent> _flightStash;
         private readonly Stash<RotationComponent> _rotationStash;
@@ -28,6 +29,7 @@ namespace ECS.ProjectileSystems
             _attackStash = world.GetStash<AttackComponent>();
             _targetStash = world.GetStash<TargetComponent>();
             _positionStash = world.GetStash<PositionComponent>();
+            _deathStash = world.GetStash<DeathComponent>();
             _projectileStash = world.GetStash<ProjectileComponent>();
             _flightStash = world.GetStash<RocketFlightComponent>();
             _rotationStash = world.GetStash<RotationComponent>();
@@ -45,12 +47,8 @@ namespace ECS.ProjectileSystems
                 return;
             }
 
-            Entity target = _targetStash.Get(weapon).Target;
-            if (!_positionStash.Has(target))
-                return;
-
             AttackComponent attack = _attackStash.Get(weapon);
-            Vector3 targetPosition = _positionStash.Get(target).Position;
+            Entity target = _targetStash.Get(weapon).Target;
 
             foreach (Entity projectileEntity in projectiles)
             {
@@ -63,18 +61,37 @@ namespace ECS.ProjectileSystems
 
                 Vector3 start = _positionStash.Get(projectileEntity).Position;
                 start.z = 0f;
-                Vector3 destination = targetPosition;
-                destination.z = 0f;
-                Vector3 direction = destination - start;
+                bool hasTarget = target != default &&
+                                 _positionStash.Has(target) &&
+                                 !_deathStash.Has(target);
+                Vector3 destination = start;
+                Vector3 direction = Vector3.zero;
+                if (hasTarget)
+                {
+                    destination = _positionStash.Get(target).Position;
+                    destination.z = 0f;
+                    direction = destination - start;
+                    hasTarget = direction.sqrMagnitude > 0.0001f;
+                }
+
+                if (!hasTarget)
+                {
+                    direction = _projectileStash.Get(projectileEntity).Direction;
+                    direction.z = 0f;
+                }
+
                 if (direction.sqrMagnitude <= 0.0001f)
                     continue;
                 direction.Normalize();
 
                 float speed = Mathf.Max(0.01f, attack.ProjectileSpeed);
-                float flightDistance = Mathf.Max(
-                    Vector3.Distance(start, destination),
-                    attack.ProjectileFlightDistance +
-                    attack.ProjectileFlightDistanceTolerance);
+                float configuredDistance = attack.Trajectory.FlightDistance +
+                                           attack.Trajectory.FlightDistanceTolerance;
+                float flightDistance = hasTarget
+                    ? Mathf.Max(Vector3.Distance(start, destination), configuredDistance)
+                    : Mathf.Max(0.1f, configuredDistance);
+                if (!hasTarget)
+                    destination = start + direction * flightDistance;
 
                 ref ProjectileComponent projectile =
                     ref _projectileStash.Get(projectileEntity);

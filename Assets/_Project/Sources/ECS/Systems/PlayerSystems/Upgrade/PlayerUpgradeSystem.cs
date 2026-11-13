@@ -160,17 +160,24 @@ namespace ECS.PlayerSystems
 
             switch (config.Stat)
             {
-                case WeaponStats.ProjectileCount:
-                    attack.ProjectileCount += amount;
+                case WeaponStats.CyclesPerAttack:
+                    attack.CyclesPerAttack = Math.Min(
+                        attack.MaxCyclesPerAttack,
+                        attack.CyclesPerAttack + amount);
+                    break;
+                case WeaponStats.ShotsPerCycle:
+                    attack.ShotsPerCycle = Math.Min(
+                        attack.MaxShotsPerCycle,
+                        attack.ShotsPerCycle + amount);
                     break;
                 case WeaponStats.Pierce:
                     attack.Pierce += amount;
                     break;
                 case WeaponStats.AttackDuration:
-                    attack.AttackDuration += (float)Math.Round(attack.AttackDuration * (amount / 100f), 2);
+                    attack.Trajectory.Duration += (float)Math.Round(attack.Trajectory.Duration * (amount / 100f), 2);
                     break;
-                case WeaponStats.FireRate:
-                    attack.FireRate += (float)Math.Round(attack.FireRate * (amount / 100f), 2);
+                case WeaponStats.CycleInterval:
+                    attack.CycleInterval += (float)Math.Round(attack.CycleInterval * (amount / 100f), 2);
                     break;
                 case WeaponStats.Damage:
                     attack.Damage += amount;

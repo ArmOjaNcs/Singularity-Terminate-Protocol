@@ -76,7 +76,8 @@ namespace ECS.CommonSystems
 
                 if (sequence.IsActive &&
                     attack.ProjectileSequencePolicy ==
-                    ProjectileSequencePolicy.ComboOnTarget)
+                    ProjectileSequencePolicy.ComboOnTarget &&
+                    sequence.LockedTarget != default)
                 {
                     if (IsValidTarget(sequence.LockedTarget, attack.TargetType) &&
                         _positionStash.Has(sequence.LockedTarget) &&
@@ -95,10 +96,10 @@ namespace ECS.CommonSystems
                 FindTarget(
                     position.Position,
                     attack.TargetSearchRadius,
-                    attack.ProjectileFlightDistance > 0f
-                        ? attack.DistanceFromSource + attack.ProjectileFlightDistance
+                    attack.Trajectory.FlightDistance > 0f
+                        ? attack.DistanceFromSource + attack.Trajectory.FlightDistance
                         : 0f,
-                    attack.ProjectileFlightDistanceTolerance,
+                    attack.Trajectory.FlightDistanceTolerance,
                     attack.TargetType,
                     sequence.IsActive ? sequence.VisitedTargets : null,
                     ref target);

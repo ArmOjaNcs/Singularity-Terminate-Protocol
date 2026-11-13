@@ -60,8 +60,8 @@ namespace ECS.ProjectileSystems
                     new ElectricTrajectoryComponent
                     {
                         Target = target,
-                        Amplitude = attack.ZigZagAmplitude,
-                        Frequency = attack.ZigZagFrequency,
+                        Amplitude = attack.Trajectory.ZigZagAmplitude,
+                        Frequency = attack.Trajectory.ZigZagFrequency,
                         Phase = 0f,
                         ForwardDirection = direction.normalized
                     });

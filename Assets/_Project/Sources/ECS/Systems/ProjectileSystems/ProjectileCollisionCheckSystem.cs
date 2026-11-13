@@ -343,7 +343,7 @@ namespace ECS.ProjectileSystems
             {
                 AttackTargetType.Enemy =>
                     _enemyFilter.Has(entity),
-
+                
                 AttackTargetType.Player =>
                     _playerFilter.Has(entity),
 

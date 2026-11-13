@@ -65,30 +65,49 @@ namespace ECS.WeaponSystems
 
             _attackStash.Set(weapon, new AttackComponent
             {
-                ProjectileCount = config.AttackConfig.ProjectileCount,
-                ShotsInAttack = config.AttackConfig.ShotsInAttack,
+                CyclesPerAttack = Mathf.Clamp(
+                    config.AttackConfig.CyclesPerAttack,
+                    0,
+                    Mathf.Max(1, config.AttackConfig.MaxCyclesPerAttack)),
+                ShotsPerCycle = Mathf.Clamp(
+                    config.AttackConfig.ShotsPerCycle,
+                    0,
+                    Mathf.Max(1, config.AttackConfig.MaxShotsPerCycle)),
+                MaxCyclesPerAttack = Mathf.Max(1, config.AttackConfig.MaxCyclesPerAttack),
+                MaxShotsPerCycle = Mathf.Max(1, config.AttackConfig.MaxShotsPerCycle),
                 Pierce = config.AttackConfig.Pierce,
                 MaxRicochets = config.AttackConfig.MaxRicochets,
 
-                AttackDuration = config.AttackConfig.AttackDuration,
-                FireRate = config.AttackConfig.FireRate,
+                CycleInterval = config.AttackConfig.CycleInterval,
+                ShotInterval = config.AttackConfig.ShotInterval,
                 Damage = config.AttackConfig.Damage,
                 AttackCooldown = config.AttackConfig.AttackCooldown,
                 CurrentCooldown = config.AttackConfig.AttackCooldown,
                 TargetSearchRadius = config.AttackConfig.TargetSearchRadius,
                 DistanceFromSource = config.AttackConfig.DistanceFromSource,
                 ProjectileScale = config.AttackConfig.ProjectileScale,
-                ProjectileFlightDistance = config.AttackConfig.ProjectileFlightDistance,
-                ProjectileFlightDistanceTolerance = config.AttackConfig.ProjectileFlightDistanceTolerance,
+                Trajectory = new TrajectoryComponent
+                {
+                    Duration = config.AttackConfig.Trajectory.Duration,
+                    FlightDistance = config.AttackConfig.Trajectory.FlightDistance,
+                    FlightDistanceTolerance = config.AttackConfig.Trajectory.FlightDistanceTolerance,
+                    ZigZagAmplitude = config.AttackConfig.Trajectory.ZigZagAmplitude,
+                    ZigZagFrequency = config.AttackConfig.Trajectory.ZigZagFrequency,
+                    ShakeAmplitude = config.AttackConfig.Trajectory.ShakeAmplitude,
+                    ShakeFrequency = config.AttackConfig.Trajectory.ShakeFrequency
+                },
+                Pattern = new AttackPatternComponent
+                {
+                    SpreadAngle = config.AttackConfig.Pattern.SpreadAngle,
+                    RandomDirectionFallback = config.AttackConfig.Pattern.RandomDirectionFallback,
+                    SelectTargetPerCycle = config.AttackConfig.Pattern.SelectTargetPerCycle
+                },
                 HomingEnabled = config.AttackConfig.HomingEnabled,
                 RicochetTargetSearchRadius = config.AttackConfig.RicochetTargetSearchRadius,
                 ProjectileSpeed = config.AttackConfig.ProjectileSpeed,
                 ProjectileLifetime = config.AttackConfig.ProjectileLifetime,
                 RicochetChance = config.AttackConfig.RicochetChance,
                 AllowRicochetRepeatTargets = config.AttackConfig.AllowRicochetRepeatTargets,
-                ZigZagAmplitude = config.AttackConfig.ZigZagAmplitude,
-                ZigZagFrequency = config.AttackConfig.ZigZagFrequency,
-                ShotSpreadAngle = config.AttackConfig.ShotSpreadAngle,
                 TargetType = config.AttackConfig.TargetType,
                 HitPolicy = config.AttackConfig.HitPolicy,
                 HitInterval = config.AttackConfig.HitInterval,

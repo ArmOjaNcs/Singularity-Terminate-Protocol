@@ -55,6 +55,9 @@ namespace ECS.TrajectorySystems
         {
             foreach (Entity entity in _filter)
             {
+                if (_projectileStash.Get(entity).CurrentLifetime < 0f)
+                    continue;
+
                 ref RocketFlightComponent flight = ref _flightStash.Get(entity);
                 Vector3 position = _positionStash.Get(entity).Position;
                 position.z = 0f;
