@@ -12,18 +12,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53e4892c4eeb58b4c9097e58712adab9, type: 3}
   m_Name: RocketLauncherAttack
   m_EditorClassIdentifier: 
-  ProjectileCount: 1
-  ShotsInAttack: 1
+  CyclesPerAttack: 1
+  ShotsPerCycle: 1
+  MaxCyclesPerAttack: 4
+  MaxShotsPerCycle: 1
   Pierce: 0
   MaxRicochets: 0
-  AttackDuration: 0.2
-  FireRate: 0.1
+  CycleInterval: 0.1
+  ShotInterval: 0
   Damage: 22
   AttackCooldown: 2
   DistanceFromSource: 0.45
   ProjectileScale: 1
-  ProjectileFlightDistance: 8.5
-  ProjectileFlightDistanceTolerance: 1.75
+  Trajectory:
+    Duration: 0.2
+    FlightDistance: 8.5
+    FlightDistanceTolerance: 1.75
+    ZigZagAmplitude: 0.3
+    ZigZagFrequency: 8
+  Pattern:
+    SpreadAngle: 0
+    RandomDirectionFallback: 1
+    SelectTargetPerCycle: 0
   HomingEnabled: 0
   RicochetTargetSearchRadius: 0
   TargetSearchRadius: 13
@@ -31,9 +41,6 @@ MonoBehaviour:
   ProjectileLifetime: 6
   RicochetChance: 0
   AllowRicochetRepeatTargets: 0
-  ZigZagAmplitude: 0.3
-  ZigZagFrequency: 8
-  ShotSpreadAngle: 0
   HitInterval: 0
   TargetType: 0000000002000000
   HitPolicy: 1

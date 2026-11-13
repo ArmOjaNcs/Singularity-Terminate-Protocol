@@ -12,18 +12,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53e4892c4eeb58b4c9097e58712adab9, type: 3}
   m_Name: RipperAttack
   m_EditorClassIdentifier: 
-  ProjectileCount: 2
-  ShotsInAttack: 1
+  CyclesPerAttack: 4
+  ShotsPerCycle: 2
+  MaxCyclesPerAttack: 4
+  MaxShotsPerCycle: 2
   Pierce: 0
   MaxRicochets: 0
-  AttackDuration: 0.35
-  FireRate: 0.35
+  CycleInterval: 0
+  ShotInterval: 0
   Damage: 10
   AttackCooldown: 2
   DistanceFromSource: 0.75
   ProjectileScale: 1
-  ProjectileFlightDistance: 0
-  ProjectileFlightDistanceTolerance: 0
+  Trajectory:
+    Duration: 0.35
+    FlightDistance: 0
+    FlightDistanceTolerance: 0
+    ZigZagAmplitude: 0
+    ZigZagFrequency: 0
+    ShakeAmplitude: 0.05
+    ShakeFrequency: 18
+  Pattern:
+    SpreadAngle: 0
+    RandomDirectionFallback: 1
+    SelectTargetPerCycle: 0
   HomingEnabled: 0
   RicochetTargetSearchRadius: 1
   TargetSearchRadius: 2
@@ -31,9 +43,6 @@ MonoBehaviour:
   ProjectileLifetime: 1
   RicochetChance: 0
   AllowRicochetRepeatTargets: 0
-  ZigZagAmplitude: 0.3
-  ZigZagFrequency: 8
-  ShotSpreadAngle: 0
   HitInterval: 0.15
   TargetType: 0000000002000000
   HitPolicy: 2

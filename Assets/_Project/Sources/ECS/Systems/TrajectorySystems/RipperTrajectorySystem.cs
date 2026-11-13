@@ -42,6 +42,9 @@ namespace ECS.TrajectorySystems
                 ref RipperTrajectoryComponent trajectory =
                     ref _trajectoryStash.Get(entity);
 
+                if (projectile.CurrentLifetime < 0f)
+                    continue;
+
                 if (trajectory.Duration <= 0f ||
                     !_positionStash.Has(projectile.Weapon))
                 {
@@ -54,15 +57,26 @@ namespace ECS.TrajectorySystems
 
                 float progress = Mathf.Clamp01(
                     trajectory.CurrentTime / trajectory.Duration);
+                float sweepProgress = progress <= 0.5f
+                    ? progress * 2f
+                    : (1f - progress) * 2f;
                 Vector3 start =
                     _positionStash.Get(projectile.Weapon).Position +
                     trajectory.StartOffset;
 
                 ref PositionComponent position =
                     ref _positionStash.Get(entity);
+                Vector3 perpendicular = new Vector3(
+                    -trajectory.Direction.y,
+                    trajectory.Direction.x,
+                    0f);
+                float shake = Mathf.Sin(
+                    trajectory.CurrentTime * trajectory.ShakeFrequency *
+                    Mathf.PI * 2f) * trajectory.ShakeAmplitude;
                 position.Position = start +
                                     trajectory.Direction *
-                                    (trajectory.SweepLength * progress);
+                                    (trajectory.SweepLength * sweepProgress) +
+                                    perpendicular * shake;
 
                 float angle = Mathf.Atan2(
                     trajectory.AttackDirection.y,

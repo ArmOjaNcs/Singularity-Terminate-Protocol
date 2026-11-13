@@ -39,6 +39,14 @@ namespace ECS.TrajectorySystems
                 ref ProjectileComponent projectile =
                     ref _projectileStash.Get(entity);
 
+                if (projectile.CurrentLifetime < 0f)
+                {
+                    projectile.CollisionEnabled = false;
+                    continue;
+                }
+
+                projectile.CollisionEnabled = true;
+
                 Vector3 direction = projectile.Direction;
                 direction.z = 0f;
 

@@ -12,6 +12,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 951adce678c91324396c3327daa789a9, type: 3}
   m_Name: ArturConfig
   m_EditorClassIdentifier: 
+  CreatureType: 0
+  Id: 3
+  Name: 
+  Prefab: {fileID: 3390881850889633240, guid: 3262540a8de87714483d1316aa9de188, type: 3}
+  Stats:
+    MaxHealth: 100000
+    HealthRegeneration: 0
+    Damage: 0
+    Luck: 0
+    Defence: 0
+    Speed: 5
+  WeaponConfig: []
   HitBox:
     Type: 2
     Radius: 0.3

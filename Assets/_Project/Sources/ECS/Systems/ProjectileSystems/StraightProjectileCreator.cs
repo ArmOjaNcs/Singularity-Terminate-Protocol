@@ -59,7 +59,7 @@ namespace ECS.ProjectileSystems
 
             baseDirection.Normalize();
 
-            float spreadAngle = attack.ShotSpreadAngle;
+            float spreadAngle = attack.Pattern.SpreadAngle;
             int projectileCount = projectiles.Length;
 
             for (int i = 0; i < projectileCount; i++)

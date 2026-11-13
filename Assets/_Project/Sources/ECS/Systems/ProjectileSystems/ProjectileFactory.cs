@@ -92,12 +92,32 @@ namespace ECS.ProjectileSystems
                 ref _attackStatusStash.Get(weapon);
 
             creation.ElapsedTime = 0f;
-            creation.RemainingCount = Mathf.Max(0, attack.ProjectileCount);
+            int cyclesPerAttack = Mathf.Max(0, attack.CyclesPerAttack);
+            if (weaponType == WeaponType.Axe)
+            {
+                cyclesPerAttack = Mathf.Min(
+                    cyclesPerAttack,
+                    AxeProjectileCreator.SectorCount);
+            }
+
+            creation.RemainingCount = weaponType == WeaponType.Sword
+                ? Mathf.Max(0, cyclesPerAttack - 1)
+                : cyclesPerAttack;
+            creation.IsWaitingForCycle = false;
+            creation.IsComboRestart = false;
             creation.IsInitialized = true;
 
             sequence.Id++;
             sequence.IsActive = true;
             sequence.LockedTarget = default;
+            sequence.AttackTarget = default;
+            sequence.FallbackDirection = Vector3.zero;
+            sequence.HasFallbackDirection = false;
+            sequence.UsedSectorMask = 0;
+            sequence.AssignedSectorCycle = -1;
+            sequence.AssignedSectorIndex = -1;
+            sequence.AxeSweepClockwise = false;
+            sequence.HasAxeSweepDirection = false;
             sequence.ReleasesCreated = 0;
             sequence.OutstandingProjectiles = 0;
             sequence.RicochetsCount = 0;
@@ -110,7 +130,9 @@ namespace ECS.ProjectileSystems
 
             attackStatus.CreationFinished = false;
 
-            if (creation.RemainingCount <= 0)
+            if (weaponType == WeaponType.Sword
+                    ? attack.CyclesPerAttack <= 0
+                    : creation.RemainingCount <= 0)
             {
                 if (attack.ProjectileSequencePolicy ==
                     ProjectileSequencePolicy.ComboOnTarget)
@@ -121,6 +143,9 @@ namespace ECS.ProjectileSystems
             }
 
             if (!CreateRelease(weapon))
+                return;
+
+            if (weaponType == WeaponType.Sword)
                 return;
 
             creation.RemainingCount--;
@@ -152,6 +177,13 @@ namespace ECS.ProjectileSystems
 
             ref AttackComponent attack = ref _attackStash.Get(weapon);
 
+            if (_weaponStash.Has(weapon) &&
+                _weaponStash.Get(weapon).Type == WeaponType.Sword)
+            {
+                UpdateSwordCycles(weapon, deltaTime);
+                return;
+            }
+
             if (!_weaponStash.Has(weapon) ||
                 !HasProjectileConfig(_weaponStash.Get(weapon).Type))
             {
@@ -169,7 +201,7 @@ namespace ECS.ProjectileSystems
                 return;
             }
 
-            if (attack.FireRate <= 0f)
+            if (attack.CycleInterval <= 0f)
             {
                 while (creation.RemainingCount > 0)
                 {
@@ -187,10 +219,10 @@ namespace ECS.ProjectileSystems
 
             creation.ElapsedTime += deltaTime;
 
-            while (creation.ElapsedTime >= attack.FireRate &&
+            while (creation.ElapsedTime >= attack.CycleInterval &&
                    creation.RemainingCount > 0)
             {
-                creation.ElapsedTime -= attack.FireRate;
+                creation.ElapsedTime -= attack.CycleInterval;
 
                 if (!CreateRelease(weapon))
                     return;
@@ -209,6 +241,43 @@ namespace ECS.ProjectileSystems
         public void Cancel(Entity weapon)
         {
             FinishCreation(weapon);
+        }
+
+        private void UpdateSwordCycles(Entity weapon, float deltaTime)
+        {
+            ref ProjectileCreationComponent creation =
+                ref _creationStash.Get(weapon);
+            if (!creation.IsWaitingForCycle)
+                return;
+
+            ref AttackComponent attack = ref _attackStash.Get(weapon);
+            creation.ElapsedTime += deltaTime;
+            if (attack.CycleInterval > 0f &&
+                creation.ElapsedTime < attack.CycleInterval)
+            {
+                return;
+            }
+
+            bool comboRestart = creation.IsComboRestart;
+            if (!comboRestart && _sequenceStash.Has(weapon))
+            {
+                ref AttackSequenceComponent sequence =
+                    ref _sequenceStash.Get(weapon);
+                sequence.LockedTarget = default;
+                sequence.RicochetsCount = 0;
+                sequence.RicochetPending = false;
+                sequence.PendingTarget = default;
+            }
+
+            if (!CreateRelease(weapon))
+                return;
+
+            if (!comboRestart)
+                creation.RemainingCount--;
+
+            creation.ElapsedTime = 0f;
+            creation.IsWaitingForCycle = false;
+            creation.IsComboRestart = false;
         }
 
         private bool CreateRelease(Entity weapon)
@@ -237,10 +306,24 @@ namespace ECS.ProjectileSystems
             ref ProjectileCreationComponent creation =
                 ref _creationStash.Get(weapon);
 
-            Entity target = sequence.LockedTarget;
-            if (attack.ProjectileSequencePolicy !=
-                    ProjectileSequencePolicy.ComboOnTarget ||
-                target == default)
+            Entity target;
+            if (attack.ProjectileSequencePolicy ==
+                ProjectileSequencePolicy.ComboOnTarget &&
+                sequence.LockedTarget != default)
+            {
+                target = sequence.LockedTarget;
+            }
+            else if (!attack.Pattern.SelectTargetPerCycle &&
+                     sequence.AttackTarget != default)
+            {
+                target = sequence.AttackTarget;
+            }
+            else if (!attack.Pattern.SelectTargetPerCycle &&
+                     sequence.HasFallbackDirection)
+            {
+                target = default;
+            }
+            else
             {
                 target = _targetStash.Has(weapon)
                     ? _targetStash.Get(weapon).Target
@@ -249,28 +332,50 @@ namespace ECS.ProjectileSystems
 
             if (!TryGetDirection(weapon, target, out Vector3 direction))
             {
-                bool hasCachedRipperDirection =
-                    weaponType == WeaponType.Ripper &&
-                    _ripperSequenceStash.Has(weapon) &&
-                    _ripperSequenceStash.Get(weapon).IsInitialized &&
-                    _ripperSequenceStash.Get(weapon).SequenceId == sequence.Id;
-
-                if (!hasCachedRipperDirection)
+                if (attack.Pattern.RandomDirectionFallback)
                 {
-                    if (attack.ProjectileSequencePolicy ==
-                            ProjectileSequencePolicy.ComboOnTarget &&
-                        sequence.LockedTarget != default)
+                    if (!attack.Pattern.SelectTargetPerCycle &&
+                        sequence.HasFallbackDirection)
+                    {
+                        direction = sequence.FallbackDirection;
+                    }
+                    else
+                    {
+                        float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+                        direction = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f);
+
+                        if (!attack.Pattern.SelectTargetPerCycle)
+                        {
+                            sequence.FallbackDirection = direction;
+                            sequence.HasFallbackDirection = true;
+                        }
+                    }
+                }
+                else
+                {
+                    bool hasCachedRipperDirection =
+                        weaponType == WeaponType.Ripper &&
+                        _ripperSequenceStash.Has(weapon) &&
+                        _ripperSequenceStash.Get(weapon).IsInitialized &&
+                        _ripperSequenceStash.Get(weapon).SequenceId == sequence.Id;
+
+                    if (hasCachedRipperDirection)
+                    {
+                        direction = _ripperSequenceStash.Get(weapon).AttackDirection;
+                    }
+                    else if (attack.ProjectileSequencePolicy ==
+                                 ProjectileSequencePolicy.ComboOnTarget &&
+                             sequence.LockedTarget != default)
                     {
                         creation.RemainingCount = 0;
                         return false;
                     }
-
-                    FinishCreation(weapon);
-                    return false;
+                    else
+                    {
+                        FinishCreation(weapon);
+                        return false;
+                    }
                 }
-
-                direction =
-                    _ripperSequenceStash.Get(weapon).AttackDirection;
             }
 
             _creators.TryGetValue(
@@ -281,10 +386,7 @@ namespace ECS.ProjectileSystems
                 weaponType,
                 out ObjectPool<AnimatedView> pool);
 
-            int projectileCount = weaponType == WeaponType.Sword ||
-                                  weaponType == WeaponType.Ripper
-                ? 1
-                : Mathf.Max(1, attack.ShotsInAttack);
+            int projectileCount = Mathf.Max(1, attack.ShotsPerCycle);
             Entity[] projectiles = new Entity[projectileCount];
 
             if (attack.ProjectileSequencePolicy ==
@@ -308,11 +410,57 @@ namespace ECS.ProjectileSystems
             if (creator != null)
                 creator.Create(weapon, projectiles);
 
+            for (int i = 0; i < projectiles.Length; i++)
+            {
+                if (!_projectileStash.Has(projectiles[i]))
+                    continue;
+
+                ref ProjectileComponent shot =
+                    ref _projectileStash.Get(projectiles[i]);
+                float shotInterval = attack.ShotInterval;
+                if (weaponType == WeaponType.Axe ||
+                    weaponType == WeaponType.Ripper)
+                {
+                    float trajectoryDuration = attack.Trajectory.Duration;
+                    if (weaponType == WeaponType.Ripper)
+                    {
+                        trajectoryDuration *=
+                            RipperProjectileCreator.MotionDurationMultiplier;
+                    }
+
+                    shotInterval = Mathf.Max(
+                        shotInterval,
+                        trajectoryDuration);
+                }
+
+                float startDelay = shotInterval * i;
+                if (startDelay <= 0f)
+                    continue;
+
+                shot.CurrentLifetime = -startDelay;
+                shot.CollisionEnabled = false;
+            }
+
             if (target != default &&
                 !sequence.VisitedTargets.Contains(target))
                 sequence.VisitedTargets.Add(target);
 
+            if (target != default &&
+                attack.ProjectileSequencePolicy !=
+                    ProjectileSequencePolicy.ComboOnTarget &&
+                !attack.Pattern.SelectTargetPerCycle &&
+                sequence.AttackTarget == default)
+            {
+                sequence.AttackTarget = target;
+            }
+
             sequence.ReleasesCreated++;
+            if (weaponType == WeaponType.Sword &&
+                creation.RemainingCount > 0 &&
+                !creation.IsComboRestart)
+            {
+                sequence.LockedTarget = default;
+            }
             if (attack.ProjectileSequencePolicy ==
                 ProjectileSequencePolicy.ComboOnTarget)
             {
@@ -362,7 +510,8 @@ namespace ECS.ProjectileSystems
                 HitInterval = attack.HitInterval,
                 HitPolicy = attack.HitPolicy,
                 CollisionEnabled = true,
-                CleanupRequested = false
+                CleanupRequested = false,
+                ViewActivated = true
             });
 
             _positionStash.Set(projectile, new PositionComponent
@@ -536,6 +685,8 @@ namespace ECS.ProjectileSystems
 
                 creation.ElapsedTime = 0f;
                 creation.RemainingCount = 0;
+                creation.IsWaitingForCycle = false;
+                creation.IsComboRestart = false;
                 creation.IsInitialized = false;
             }
 

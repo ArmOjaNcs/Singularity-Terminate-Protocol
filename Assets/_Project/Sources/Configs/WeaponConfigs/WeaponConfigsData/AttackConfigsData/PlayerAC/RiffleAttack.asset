@@ -12,28 +12,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53e4892c4eeb58b4c9097e58712adab9, type: 3}
   m_Name: RiffleAttack
   m_EditorClassIdentifier: 
-  ProjectileCount: 5
-  ShotsInAttack: 1
+  CyclesPerAttack: 1
+  ShotsPerCycle: 5
+  MaxCyclesPerAttack: 4
+  MaxShotsPerCycle: 12
   Pierce: 2
   MaxRicochets: 5
-  AttackDuration: 0.5
-  FireRate: 0.1
+  CycleInterval: 0
+  ShotInterval: 0.1
   Damage: 5
   AttackCooldown: 3
   DistanceFromSource: 0.45
   ProjectileScale: 1
-  ProjectileFlightDistance: 0
-  ProjectileFlightDistanceTolerance: 0
-  HomingEnabled: 0
+  Trajectory:
+    Duration: 0.5
+    FlightDistance: 0
+    FlightDistanceTolerance: 0
+    ZigZagAmplitude: 0
+    ZigZagFrequency: 0
+  Pattern:
+    SpreadAngle: 0
+    RandomDirectionFallback: 1
+    SelectTargetPerCycle: 0
   RicochetTargetSearchRadius: 2.5
   TargetSearchRadius: 5
   ProjectileSpeed: 18
   ProjectileLifetime: 1.5
   RicochetChance: 100
-  AllowRicochetRepeatTargets: 0
-  ZigZagAmplitude: 0.3
-  ZigZagFrequency: 8
-  ShotSpreadAngle: 0
   HitInterval: 0
   TargetType: 0000000002000000
   HitPolicy: 0

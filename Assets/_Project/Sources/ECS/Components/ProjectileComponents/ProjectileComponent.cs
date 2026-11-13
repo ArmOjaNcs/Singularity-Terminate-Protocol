@@ -35,5 +35,6 @@ namespace ECS.ProjectileComponents
         public bool CleanupRequested;
         public bool RicochetPending;
         public bool CollisionEnabled;
+        public bool ViewActivated;
     }
 }

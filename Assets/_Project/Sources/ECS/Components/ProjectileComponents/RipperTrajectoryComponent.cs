@@ -15,6 +15,8 @@ namespace ECS.ProjectileComponents
         public float SweepLength;
         public float Duration;
         public float CurrentTime;
+        public float ShakeAmplitude;
+        public float ShakeFrequency;
         public bool MirrorY;
         public bool CompletionReported;
     }

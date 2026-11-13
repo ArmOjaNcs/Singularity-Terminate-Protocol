@@ -42,6 +42,9 @@ namespace ECS.TrajectorySystems
         {
             foreach (Entity entity in _filter)
             {
+                if (_projectileStash.Get(entity).CurrentLifetime < 0f)
+                    continue;
+
                 ref GrenadeFlightComponent flight = ref _flightStash.Get(entity);
                 flight.Elapsed += deltaTime;
                 float progress = flight.Duration <= 0f

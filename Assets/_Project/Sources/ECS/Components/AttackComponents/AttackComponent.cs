@@ -6,21 +6,23 @@ namespace ECS.AttackComponents
     [System.Serializable]
     public struct AttackComponent : IComponent
     {
-        public int ProjectileCount;
-        public int ShotsInAttack;
+        public int CyclesPerAttack;
+        public int ShotsPerCycle;
+        public int MaxCyclesPerAttack;
+        public int MaxShotsPerCycle;
         public int Pierce;
         public int MaxRicochets;
 
-        public float AttackDuration;
-        public float FireRate;
+        public float CycleInterval;
+        public float ShotInterval;
         public float Damage;
         public float AttackCooldown;
         public float CurrentCooldown;
         public float TargetSearchRadius;
         public float DistanceFromSource;
         public float ProjectileScale;
-        public float ProjectileFlightDistance;
-        public float ProjectileFlightDistanceTolerance;
+        public TrajectoryComponent Trajectory;
+        public AttackPatternComponent Pattern;
         public bool HomingEnabled;
         public float RicochetTargetSearchRadius;
         public float ProjectileSpeed;
@@ -28,9 +30,6 @@ namespace ECS.AttackComponents
         public float HitInterval;
         public float RicochetChance;
         public bool AllowRicochetRepeatTargets;
-        public float ZigZagAmplitude;
-        public float ZigZagFrequency;
-        public float ShotSpreadAngle;
 
         public AttackTargetType[] TargetTypes;
         public HitPolicyType HitPolicy;

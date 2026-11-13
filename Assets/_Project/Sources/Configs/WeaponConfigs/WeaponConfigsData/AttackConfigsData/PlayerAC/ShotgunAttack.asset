@@ -12,28 +12,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53e4892c4eeb58b4c9097e58712adab9, type: 3}
   m_Name: ShotgunAttack
   m_EditorClassIdentifier: 
-  ProjectileCount: 1
-  ShotsInAttack: 8
+  CyclesPerAttack: 1
+  ShotsPerCycle: 8
+  MaxCyclesPerAttack: 4
+  MaxShotsPerCycle: 12
   Pierce: 2
   MaxRicochets: 5
-  AttackDuration: 0.25
-  FireRate: 0.5
+  CycleInterval: 0.15
+  ShotInterval: 0
   Damage: 3
   AttackCooldown: 4
   DistanceFromSource: 0.45
   ProjectileScale: 1
-  ProjectileFlightDistance: 0
-  ProjectileFlightDistanceTolerance: 0
-  HomingEnabled: 0
+  Trajectory:
+    Duration: 0.25
+    FlightDistance: 0
+    FlightDistanceTolerance: 0
+    ZigZagAmplitude: 0
+    ZigZagFrequency: 0
+  Pattern:
+    SpreadAngle: 45
+    RandomDirectionFallback: 1
+    SelectTargetPerCycle: 1
   RicochetTargetSearchRadius: 2
   TargetSearchRadius: 4
   ProjectileSpeed: 14
   ProjectileLifetime: 1.2
   RicochetChance: 5
-  AllowRicochetRepeatTargets: 0
-  ZigZagAmplitude: 0.3
-  ZigZagFrequency: 8
-  ShotSpreadAngle: 45
   HitInterval: 0
   TargetType: 0000000002000000
   HitPolicy: 0

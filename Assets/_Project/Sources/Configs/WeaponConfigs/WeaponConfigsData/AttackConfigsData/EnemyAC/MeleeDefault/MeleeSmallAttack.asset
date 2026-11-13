@@ -12,28 +12,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 53e4892c4eeb58b4c9097e58712adab9, type: 3}
   m_Name: MeleeSmallAttack
   m_EditorClassIdentifier: 
-  ProjectileCount: 1
-  ShotsInAttack: 0
+  CyclesPerAttack: 1
+  ShotsPerCycle: 0
+  MaxCyclesPerAttack: 1
+  MaxShotsPerCycle: 1
   Pierce: 1
   MaxRicochets: 0
-  AttackDuration: 0.25
-  FireRate: 2
+  CycleInterval: 2
+  ShotInterval: 0
   Damage: 10
   AttackCooldown: 2
   DistanceFromSource: 0.35
   ProjectileScale: 1
-  ProjectileFlightDistance: 0
-  ProjectileFlightDistanceTolerance: 0
-  HomingEnabled: 0
+  Trajectory:
+    Duration: 0.25
+    FlightDistance: 0
+    FlightDistanceTolerance: 0
+    ZigZagAmplitude: 0
+    ZigZagFrequency: 0
+  Pattern:
+    SpreadAngle: 0
+    RandomDirectionFallback: 0
+    SelectTargetPerCycle: 0
   RicochetTargetSearchRadius: 0.175
   TargetSearchRadius: 0.35
   ProjectileSpeed: 5
   ProjectileLifetime: 0.1
   RicochetChance: 0
-  AllowRicochetRepeatTargets: 0
-  ZigZagAmplitude: 0.3
-  ZigZagFrequency: 8
-  ShotSpreadAngle: 0
   HitInterval: 0
   TargetType: 01000000
   HitPolicy: 1

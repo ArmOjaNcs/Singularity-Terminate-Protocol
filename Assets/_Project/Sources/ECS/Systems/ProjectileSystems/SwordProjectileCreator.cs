@@ -9,6 +9,7 @@ namespace ECS.ProjectileSystems
 {
     public sealed class SwordProjectileCreator : IProjectileCreator
     {
+        private readonly World _world;
         private readonly ArcProjectileConfig _config;
         private readonly Stash<AttackComponent> _attackStash;
         private readonly Stash<AttackSequenceComponent> _sequenceStash;
@@ -22,6 +23,7 @@ namespace ECS.ProjectileSystems
 
         public SwordProjectileCreator(World world, ArcProjectileConfig config)
         {
+            _world = world;
             _config = config;
             _attackStash = world.GetStash<AttackComponent>();
             _sequenceStash = world.GetStash<AttackSequenceComponent>();
@@ -51,11 +53,26 @@ namespace ECS.ProjectileSystems
             if (target == default && _targetStash.Has(weapon))
                 target = _targetStash.Get(weapon).Target;
 
-            if (!_positionStash.Has(target))
-                return;
-
-            foreach (Entity projectileEntity in projectiles)
+            Vector3 fallbackDirection = Vector3.right;
+            if (projectiles.Length > 0 &&
+                _projectileStash.Has(projectiles[0]))
             {
+                fallbackDirection = _projectileStash.Get(projectiles[0]).Direction;
+                fallbackDirection.z = 0f;
+                if (fallbackDirection.sqrMagnitude > 0.0001f)
+                    fallbackDirection.Normalize();
+            }
+
+            Vector3 attackAreaPosition = target != default &&
+                                         !_world.IsDisposed(target) &&
+                                         _positionStash.Has(target)
+                ? _positionStash.Get(target).Position
+                : _positionStash.Get(weapon).Position +
+                  fallbackDirection * attack.TargetSearchRadius;
+
+            for (int index = 0; index < projectiles.Length; index++)
+            {
+                Entity projectileEntity = projectiles[index];
                 if (!_projectileStash.Has(projectileEntity) ||
                     !_positionStash.Has(projectileEntity) ||
                     !_hitBoxStash.Has(projectileEntity))
@@ -65,13 +82,15 @@ namespace ECS.ProjectileSystems
 
                 ref ProjectileComponent projectile =
                     ref _projectileStash.Get(projectileEntity);
+                float startDelay = attack.ShotInterval * index;
                 Vector3 direction = projectile.Direction;
                 direction.z = 0f;
                 if (direction.sqrMagnitude <= 0.0001f)
                     continue;
                 direction.Normalize();
 
-                bool reverseSwing = projectile.SwingIndex % 2 != 0;
+                int swingIndex = projectile.SwingIndex + index;
+                bool reverseSwing = swingIndex % 2 != 0;
                 bool mirrorY = reverseSwing ^ (direction.x < 0f);
                 float startAngle = reverseSwing
                     ? -_config.StartAngle
@@ -85,8 +104,8 @@ namespace ECS.ProjectileSystems
                     new ArcTrajectoryComponent
                     {
                         Direction = direction,
-                        Anchor = ArcTrajectoryAnchor.Target,
-                        AnchorTarget = target,
+                        Anchor = ArcTrajectoryAnchor.FixedPosition,
+                        AnchorPosition = attackAreaPosition,
                         ColliderOffset = _config.ColliderOffset,
                         DistanceFromSource = attack.DistanceFromSource,
                         Radius = _config.TrajectoryRadius,
@@ -94,11 +113,15 @@ namespace ECS.ProjectileSystems
                         EndAngle = endAngle,
                         StartRotationAngle = startAngle,
                         EndRotationAngle = endAngle,
-                        Duration = attack.AttackDuration,
-                        CurrentTime = 0f,
+                        Duration = attack.Trajectory.Duration,
+                        CurrentTime = -startDelay,
                         BaseColliderCenter =
                             _hitBoxStash.Get(projectileEntity).Collider.Center
                     });
+
+                projectile.CurrentLifetime = -startDelay;
+                if (startDelay > 0f)
+                    projectile.CollisionEnabled = false;
 
                 _swordSlashStash.Set(projectileEntity,
                     new SwordSlashComponent

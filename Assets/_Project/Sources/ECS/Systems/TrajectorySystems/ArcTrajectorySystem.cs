@@ -44,11 +44,18 @@ namespace ECS.TrajectorySystems
                 ref ArcTrajectoryComponent trajectory =
                     ref _trajectoryStash.Get(entity);
 
+                if (projectile.CurrentLifetime < 0f)
+                    continue;
+
                 if (trajectory.Duration <= 0f)
                     continue;
 
                 Vector3 anchorPosition;
-                if (trajectory.Anchor == ArcTrajectoryAnchor.Target)
+                if (trajectory.Anchor == ArcTrajectoryAnchor.FixedPosition)
+                {
+                    anchorPosition = trajectory.AnchorPosition;
+                }
+                else if (trajectory.Anchor == ArcTrajectoryAnchor.Target)
                 {
                     if (!_positionStash.Has(trajectory.AnchorTarget))
                         continue;
@@ -65,7 +72,14 @@ namespace ECS.TrajectorySystems
                         _positionStash.Get(projectile.Weapon).Position;
                 }
 
-                trajectory.CurrentTime += deltaTime;
+                trajectory.CurrentTime += Mathf.Max(0f, deltaTime);
+                if (trajectory.CurrentTime < 0f)
+                {
+                    projectile.CollisionEnabled = false;
+                    continue;
+                }
+
+                projectile.CollisionEnabled = true;
 
                 float progress = Mathf.Clamp01(
                     trajectory.CurrentTime / trajectory.Duration);
@@ -101,7 +115,7 @@ namespace ECS.TrajectorySystems
                     direction.x,
                     0f);
 
-                Vector3 origin = trajectory.Anchor == ArcTrajectoryAnchor.Target
+                Vector3 origin = trajectory.Anchor != ArcTrajectoryAnchor.Weapon
                     ? anchorPosition - direction * trajectory.DistanceFromSource
                     : anchorPosition + direction * trajectory.DistanceFromSource;
 

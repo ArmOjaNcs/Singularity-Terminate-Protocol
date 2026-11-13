@@ -76,6 +76,12 @@ namespace ECS.ProjectileSystems
                 ref AttackSequenceComponent sequence =
                     ref _sequenceStash.Get(weapon);
 
+                if (_weaponStash.Get(weapon).Type == WeaponType.Sword)
+                {
+                    UpdateSwordSeries(weapon, ref sequence);
+                    continue;
+                }
+
                 if (!sequence.IsActive ||
                     _attackStash.Get(weapon).ProjectileSequencePolicy !=
                     ProjectileSequencePolicy.ComboOnTarget)
@@ -133,6 +139,49 @@ namespace ECS.ProjectileSystems
                     FinishCombo(weapon);
                 }
             }
+        }
+
+        private void UpdateSwordSeries(
+            Entity weapon,
+            ref AttackSequenceComponent sequence)
+        {
+            if (!sequence.IsActive ||
+                _attackStash.Get(weapon).ProjectileSequencePolicy !=
+                ProjectileSequencePolicy.ComboOnTarget)
+            {
+                return;
+            }
+
+            ref ProjectileCreationComponent creation =
+                ref _creationStash.Get(weapon);
+            if (creation.IsWaitingForCycle ||
+                sequence.OutstandingProjectiles > 0)
+            {
+                return;
+            }
+
+            AttackComponent attack = _attackStash.Get(weapon);
+            if (sequence.RicochetPending &&
+                IsLivingTarget(sequence.PendingTarget) &&
+                sequence.RicochetsCount < attack.MaxRicochets)
+            {
+                BeginNextCombo(weapon, sequence.PendingTarget);
+                return;
+            }
+
+            if (creation.RemainingCount > 0)
+            {
+                sequence.LockedTarget = default;
+                sequence.RicochetsCount = 0;
+                sequence.RicochetPending = false;
+                sequence.PendingTarget = default;
+                creation.IsWaitingForCycle = true;
+                creation.IsComboRestart = false;
+                creation.ElapsedTime = 0f;
+                return;
+            }
+
+            FinishCombo(weapon);
         }
 
         private void ReportCompletedSlashes()
@@ -225,6 +274,11 @@ namespace ECS.ProjectileSystems
             sequence.Id++;
             sequence.RicochetsCount++;
             sequence.LockedTarget = nextTarget;
+            sequence.UsedSectorMask = 0;
+            sequence.AssignedSectorCycle = -1;
+            sequence.AssignedSectorIndex = -1;
+            sequence.AxeSweepClockwise = false;
+            sequence.HasAxeSweepDirection = false;
             sequence.RicochetPending = false;
             sequence.PendingTarget = default;
             sequence.ReleasesCreated = 0;
@@ -235,8 +289,17 @@ namespace ECS.ProjectileSystems
                 sequence.VisitedTargets.Add(nextTarget);
 
             creation.IsInitialized = true;
-            creation.RemainingCount = attack.ProjectileCount;
-            creation.ElapsedTime = attack.FireRate;
+            if (_weaponStash.Get(weapon).Type == WeaponType.Sword)
+            {
+                creation.IsWaitingForCycle = true;
+                creation.IsComboRestart = true;
+                creation.ElapsedTime = 0f;
+            }
+            else
+            {
+                creation.RemainingCount = attack.CyclesPerAttack;
+                creation.ElapsedTime = attack.CycleInterval;
+            }
             attackStatus.IsAttacking = true;
             attackStatus.CreationFinished = false;
 
@@ -257,6 +320,8 @@ namespace ECS.ProjectileSystems
             creation.IsInitialized = false;
             creation.RemainingCount = 0;
             creation.ElapsedTime = 0f;
+            creation.IsWaitingForCycle = false;
+            creation.IsComboRestart = false;
             _attackStatusStash.Get(weapon).CreationFinished = true;
         }
 
