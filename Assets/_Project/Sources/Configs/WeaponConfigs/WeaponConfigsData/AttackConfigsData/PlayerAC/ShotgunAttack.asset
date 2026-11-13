@@ -22,13 +22,20 @@ MonoBehaviour:
   AttackCooldown: 4
   DistanceFromSource: 0.45
   ProjectileScale: 1
+  ProjectileFlightDistance: 0
+  ProjectileFlightDistanceTolerance: 0
+  HomingEnabled: 0
   RicochetTargetSearchRadius: 2
   TargetSearchRadius: 4
   ProjectileSpeed: 14
   ProjectileLifetime: 1.2
   RicochetChance: 5
+  AllowRicochetRepeatTargets: 0
+  ZigZagAmplitude: 0.3
+  ZigZagFrequency: 8
   ShotSpreadAngle: 45
   HitInterval: 0
-  TargetType: 0
+  TargetType: 0000000002000000
   HitPolicy: 0
   AnimationPolicy: 1
+  ProjectileSequencePolicy: 0

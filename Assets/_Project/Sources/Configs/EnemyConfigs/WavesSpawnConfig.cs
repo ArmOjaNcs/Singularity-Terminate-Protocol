@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Scripting.APIUpdating;
 
 namespace EnemyConfigs
 {
-    [CreateAssetMenu(fileName = "EnemySpawnDatabase", menuName = "Game/Enemy/Enemy Spawn Database")]
-    public class EnemySpawnDatabase : ScriptableObject
+    [CreateAssetMenu(fileName = "WavesSpawnConfig", menuName = "Game/Enemy/Waves Spawn Config")]
+    public class WavesSpawnConfig : ScriptableObject
     {
         public List<EnemyWaveSpawnConfig> Waves;
 

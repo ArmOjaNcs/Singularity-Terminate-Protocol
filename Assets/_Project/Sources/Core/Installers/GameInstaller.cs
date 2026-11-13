@@ -21,6 +21,7 @@ namespace Core.Installers
 
         [Header("Arena")]
         [SerializeField] private NavigationGrid _navigationGrid;
+        [SerializeField] private WavesSpawnConfig _wavesSpawnConfig;
 
         [Header("Camera")]
         [SerializeField] private CinemachineVirtualCamera _camera;
@@ -58,6 +59,7 @@ namespace Core.Installers
         private void BindArenaInstances()
         {
             Container.BindInstance(_navigationGrid).AsSingle();
+            Container.BindInstance(_wavesSpawnConfig).AsSingle();
         }
 
         private void BindCameraInstances()

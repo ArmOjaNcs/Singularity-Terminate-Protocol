@@ -89,7 +89,7 @@ namespace ECS.WeaponSystems
                 ZigZagAmplitude = config.AttackConfig.ZigZagAmplitude,
                 ZigZagFrequency = config.AttackConfig.ZigZagFrequency,
                 ShotSpreadAngle = config.AttackConfig.ShotSpreadAngle,
-                TargetType = config.AttackConfig.TargetType,
+                TargetTypes = config.AttackConfig.TargetType,
                 HitPolicy = config.AttackConfig.HitPolicy,
                 HitInterval = config.AttackConfig.HitInterval,
                 AnimationPolicy = config.AttackConfig.AnimationPolicy,

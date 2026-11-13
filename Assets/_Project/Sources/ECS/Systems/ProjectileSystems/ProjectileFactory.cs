@@ -358,7 +358,7 @@ namespace ECS.ProjectileSystems
                 SequenceId = sequenceId,
                 SwingIndex = swingIndex,
                 Direction = direction,
-                TargetType = attack.TargetType,
+                TargetTypes = attack.TargetTypes,
                 HitInterval = attack.HitInterval,
                 HitPolicy = attack.HitPolicy,
                 CollisionEnabled = true,

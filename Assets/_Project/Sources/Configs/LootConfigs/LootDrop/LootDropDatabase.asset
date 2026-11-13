@@ -141,3 +141,11 @@ MonoBehaviour:
       DropChance: 10
     - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
       DropChance: 1
+  - EnemyType: 17
+    Drops:
+    - Item: {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
+      DropChance: 0
+    - Item: {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
+      DropChance: 0
+    - Item: {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+      DropChance: 100

@@ -16,7 +16,7 @@ namespace ECS.EnemySystems
 
         private readonly EnemyFactory _enemyFactory;
         private readonly EnemyConfigsDatabase _enemyConfigsDatabase;
-        private readonly EnemySpawnDatabase _enemySpawnDatabase;
+        private readonly WavesSpawnConfig _enemySpawnDatabase;
         private readonly NavigationGrid _navigationGrid;
 
         private Filter _playerFilter;
@@ -36,7 +36,7 @@ namespace ECS.EnemySystems
         public EnemySpawnSystem(
             EnemyFactory enemyFactory,
             EnemyConfigsDatabase enemyConfigsDatabase,
-            EnemySpawnDatabase enemySpawnDatabase,
+            WavesSpawnConfig enemySpawnDatabase,
             NavigationGrid navigationGrid)
         {
             _enemyFactory = enemyFactory;

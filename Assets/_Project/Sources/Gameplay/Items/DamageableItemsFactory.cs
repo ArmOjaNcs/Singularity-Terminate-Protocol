@@ -4,6 +4,7 @@ using Configs;
 using Core.Game;
 using DamageableConfigs;
 using ECS.CommonComponents;
+using ECS.PlayerComponents;
 using ECS.ViewComponents;
 using Gameplay.View;
 using Scellecs.Morpeh;
@@ -14,10 +15,14 @@ namespace Gameplay.Items
     public sealed class DamageableItemsFactory
     {
         private readonly World _world;
-        private readonly Dictionary<DamageableItemType, ObjectPool<AnimatedCreature>> _pools = new ();
+        private readonly Dictionary<CreatureType, ObjectPool<AnimatedCreature>> _pools = new ();
+        private readonly Stash<DamageableTag> _damageableTagStash;
+        private readonly Stash<PositionComponent> _positionStash;
         private readonly Stash<HealthComponent> _healthStash;
         private readonly Stash<HitBoxComponent> _hitBoxStash;
         private readonly Stash<ViewComponent> _viewStash;
+        private readonly Stash<StatsComponent> _statsStash;
+        private readonly Stash<AnimatedCreatureComponent> _animatedCreatureStash;
         private readonly DamageableItemsDatabase _database;
         private Transform _container;
 
@@ -30,9 +35,13 @@ namespace Gameplay.Items
             _container = container;
             _database = damageableItemsDatabase;
 
+            _damageableTagStash = world.GetStash<DamageableTag>();
+            _positionStash = world.GetStash<PositionComponent>();
             _healthStash = world.GetStash<HealthComponent>();
             _hitBoxStash = world.GetStash<HitBoxComponent>();
             _viewStash = world.GetStash<ViewComponent>();
+            _statsStash = world.GetStash<StatsComponent>();
+            _animatedCreatureStash = world.GetStash<AnimatedCreatureComponent>();
 
             InitializeConfigs();
         }
@@ -61,7 +70,7 @@ namespace Gameplay.Items
             view.ResetAnimator();
             view.SetEntity(entity);
 
-            SetComponents(config, view, entity);
+            SetComponents(config, view, entity, position);
 
             view.SetActive(true);
 
@@ -88,8 +97,26 @@ namespace Gameplay.Items
             }
         }
 
-        private void SetComponents(DamageableItemConfig config, AnimatedCreature view, Entity entity)
+        private void SetComponents(DamageableItemConfig config, AnimatedCreature view, Entity entity, Vector3 position)
         {
+            _damageableTagStash.Set(entity, new DamageableTag());
+
+            _positionStash.Set(entity, new PositionComponent
+            {
+                Position = position,
+            });
+
+            _animatedCreatureStash.Set(entity, new AnimatedCreatureComponent
+            {
+                View = view,
+            });
+
+            _statsStash.Set(entity, new StatsComponent
+            {
+                CreatureType = config.Type,
+                MaxHealth = config.Health,
+            });
+
             _viewStash.Set(entity, new ViewComponent
             {
                 View = view,

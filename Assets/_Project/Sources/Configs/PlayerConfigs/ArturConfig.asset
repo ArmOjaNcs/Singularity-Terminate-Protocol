@@ -12,18 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 951adce678c91324396c3327daa789a9, type: 3}
   m_Name: ArturConfig
   m_EditorClassIdentifier: 
-  CreatureType: 0
-  Id: 3
-  Name: 
-  Prefab: {fileID: 3390881850889633240, guid: 3262540a8de87714483d1316aa9de188, type: 3}
-  Stats:
-    MaxHealth: 0
-    HealthRegeneration: 0
-    Damage: 0
-    Luck: 0
-    Defence: 0
-    Speed: 0
-  WeaponConfig: []
   HitBox:
     Type: 2
     Radius: 0.3
@@ -38,6 +26,19 @@ MonoBehaviour:
     Size: {x: 0, y: 0}
     Center: {x: 0, y: -0.55}
     CapsuleOrientation: 0
+  CreatureType: 0
+  Id: 3
+  Name: 
+  Prefab: {fileID: 3390881850889633240, guid: 3262540a8de87714483d1316aa9de188, type: 3}
+  Stats:
+    MaxHealth: 0
+    HealthRegeneration: 0
+    Damage: 0
+    Luck: 0
+    Defence: 0
+    Speed: 0
+  WeaponConfig:
+  - {fileID: 11400000, guid: 5bdc017a743442c69a3a2e2ef3f2190b, type: 2}
   MaxWeapons: 6
   MaxTurrets: 2
   MaxSkills: 6

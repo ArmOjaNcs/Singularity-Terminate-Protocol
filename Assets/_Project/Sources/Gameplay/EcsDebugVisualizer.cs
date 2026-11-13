@@ -42,6 +42,7 @@ namespace Gameplay
         private Filter _targetFilter;
         private Filter _enemyFilter;
         private Filter _playerFilter;
+        private Filter _damageableFilter;
 
         private Stash<HitBoxComponent> _hitBoxStash;
         private Stash<NavigationBoxComponent> _navigationBoxStash;
@@ -94,6 +95,11 @@ namespace Gameplay
 
             _playerFilter = _world.Filter
                 .With<PlayerTag>()
+                .Without<DeathComponent>()
+                .Build();
+
+            _damageableFilter = _world.Filter
+                .With<DamageableTag>()
                 .Without<DeathComponent>()
                 .Build();
 
@@ -171,6 +177,7 @@ namespace Gameplay
                 DrawCollider(center, collider);
             }
         }
+
         private void DrawCollider(
             Vector3 center,
             ColliderComponent collider)
@@ -327,16 +334,7 @@ namespace Gameplay
 
                 try
                 {
-                    bool validTarget = attack.TargetType switch
-                    {
-                        AttackTargetType.Enemy =>
-                            _enemyFilter.Has(targetEntity),
-
-                        AttackTargetType.Player =>
-                            _playerFilter.Has(targetEntity),
-
-                        _ => false
-                    };
+                    bool validTarget = CommonFunctions.IsValidTarget(targetEntity, attack.TargetTypes, _damageableFilter, _enemyFilter, _playerFilter);
 
                     if (!validTarget ||
                         !_positionStash.Has(targetEntity))

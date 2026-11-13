@@ -5,6 +5,7 @@ using ECS.ProjectileComponents;
 using Gameplay.Spatial;
 using Scellecs.Morpeh;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace ECS.ProjectileSystems
@@ -72,7 +73,7 @@ namespace ECS.ProjectileSystems
                     ref _projectileStash.Get(request.Projectile);
 
                 if (projectile.CleanupRequested ||
-                    projectile.TargetType != AttackTargetType.Enemy ||
+                    projectile.TargetTypes.Contains(AttackTargetType.Enemy) == false ||
                     projectile.RicochetChance <= 0f ||
                     projectile.TargetSearchRadius <= 0f)
                 {

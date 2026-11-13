@@ -20,8 +20,8 @@ namespace ECS.DamageableItemSystems
         private readonly DamageableItemsDatabase _database;
         private readonly NavigationGrid _navigationGrid;
 
-        private readonly Dictionary<DamageableItemType, DamageableItemConfig> _itemConfigs =
-            new Dictionary<DamageableItemType, DamageableItemConfig>();
+        private readonly Dictionary<CreatureType, DamageableItemConfig> _itemConfigs =
+            new Dictionary<CreatureType, DamageableItemConfig>();
 
         private readonly List<Vector3> _candidatePositions = new List<Vector3>(4);
 

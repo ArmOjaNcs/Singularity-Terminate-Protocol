@@ -3,6 +3,7 @@ using ECS.CommonComponents;
 using ECS.EnemyComponents;
 using ECS.PlayerComponents;
 using ECS.WeaponComponents;
+using Gameplay;
 using Scellecs.Morpeh;
 
 namespace ECS.WeaponSystems
@@ -22,6 +23,7 @@ namespace ECS.WeaponSystems
         private Stash<DeathComponent> _deathStash;
         private Stash<EnemyTag> _enemyTagStash;
         private Stash<PlayerTag> _playerTagStash;
+        private Stash<DamageableTag> _damageableTagStash;
 
         public void OnAwake()
         {
@@ -45,6 +47,7 @@ namespace ECS.WeaponSystems
             _deathStash = World.GetStash<DeathComponent>();
             _enemyTagStash = World.GetStash<EnemyTag>();
             _playerTagStash = World.GetStash<PlayerTag>();
+            _damageableTagStash = World.GetStash<DamageableTag>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -89,7 +92,8 @@ namespace ECS.WeaponSystems
 
                 ref TargetComponent target = ref _targetStash.Get(weapon);
 
-                if (!IsValidTarget(target.Target, attack.TargetType))
+                if (target.Target == default || _deathStash.Has(target.Target) ||
+                    CommonFunctions.IsValidTarget(target.Target, attack.TargetTypes, _damageableTagStash, _enemyTagStash, _playerTagStash) == false)
                     continue;
 
                 _attackRequestStash.Set(weapon, new AttackRequest());
@@ -103,22 +107,6 @@ namespace ECS.WeaponSystems
                 return true;
 
             return false;
-        }
-
-        private bool IsValidTarget(Entity target, AttackTargetType targetType)
-        {
-            if (target == default)
-                return false;
-
-            if (_deathStash.Has(target))
-                return false;
-
-            return targetType switch
-            {
-                AttackTargetType.Enemy => _enemyTagStash.Has(target),
-                AttackTargetType.Player => _playerTagStash.Has(target),
-                _ => false
-            };
         }
 
         public void Dispose() { }

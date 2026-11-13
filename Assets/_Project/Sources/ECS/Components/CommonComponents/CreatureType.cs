@@ -17,4 +17,5 @@ public enum CreatureType
     TyrantLord = 14,
     Viper = 15,
     Boss = 16,
+    EnergyPylon = 17,
 }

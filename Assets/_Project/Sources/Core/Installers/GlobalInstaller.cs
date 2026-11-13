@@ -28,7 +28,6 @@ namespace Core.Installers
         [Header("Databases")]
         [SerializeField] private ProjectileDatabase _projectileDatabase;
         [SerializeField] private EnemyConfigsDatabase _enemyConfigsDatabase;
-        [SerializeField] private EnemySpawnDatabase _enemySpawnDatabase;
         [SerializeField] private LootDropDatabase _lootDropDatabase;
         [SerializeField] private LootDatabase _lootDatabase;
         [SerializeField] private DamageableItemsDatabase _damageableItemsDatabase;
@@ -53,7 +52,6 @@ namespace Core.Installers
 
             Container.BindInstance(_projectileDatabase).AsSingle();
             Container.BindInstance(_enemyConfigsDatabase).AsSingle();
-            Container.BindInstance(_enemySpawnDatabase).AsSingle();
             Container.BindInstance(_damageableItemsDatabase).AsSingle();
         }
 

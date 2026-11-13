@@ -37,7 +37,7 @@ namespace Core.Game
 
         private ProjectileDatabase _projectileDatabase;
         private EnemyConfigsDatabase _enemyConfigsDatabase;
-        private EnemySpawnDatabase _enemySpawnDatabase;
+        private WavesSpawnConfig _wavesSpawnConfig;
         private LootDropDatabase _lootDropDatabase;
         private LootDatabase _lootDatabase;
         private DamageableItemsDatabase _damageableItemsDatabase;
@@ -85,7 +85,7 @@ namespace Core.Game
             PlayerConfig playerConfig,
             ProjectileDatabase projectileDatabase,
             EnemyConfigsDatabase enemyConfigsDatabase,
-            EnemySpawnDatabase enemySpawnDatabase,
+            WavesSpawnConfig wavesSpawnConfig,
             DamageableItemsDatabase damageableItemsDatabase,
             LootDropDatabase lootDropDatabase,
             LootDatabase lootDatabase,
@@ -115,7 +115,7 @@ namespace Core.Game
             _playerConfig = playerConfig;
             _projectileDatabase = projectileDatabase;
             _enemyConfigsDatabase = enemyConfigsDatabase;
-            _enemySpawnDatabase = enemySpawnDatabase;
+            _wavesSpawnConfig = wavesSpawnConfig;
             _lootDropDatabase = lootDropDatabase;
             _lootDatabase = lootDatabase;
             _damageableItemsDatabase = damageableItemsDatabase;
@@ -284,7 +284,7 @@ namespace Core.Game
             _enemySpawnSystem = new EnemySpawnSystem(
                 _enemyFactory,
                 _enemyConfigsDatabase,
-                _enemySpawnDatabase,
+                _wavesSpawnConfig,
                 _navigationGrid);
 
             _damageableSpawnSystem = new DamageableItemsSpawnSystem(
@@ -299,6 +299,7 @@ namespace Core.Game
             _gameplaySystems.AddSystem(_playerDeathSystem);
             _gameplaySystems.AddSystem(new CleanupSystem());
             _gameplaySystems.AddSystem(new EnemyDeathSystem());
+            _gameplaySystems.AddSystem(new DamageableDestroySystem());
 
             _gameplaySystems.AddSystem(new ItemScanSystem());
             _gameplaySystems.AddSystem(new ItemPickupSystem(_lootFactory));

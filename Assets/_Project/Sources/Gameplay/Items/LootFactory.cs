@@ -67,7 +67,7 @@ namespace Gameplay.Items
             {
                 float randomRoll = UnityEngine.Random.Range(0f, 100f);
 
-                if (randomRoll > loot.DropChance)
+                if (randomRoll < loot.DropChance)
                 {
                     LootDropItem item = loot.Item;
 

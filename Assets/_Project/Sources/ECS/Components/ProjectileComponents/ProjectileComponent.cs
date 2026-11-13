@@ -29,7 +29,7 @@ namespace ECS.ProjectileComponents
         public int SwingIndex;
 
         public Vector3 Direction;
-        public AttackTargetType TargetType;
+        public AttackTargetType[] TargetTypes;
         public HitPolicyType HitPolicy;
 
         public bool CleanupRequested;

@@ -12,20 +12,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cf82b20a59c23840a3507c518fc124b, type: 3}
   m_Name: EnergyPylon
   m_EditorClassIdentifier: 
-  Type: 0
-  Health: 100
-  SpawnInterval: 30
-  SpawnDistance: 12
   HitBox:
-    Type: 2
-    Radius: 2
-    Length: 1
+    Type: 1
+    Radius: 0.25
+    Length: 1.1
+    Size: {x: 0.65, y: 1.15}
+    Center: {x: 0, y: 0}
+    CapsuleOrientation: 1
+  NavigationBox:
+    Type: 0
+    Radius: 0
+    Length: 0
     Size: {x: 0, y: 0}
     Center: {x: 0, y: 0}
     CapsuleOrientation: 0
-  DropItems:
-  - {fileID: 11400000, guid: b67808b658b671e4e8a5eb32895598c3, type: 2}
-  - {fileID: 11400000, guid: 44bbc17dc32b17949bb2d2ee9056042b, type: 2}
-  - {fileID: 11400000, guid: 8a18916f1826c5d4aa9058da4da34053, type: 2}
+  Type: 17
+  Health: 40
+  SpawnInterval: 10
+  SpawnDistance: 12
   Prefab: {fileID: 7579237171823753289, guid: 18153ab5f28307046ae7c127b60e734f, type: 3}
   PoolCapacity: 3

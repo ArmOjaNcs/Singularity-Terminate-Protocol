@@ -22,6 +22,9 @@ MonoBehaviour:
   AttackCooldown: 3
   DistanceFromSource: 0.45
   ProjectileScale: 1
+  ProjectileFlightDistance: 0
+  ProjectileFlightDistanceTolerance: 0
+  HomingEnabled: 0
   RicochetTargetSearchRadius: 5
   TargetSearchRadius: 10
   ProjectileSpeed: 10
@@ -32,7 +35,7 @@ MonoBehaviour:
   ZigZagFrequency: 5
   ShotSpreadAngle: 0
   HitInterval: 0
-  TargetType: 0
+  TargetType: 0000000002000000
   HitPolicy: 3
   AnimationPolicy: 1
   ProjectileSequencePolicy: 0

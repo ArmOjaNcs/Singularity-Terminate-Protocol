@@ -12,19 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 951adce678c91324396c3327daa789a9, type: 3}
   m_Name: SimonConfig
   m_EditorClassIdentifier: 
-  CreatureType: 0
-  Id: 1
-  Name: 
-  Prefab: {fileID: 3883261473061946788, guid: 40ef8a3ab6175764f9bbbb77fc52942c, type: 3}
-  Stats:
-    MaxHealth: 100000
-    HealthRegeneration: 2
-    Damage: 5
-    Luck: 50
-    Defence: 1
-    Speed: 5
-  WeaponConfig:
-  - {fileID: 11400000, guid: 991479d837d34b95bcefa4e0c909bb6b, type: 2}
   HitBox:
     Type: 2
     Radius: 0.35
@@ -39,7 +26,21 @@ MonoBehaviour:
     Size: {x: 0, y: 0}
     Center: {x: 0, y: -0.45}
     CapsuleOrientation: 0
-  MaxWeapons: 1
+  CreatureType: 0
+  Id: 1
+  Name: 
+  Prefab: {fileID: 3883261473061946788, guid: 40ef8a3ab6175764f9bbbb77fc52942c, type: 3}
+  Stats:
+    MaxHealth: 100000
+    HealthRegeneration: 2
+    Damage: 5
+    Luck: 50
+    Defence: 1
+    Speed: 5
+  WeaponConfig:
+  - {fileID: 11400000, guid: 991479d837d34b95bcefa4e0c909bb6b, type: 2}
+  - {fileID: 11400000, guid: 40c5995f08111b64faf0b4cd40275e63, type: 2}
+  MaxWeapons: 2
   MaxTurrets: 2
   MaxSkills: 6
   EvasionChance: 5

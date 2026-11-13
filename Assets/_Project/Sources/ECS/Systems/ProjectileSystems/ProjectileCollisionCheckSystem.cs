@@ -1,14 +1,14 @@
-using ECS.AttackComponents;
+using System.Collections.Generic;
 using ECS.CommonComponents;
 using ECS.DamageComponents;
 using ECS.EnemyComponents;
 using ECS.PlayerComponents;
 using ECS.ProjectileComponents;
 using ECS.WeaponComponents;
+using Gameplay;
 using Gameplay.Spatial;
 using Gameplay.View;
 using Scellecs.Morpeh;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace ECS.ProjectileSystems
@@ -22,6 +22,7 @@ namespace ECS.ProjectileSystems
 
         private Filter _filter;
         private Filter _enemyFilter;
+        private Filter _damageableFilter;
         private Filter _playerFilter;
 
         private Stash<ProjectileComponent> _projectileStash;
@@ -50,6 +51,11 @@ namespace ECS.ProjectileSystems
 
             _enemyFilter = World.Filter
                 .With<EnemyTag>()
+                .Without<DeathComponent>()
+                .Build();
+
+            _damageableFilter = World.Filter
+                .With<DamageableTag>()
                 .Without<DeathComponent>()
                 .Build();
 
@@ -104,10 +110,15 @@ namespace ECS.ProjectileSystems
                 {
                     Entity target = _candidates[i];
 
-                    if (!IsValidTarget(target, projectileComponent))
+                    if (target == projectileComponent.Weapon ||
+                        _hitBoxStash.Has(target) == false ||
+                        CommonFunctions.IsValidTarget(target, projectileComponent.TargetTypes, _damageableFilter, _enemyFilter, _playerFilter) == false)
+                    {
                         continue;
+                    }
 
                     bool overlaps = CheckCollision(projectile, target);
+
                     if (target == projectileComponent.TemporarilyIgnoredTarget)
                     {
                         if (overlaps)
@@ -331,26 +342,6 @@ namespace ECS.ProjectileSystems
                 targetCollider);
         }
 
-        private bool IsValidTarget(Entity entity, ProjectileComponent projectile)
-        {
-            if (entity == projectile.Weapon)
-                return false;
-
-            if (!_hitBoxStash.Has(entity))
-                return false;
-
-            return projectile.TargetType switch
-            {
-                AttackTargetType.Enemy =>
-                    _enemyFilter.Has(entity),
-
-                AttackTargetType.Player =>
-                    _playerFilter.Has(entity),
-
-                _ => false
-            };
-        }
-
         private void CreateDamageRequest(Entity projectile, Entity target)
         {
             ref ProjectileComponent projectileComponent =
@@ -378,7 +369,7 @@ namespace ECS.ProjectileSystems
                         DamageType = DamageType.Direct,
                         SourceType = sourceType,
                         WeaponType = projectileComponent.WeaponType,
-                    }
+                    },
                 });
         }
 
@@ -404,7 +395,7 @@ namespace ECS.ProjectileSystems
                 request,
                 new CleanupRequest
                 {
-                    Candidate = projectile
+                    Candidate = projectile,
                 });
         }
 
