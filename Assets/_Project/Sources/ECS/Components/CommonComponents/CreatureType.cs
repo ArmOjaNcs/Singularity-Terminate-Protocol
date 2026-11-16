@@ -18,4 +18,5 @@ public enum CreatureType
     Viper = 15,
     Boss = 16,
     EnergyPylon = 17,
+    Dummy = 18,
 }

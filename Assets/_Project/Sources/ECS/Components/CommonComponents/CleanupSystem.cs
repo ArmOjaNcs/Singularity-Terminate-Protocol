@@ -54,12 +54,15 @@ namespace ECS.CommonSystems
             // Во время обхода фильтров сущности не удаляем.
             foreach (Entity request in _filter)
             {
+                if (World.IsDisposed(request))
+                    continue;
+
                 ref CleanupRequest cleanupRequest =
                     ref _cleanupRequestStash.Get(request);
 
                 Entity candidate = cleanupRequest.Candidate;
 
-                if (candidate == default)
+                if (candidate == default || World.IsDisposed(candidate))
                 {
                     _requestsToRemove.Add(request);
                     continue;
@@ -102,9 +105,12 @@ namespace ECS.CommonSystems
         {
             foreach (Entity projectile in _projectileFilter)
             {
+                if (World.IsDisposed(projectile))
+                    continue;
+
                 Entity weapon = _projectileStash.Get(projectile).Weapon;
 
-                if (!_weaponStash.Has(weapon))
+                if (weapon == default || World.IsDisposed(weapon) || !_weaponStash.Has(weapon))
                     continue;
 
                 if (_weaponStash.Get(weapon).Owner == owner)
@@ -118,7 +124,7 @@ namespace ECS.CommonSystems
         {
             foreach (Entity weapon in _weaponFilter)
             {
-                if (_weaponStash.Get(weapon).Owner != owner)
+                if (World.IsDisposed(weapon) || _weaponStash.Get(weapon).Owner != owner)
                     continue;
 
                 _entitiesToRemove.Add(weapon);

@@ -146,7 +146,7 @@ namespace Gameplay
         {
             foreach (Entity entity in _colliderFilter)
             {
-                if (!_positionStash.Has(entity))
+                if (_world.IsDisposed(entity) || !_positionStash.Has(entity))
                     continue;
 
                 ColliderComponent collider =
@@ -164,7 +164,7 @@ namespace Gameplay
         {
             foreach (Entity entity in _navigationBoxFilter)
             {
-                if (!_positionStash.Has(entity))
+                if (_world.IsDisposed(entity) || !_positionStash.Has(entity))
                     continue;
 
                 ColliderComponent collider =
@@ -300,6 +300,9 @@ namespace Gameplay
 
             foreach (Entity entity in _attackFilter)
             {
+                if (_world.IsDisposed(entity))
+                    continue;
+
                 ref AttackComponent attack =
                     ref _attackStash.Get(entity);
 
@@ -321,6 +324,9 @@ namespace Gameplay
 
             foreach (Entity entity in _targetFilter)
             {
+                if (_world.IsDisposed(entity))
+                    continue;
+
                 ref TargetComponent target =
                     ref _targetStash.Get(entity);
 

@@ -657,7 +657,11 @@ namespace ECS.ProjectileSystems
         {
             direction = Vector3.zero;
 
-            if (target == default ||
+            if (weapon == default ||
+                _world.IsDisposed(weapon) ||
+                !_positionStash.Has(weapon) ||
+                target == default ||
+                _world.IsDisposed(target) ||
                 !_positionStash.Has(target) ||
                 _deathStash.Has(target))
             {

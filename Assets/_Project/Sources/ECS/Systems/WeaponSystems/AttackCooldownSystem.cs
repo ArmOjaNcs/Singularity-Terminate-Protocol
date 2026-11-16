@@ -92,8 +92,26 @@ namespace ECS.WeaponSystems
 
                 ref TargetComponent target = ref _targetStash.Get(weapon);
 
-                if (target.Target == default || _deathStash.Has(target.Target) ||
-                    CommonFunctions.IsValidTarget(target.Target, attack.TargetTypes, _damageableTagStash, _enemyTagStash, _playerTagStash) == false)
+                Entity targetEntity = target.Target;
+                bool hasValidTarget = targetEntity != default &&
+                                      !World.IsDisposed(targetEntity) &&
+                                      !_deathStash.Has(targetEntity) &&
+                                      CommonFunctions.IsValidTarget(
+                                          targetEntity,
+                                          attack.TargetTypes,
+                                          _damageableTagStash,
+                                          _enemyTagStash,
+                                          _playerTagStash);
+
+                // A fallback weapon can start its attack cycle without a target.
+                // TargetTypes is empty while a weapon is disabled in the test bench,
+                // so the fallback cannot accidentally re-enable it.
+                bool canUseRandomDirectionFallback =
+                    attack.Pattern.RandomDirectionFallback &&
+                    attack.TargetTypes != null &&
+                    attack.TargetTypes.Length > 0;
+
+                if (!hasValidTarget && !canUseRandomDirectionFallback)
                     continue;
 
                 _attackRequestStash.Set(weapon, new AttackRequest());

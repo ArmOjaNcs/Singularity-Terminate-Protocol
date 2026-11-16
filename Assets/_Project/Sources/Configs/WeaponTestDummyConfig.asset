@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88d5dce5886c4e3db72536431b5ff5ae, type: 3}
+  m_Name: WeaponTestDummyConfig
+  m_EditorClassIdentifier: 
+  HitBox:
+    Type: 2
+    Radius: 0.25
+    Length: 1.2
+    Size: {x: 0.8, y: 0.8}
+    Center: {x: 0, y: 0}
+    CapsuleOrientation: 1
+  NavigationBox:
+    Type: 2
+    Radius: 0.15
+    Length: 0.5
+    Size: {x: 0.8, y: 0.8}
+    Center: {x: 0, y: -0.5}
+    CapsuleOrientation: 0
+  CreatureType: 18
+  Id: WeaponTestDummy
+  Name: Training Dummy
+  Prefab: {fileID: 4406850055689174293, guid: 2c8008d611d9a4d40b367f26f2cac95e, type: 3}
+  Stats:
+    MaxHealth: 1000
+    HealthRegeneration: 0
+    Damage: 0
+    Luck: 0
+    Defence: 0
+    Speed: 0
+  WeaponConfig: []
+  RecoveryDelay: 1
+  ReturnSpeed: 2

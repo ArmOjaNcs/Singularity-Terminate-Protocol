@@ -62,9 +62,14 @@ namespace ECS.ProjectileSystems
         {
             foreach (Entity requestEntity in _filter)
             {
+                if (World.IsDisposed(requestEntity))
+                    continue;
+
                 RicochetRequest request = _requestStash.Get(requestEntity);
 
-                if (!_projectileStash.Has(request.Projectile))
+                if (request.Projectile == default ||
+                    World.IsDisposed(request.Projectile) ||
+                    !_projectileStash.Has(request.Projectile))
                 {
                     World.RemoveEntity(requestEntity);
                     continue;

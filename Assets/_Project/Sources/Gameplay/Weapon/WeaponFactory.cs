@@ -39,6 +39,13 @@ namespace ECS.WeaponSystems
 
         public bool Create(WeaponConfig config, Entity owner)
         {
+            return Create(config, owner, out _);
+        }
+
+        public bool Create(WeaponConfig config, Entity owner, out Entity createdWeapon)
+        {
+            createdWeapon = default;
+
             if (config == null)
             {
                 Debug.LogError("Cannot create a weapon because its WeaponConfig is missing.");
@@ -53,6 +60,7 @@ namespace ECS.WeaponSystems
             }
 
             Entity weapon = _world.CreateEntity();
+            createdWeapon = weapon;
 
             _weaponTagStash.Set(weapon, new WeaponTag());
 
