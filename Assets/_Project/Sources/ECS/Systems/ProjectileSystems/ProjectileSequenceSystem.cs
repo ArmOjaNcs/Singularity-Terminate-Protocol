@@ -4,6 +4,7 @@ using ECS.ProjectileComponents;
 using ECS.WeaponComponents;
 using Gameplay.View;
 using Scellecs.Morpeh;
+using System.Collections.Generic;
 
 namespace ECS.ProjectileSystems
 {
@@ -75,6 +76,7 @@ namespace ECS.ProjectileSystems
             {
                 ref AttackSequenceComponent sequence =
                     ref _sequenceStash.Get(weapon);
+                Entity pendingTarget;
 
                 if (_weaponStash.Get(weapon).Type == WeaponType.Sword)
                 {
@@ -105,11 +107,13 @@ namespace ECS.ProjectileSystems
                     }
 
                     if (sequence.RicochetPending &&
-                        IsLivingTarget(sequence.PendingTarget) &&
                         sequence.RicochetsCount <
-                        _attackStash.Get(weapon).MaxRicochets)
+                        _attackStash.Get(weapon).MaxRicochets &&
+                        TryGetLivingPendingTarget(
+                            ref sequence,
+                            out pendingTarget))
                     {
-                        BeginNextCombo(weapon, sequence.PendingTarget);
+                        BeginNextCombo(weapon, pendingTarget);
                     }
                     else
                     {
@@ -128,11 +132,13 @@ namespace ECS.ProjectileSystems
                 }
 
                 if (sequence.RicochetPending &&
-                    IsLivingTarget(sequence.PendingTarget) &&
                     sequence.RicochetsCount <
-                    _attackStash.Get(weapon).MaxRicochets)
+                    _attackStash.Get(weapon).MaxRicochets &&
+                    TryGetLivingPendingTarget(
+                        ref sequence,
+                        out pendingTarget))
                 {
-                    BeginNextCombo(weapon, sequence.PendingTarget);
+                    BeginNextCombo(weapon, pendingTarget);
                 }
                 else
                 {
@@ -162,10 +168,10 @@ namespace ECS.ProjectileSystems
 
             AttackComponent attack = _attackStash.Get(weapon);
             if (sequence.RicochetPending &&
-                IsLivingTarget(sequence.PendingTarget) &&
-                sequence.RicochetsCount < attack.MaxRicochets)
+                sequence.RicochetsCount < attack.MaxRicochets &&
+                TryGetLivingPendingTarget(ref sequence, out Entity pendingTarget))
             {
-                BeginNextCombo(weapon, sequence.PendingTarget);
+                BeginNextCombo(weapon, pendingTarget);
                 return;
             }
 
@@ -175,6 +181,8 @@ namespace ECS.ProjectileSystems
                 sequence.RicochetsCount = 0;
                 sequence.RicochetPending = false;
                 sequence.PendingTarget = default;
+                if (sequence.PendingRicochetTargets != null)
+                    sequence.PendingRicochetTargets.Clear();
                 creation.IsWaitingForCycle = true;
                 creation.IsComboRestart = false;
                 creation.ElapsedTime = 0f;
@@ -258,6 +266,34 @@ namespace ECS.ProjectileSystems
                    !_deathStash.Has(target);
         }
 
+        private bool TryGetLivingPendingTarget(
+            ref AttackSequenceComponent sequence,
+            out Entity target)
+        {
+            List<Entity> pendingTargets = sequence.PendingRicochetTargets;
+            if (pendingTargets != null)
+            {
+                for (int i = 0; i < pendingTargets.Count; i++)
+                {
+                    if (!IsLivingTarget(pendingTargets[i]))
+                        continue;
+
+                    target = pendingTargets[i];
+                    sequence.PendingTarget = target;
+                    return true;
+                }
+            }
+
+            if (IsLivingTarget(sequence.PendingTarget))
+            {
+                target = sequence.PendingTarget;
+                return true;
+            }
+
+            target = default;
+            return false;
+        }
+
         private void BeginNextCombo(Entity weapon, Entity nextTarget)
         {
             ref AttackSequenceComponent sequence =
@@ -281,6 +317,8 @@ namespace ECS.ProjectileSystems
             sequence.HasAxeSweepDirection = false;
             sequence.RicochetPending = false;
             sequence.PendingTarget = default;
+            if (sequence.PendingRicochetTargets != null)
+                sequence.PendingRicochetTargets.Clear();
             sequence.ReleasesCreated = 0;
             sequence.OutstandingProjectiles = 0;
             if (sequence.VisitedTargets == null)
@@ -317,6 +355,8 @@ namespace ECS.ProjectileSystems
             sequence.IsActive = false;
             sequence.RicochetPending = false;
             sequence.PendingTarget = default;
+            if (sequence.PendingRicochetTargets != null)
+                sequence.PendingRicochetTargets.Clear();
             creation.IsInitialized = false;
             creation.RemainingCount = 0;
             creation.ElapsedTime = 0f;

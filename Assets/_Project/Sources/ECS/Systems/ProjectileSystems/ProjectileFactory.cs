@@ -123,6 +123,10 @@ namespace ECS.ProjectileSystems
             sequence.RicochetsCount = 0;
             sequence.RicochetPending = false;
             sequence.PendingTarget = default;
+            if (sequence.PendingRicochetTargets == null)
+                sequence.PendingRicochetTargets = new List<Entity>();
+            else
+                sequence.PendingRicochetTargets.Clear();
             if (sequence.VisitedTargets == null)
                 sequence.VisitedTargets = new List<Entity>();
             else

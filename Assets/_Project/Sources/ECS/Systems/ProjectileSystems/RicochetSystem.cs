@@ -19,6 +19,7 @@ namespace ECS.ProjectileSystems
 
         private RicochetTargetSelector _targetSelector;
         private readonly List<Entity> _candidates = new List<Entity>();
+        private readonly List<Entity> _targetExclusions = new List<Entity>();
 
         private Filter _filter;
         private Filter _livingEnemyFilter;
@@ -285,29 +286,83 @@ namespace ECS.ProjectileSystems
 
             if (!sequence.IsActive ||
                 sequence.Id != request.SequenceId ||
-                sequence.RicochetsCount >= attack.MaxRicochets ||
-                sequence.RicochetPending ||
-                !_targetSelector.TrySelectNearest(
+                sequence.RicochetsCount >= attack.MaxRicochets)
+            {
+                return;
+            }
+
+            if (sequence.PendingRicochetTargets == null)
+                sequence.PendingRicochetTargets = new List<Entity>();
+
+            _targetExclusions.Clear();
+            AddTargets(_targetExclusions, sequence.VisitedTargets);
+            AddTargets(_targetExclusions, sequence.PendingRicochetTargets);
+
+            Entity nextTarget;
+            while (_targetSelector.TrySelectNearest(
+                       request.Projectile,
+                       request.HitTarget,
+                       request.HitPosition,
+                       projectile.TargetSearchRadius,
+                       _candidates,
+                       _targetExclusions,
+                       false,
+                       out nextTarget,
+                       out _))
+            {
+                sequence.PendingRicochetTargets.Add(nextTarget);
+                _targetExclusions.Add(nextTarget);
+            }
+
+            if (projectile.AllowRicochetRepeatTargets)
+            {
+                _targetExclusions.Clear();
+                AddTargets(_targetExclusions, sequence.PendingRicochetTargets);
+                while (_targetSelector.TrySelectNearest(
                     request.Projectile,
                     request.HitTarget,
                     request.HitPosition,
                     projectile.TargetSearchRadius,
                     _candidates,
-                    sequence.VisitedTargets,
-                    false,
-                    out Entity nextTarget,
+                    _targetExclusions,
+                    true,
+                    out nextTarget,
                     out _))
-            {
-                return;
+                {
+                    sequence.PendingRicochetTargets.Add(nextTarget);
+                    _targetExclusions.Add(nextTarget);
+                }
             }
 
+            if (sequence.PendingRicochetTargets.Count == 0)
+                return;
+
+            if (!sequence.RicochetPending)
+            {
+                sequence.PendingTarget =
+                    sequence.PendingRicochetTargets[0];
+            }
             sequence.RicochetPending = true;
-            sequence.PendingTarget = nextTarget;
+        }
+
+        private static void AddTargets(
+            List<Entity> destination,
+            IList<Entity> targets)
+        {
+            if (targets == null)
+                return;
+
+            for (int i = 0; i < targets.Count; i++)
+            {
+                if (!destination.Contains(targets[i]))
+                    destination.Add(targets[i]);
+            }
         }
 
         public void Dispose()
         {
             _candidates.Clear();
+            _targetExclusions.Clear();
         }
     }
 }

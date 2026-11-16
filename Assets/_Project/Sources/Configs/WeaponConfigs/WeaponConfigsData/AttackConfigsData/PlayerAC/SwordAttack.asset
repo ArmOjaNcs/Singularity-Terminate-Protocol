@@ -34,7 +34,8 @@ MonoBehaviour:
     SpreadAngle: 45
     RandomDirectionFallback: 1
     SelectTargetPerCycle: 1
-  RicochetTargetSearchRadius: 1
+  RicochetTargetSearchRadius: 2
+  AllowRicochetRepeatTargets: 1
   TargetSearchRadius: 2
   ProjectileSpeed: 14
   ProjectileLifetime: 1.2

@@ -23,5 +23,6 @@ namespace ECS.AttackComponents
         public int RicochetsCount;
         public bool RicochetPending;
         public Entity PendingTarget;
+        public List<Entity> PendingRicochetTargets;
     }
 }
