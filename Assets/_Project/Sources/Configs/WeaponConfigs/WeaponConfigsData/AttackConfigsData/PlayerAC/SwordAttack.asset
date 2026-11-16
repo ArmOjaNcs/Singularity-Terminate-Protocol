@@ -41,7 +41,7 @@ MonoBehaviour:
   ProjectileLifetime: 1.2
   RicochetChance: 100
   HitInterval: 0
-  TargetType: 0
+  TargetType: 0000000002000000
   HitPolicy: 1
   AnimationPolicy: 1
   ProjectileSequencePolicy: 1

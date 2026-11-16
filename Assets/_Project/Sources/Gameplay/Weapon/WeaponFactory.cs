@@ -108,7 +108,7 @@ namespace ECS.WeaponSystems
                 ProjectileLifetime = config.AttackConfig.ProjectileLifetime,
                 RicochetChance = config.AttackConfig.RicochetChance,
                 AllowRicochetRepeatTargets = config.AttackConfig.AllowRicochetRepeatTargets,
-                TargetType = config.AttackConfig.TargetType,
+                TargetTypes = config.AttackConfig.TargetType,
                 HitPolicy = config.AttackConfig.HitPolicy,
                 HitInterval = config.AttackConfig.HitInterval,
                 AnimationPolicy = config.AttackConfig.AnimationPolicy,

@@ -1,9 +1,8 @@
-using System;
 using ECS.CommonComponents;
-using ECS.DamageComponents;
 using ECS.EnemyComponents;
 using ECS.ViewComponents;
 using ECS.WeaponComponents;
+using Gameplay;
 using Gameplay.View;
 using Scellecs.Morpeh;
 
@@ -19,7 +18,6 @@ namespace ECS.EnemySystems
         private Stash<DeathComponent> _deathStash;
         private Stash<AnimatedCreatureComponent> _animatedCreatureStash;
         private Stash<ViewComponent> _viewStash;
-        private Stash<CleanupRequest> _cleanupRequestStash;
         private Stash<AddLootDropEvent> _lootSpawnStash;
         private Stash<PositionComponent> _positionStash;
         private Stash<StatsComponent> _statsStash;
@@ -37,12 +35,10 @@ namespace ECS.EnemySystems
             _animatedCreatureStash = World.GetStash<AnimatedCreatureComponent>();
             _weaponStash = World.GetStash<WeaponComponent>();
             _viewStash = World.GetStash<ViewComponent>();
-            _cleanupRequestStash = World.GetStash<CleanupRequest>();
             _lootSpawnStash = World.GetStash<AddLootDropEvent>();
             _positionStash = World.GetStash<PositionComponent>();
             _statsStash = World.GetStash<StatsComponent>();
             _battleStatsStash = World.GetStash<BattleStatisticComponent>();
-
         }
 
         public void OnUpdate(float deltaTime)
@@ -92,7 +88,7 @@ namespace ECS.EnemySystems
 
             AddKilledStatistics(entity);
             SpawnLoot(entity);
-            CreateCleanupRequest(entity);
+            CommonFunctions.CreateCleanupRequest(World, entity);
         }
 
         private void AddKilledStatistics(Entity entity)
@@ -102,16 +98,6 @@ namespace ECS.EnemySystems
             _battleStatsStash.Set(battleStats, new BattleStatisticComponent
             {
                 IsKilledEnemy = true,
-            });
-        }
-
-        private void CreateCleanupRequest(Entity entity)
-        {
-            Entity request = World.CreateEntity();
-
-            _cleanupRequestStash.Set(request, new CleanupRequest
-            {
-                Candidate = entity,
             });
         }
 
@@ -126,7 +112,7 @@ namespace ECS.EnemySystems
                 _lootSpawnStash.Set(lootSpawner, new AddLootDropEvent
                 {
                     Position = position.Position,
-                    EnemyType = stats.CreatureType,
+                    CreatureType = stats.CreatureType,
                 });
             }
         }

@@ -73,7 +73,7 @@ public sealed class ItemPickupSystem : ISystem
         int xpAmount = _addXpStash.Has(item) ? _addXpStash.Get(item).Amount : 0;
         Transform targetTransform = _playerViewStash.Get(looter).View.transform;
         Vector3 targetPosition = targetTransform.position;
-        AnimatedView view = _itemViewStash.Get(item).View;
+        EntityView view = _itemViewStash.Get(item).View;
         Transform itemTransform = view.transform;
         Vector3 itemPosition = itemTransform.position;
         Vector3 bounceDirection = targetTransform.right;

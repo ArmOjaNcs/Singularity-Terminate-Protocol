@@ -8,6 +8,6 @@ public class LootDropItem : ScriptableObject
 
     public ItemTypes Type;
 
-    public AnimatedView Prefab;
+    public EntityView Prefab;
     public int PoolCapacity;
 }

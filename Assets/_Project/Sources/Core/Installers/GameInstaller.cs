@@ -21,6 +21,7 @@ namespace Core.Installers
 
         [Header("Arena")]
         [SerializeField] private NavigationGrid _navigationGrid;
+        [SerializeField] private WavesSpawnConfig _wavesSpawnConfig;
 
         [Header("Camera")]
         [SerializeField] private CinemachineVirtualCamera _camera;
@@ -30,6 +31,7 @@ namespace Core.Installers
         [SerializeField] private Transform _projectileContainer;
         [SerializeField] private Transform _enemyContainer;
         [SerializeField] private Transform _lootContainer;
+        [SerializeField] private Transform _damageableContainer;
 
         public override void InstallBindings()
         {
@@ -57,6 +59,7 @@ namespace Core.Installers
         private void BindArenaInstances()
         {
             Container.BindInstance(_navigationGrid).AsSingle();
+            Container.BindInstance(_wavesSpawnConfig).AsSingle();
         }
 
         private void BindCameraInstances()
@@ -75,6 +78,9 @@ namespace Core.Installers
 
             Container.BindInstance(_lootContainer)
                 .WithId("LootContainer");
+
+            Container.BindInstance(_damageableContainer)
+                .WithId("DamageableContainer");
         }
     }
 }

@@ -1,10 +1,9 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 using WeaponConfigs;
 
 namespace Configs
 {
-    public class CreatureConfig : ScriptableObject
+    public class CreatureConfig : ColliderEntityConfig
     {
         public CreatureType CreatureType;
         public string Id;
@@ -12,8 +11,5 @@ namespace Configs
         public GameObject Prefab;
         public BaseStats Stats;
         public WeaponConfig[] WeaponConfig;
-        [FormerlySerializedAs("Collider")]
-        public ColliderConfig HitBox;
-        public ColliderConfig NavigationBox;
     }
 }

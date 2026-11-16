@@ -3,6 +3,7 @@ using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.EnemyComponents;
 using ECS.PlayerComponents;
+using Gameplay;
 using Gameplay.Spatial;
 using Scellecs.Morpeh;
 using UnityEngine;
@@ -17,7 +18,7 @@ namespace ECS.CommonSystems
         private Filter _filter;
         private Filter _enemyFilter;
         private Filter _playerFilter;
-
+        private Filter _damageableFilter;
         private Stash<PositionComponent> _positionStash;
         private Stash<TargetComponent> _targetStash;
         private Stash<AttackComponent> _attackStash;
@@ -50,6 +51,11 @@ namespace ECS.CommonSystems
                 .Without<DeathComponent>()
                 .Build();
 
+            _damageableFilter = World.Filter
+                .With<DamageableTag>()
+                .Without<DeathComponent>()
+                .Build();
+
             _positionStash = World.GetStash<PositionComponent>();
             _targetStash = World.GetStash<TargetComponent>();
             _attackStash = World.GetStash<AttackComponent>();
@@ -79,7 +85,7 @@ namespace ECS.CommonSystems
                     ProjectileSequencePolicy.ComboOnTarget &&
                     sequence.LockedTarget != default)
                 {
-                    if (IsValidTarget(sequence.LockedTarget, attack.TargetType) &&
+                    if (CommonFunctions.IsValidTarget(sequence.LockedTarget, attack.TargetTypes, _damageableFilter, _enemyFilter, _playerFilter) &&
                         _positionStash.Has(sequence.LockedTarget) &&
                         _hitBoxStash.Has(sequence.LockedTarget))
                     {
@@ -100,7 +106,7 @@ namespace ECS.CommonSystems
                         ? attack.DistanceFromSource + attack.Trajectory.FlightDistance
                         : 0f,
                     attack.Trajectory.FlightDistanceTolerance,
-                    attack.TargetType,
+                    attack.TargetTypes,
                     sequence.IsActive ? sequence.VisitedTargets : null,
                     ref target);
             }
@@ -111,7 +117,7 @@ namespace ECS.CommonSystems
             float radius,
             float preferredDistance,
             float distanceTolerance,
-            AttackTargetType targetType,
+            AttackTargetType[] targetType,
             List<Entity> excludedTargets,
             ref TargetComponent target)
         {
@@ -135,7 +141,7 @@ namespace ECS.CommonSystems
                     continue;
                 }
 
-                if (!IsValidTarget(candidate, targetType))
+                if (!CommonFunctions.IsValidTarget(candidate, targetType, _damageableFilter, _enemyFilter, _playerFilter))
                     continue;
 
                 if (!_positionStash.Has(candidate) ||
@@ -182,22 +188,6 @@ namespace ECS.CommonSystems
             }
 
             target.Target = closestEntity;
-        }
-
-        private bool IsValidTarget(
-            Entity entity,
-            AttackTargetType targetType)
-        {
-            return targetType switch
-            {
-                AttackTargetType.Enemy =>
-                    _enemyFilter.Has(entity),
-
-                AttackTargetType.Player =>
-                    _playerFilter.Has(entity),
-
-                _ => false
-            };
         }
 
         public void Dispose()

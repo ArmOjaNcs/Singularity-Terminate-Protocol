@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Core.Services;
+using DamageableConfigs;
 using ECS.WeaponSystems;
 using EnemyConfigs;
 using LootConfigs;
@@ -27,9 +28,9 @@ namespace Core.Installers
         [Header("Databases")]
         [SerializeField] private ProjectileDatabase _projectileDatabase;
         [SerializeField] private EnemyConfigsDatabase _enemyConfigsDatabase;
-        [SerializeField] private EnemySpawnDatabase _enemySpawnDatabase;
         [SerializeField] private LootDropDatabase _lootDropDatabase;
         [SerializeField] private LootDatabase _lootDatabase;
+        [SerializeField] private DamageableItemsDatabase _damageableItemsDatabase;
 
         public override void InstallBindings()
         {
@@ -51,7 +52,7 @@ namespace Core.Installers
 
             Container.BindInstance(_projectileDatabase).AsSingle();
             Container.BindInstance(_enemyConfigsDatabase).AsSingle();
-            Container.BindInstance(_enemySpawnDatabase).AsSingle();
+            Container.BindInstance(_damageableItemsDatabase).AsSingle();
         }
 
         private void BindServices()

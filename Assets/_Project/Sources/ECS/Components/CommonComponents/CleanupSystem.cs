@@ -11,6 +11,9 @@ namespace ECS.CommonSystems
     {
         public World World { get; set; }
 
+        private readonly List<Entity> _requestsToRemove = new List<Entity>();
+        private readonly HashSet<Entity> _entitiesToRemove = new HashSet<Entity>();
+
         private Filter _filter;
         private Filter _projectileFilter;
         private Filter _weaponFilter;
@@ -19,9 +22,7 @@ namespace ECS.CommonSystems
         private Stash<ProjectileComponent> _projectileStash;
         private Stash<WeaponComponent> _weaponStash;
         private Stash<EnemyTag> _enemyTagStash;
-
-        private readonly List<Entity> _requestsToRemove = new List<Entity>();
-        private readonly HashSet<Entity> _entitiesToRemove = new HashSet<Entity>();
+        private Stash<DamageableTag> _damageableTagStash;
 
         public void OnAwake()
         {
@@ -41,6 +42,7 @@ namespace ECS.CommonSystems
             _projectileStash = World.GetStash<ProjectileComponent>();
             _weaponStash = World.GetStash<WeaponComponent>();
             _enemyTagStash = World.GetStash<EnemyTag>();
+            _damageableTagStash = World.GetStash<DamageableTag>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -76,6 +78,9 @@ namespace ECS.CommonSystems
                     _entitiesToRemove.Add(candidate);
                 }
 
+                if (_damageableTagStash.Has(candidate))
+                    _entitiesToRemove.Add(candidate);
+
                 _requestsToRemove.Add(request);
             }
 
@@ -85,6 +90,12 @@ namespace ECS.CommonSystems
 
             foreach (Entity request in _requestsToRemove)
                 World.RemoveEntity(request);
+        }
+
+        public void Dispose()
+        {
+            _requestsToRemove.Clear();
+            _entitiesToRemove.Clear();
         }
 
         private bool HasProjectiles(Entity owner)
@@ -112,12 +123,6 @@ namespace ECS.CommonSystems
 
                 _entitiesToRemove.Add(weapon);
             }
-        }
-
-        public void Dispose()
-        {
-            _requestsToRemove.Clear();
-            _entitiesToRemove.Clear();
         }
     }
 }

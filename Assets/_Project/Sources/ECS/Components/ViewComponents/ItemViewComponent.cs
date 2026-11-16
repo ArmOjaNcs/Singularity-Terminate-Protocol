@@ -5,6 +5,6 @@ namespace ECS.ViewComponents
 {
     public struct ItemViewComponent : IComponent
     {
-        public AnimatedView View;
+        public EntityView View;
     }
 }

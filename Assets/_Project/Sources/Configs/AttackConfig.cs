@@ -31,7 +31,7 @@ namespace Configs
         public bool AllowRicochetRepeatTargets;
         public float HitInterval;
 
-        public AttackTargetType TargetType;
+        public AttackTargetType[] TargetType;
         public HitPolicyType HitPolicy;
         public AttackAnimationPolicyType AnimationPolicy;
         public ProjectileSequencePolicy ProjectileSequencePolicy;

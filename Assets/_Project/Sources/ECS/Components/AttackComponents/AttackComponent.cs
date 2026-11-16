@@ -31,7 +31,7 @@ namespace ECS.AttackComponents
         public float RicochetChance;
         public bool AllowRicochetRepeatTargets;
 
-        public AttackTargetType TargetType;
+        public AttackTargetType[] TargetTypes;
         public HitPolicyType HitPolicy;
         public AttackAnimationPolicyType AnimationPolicy;
         public ProjectileSequencePolicy ProjectileSequencePolicy;

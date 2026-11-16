@@ -8,7 +8,7 @@ namespace ECS.EnemySystems
     {
         private readonly LootFactory _lootFactory;
         private Filter _filter;
-        private Stash<AddLootDropEvent> _addGemStash;
+        private Stash<AddLootDropEvent> _addLootStash;
 
         public LootSpawnSystem(LootFactory lootFactory)
         {
@@ -23,7 +23,7 @@ namespace ECS.EnemySystems
                 .With<AddLootDropEvent>()
                 .Build();
 
-            _addGemStash = World.GetStash<AddLootDropEvent>();
+            _addLootStash = World.GetStash<AddLootDropEvent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -33,9 +33,9 @@ namespace ECS.EnemySystems
 
             foreach (Entity entity in _filter)
             {
-                ref var addGemEvent = ref _addGemStash.Get(entity);
+                ref var addLootEvent = ref _addLootStash.Get(entity);
 
-                _lootFactory.Create(addGemEvent.EnemyType, addGemEvent.Position);
+                _lootFactory.Create(addLootEvent.CreatureType, addLootEvent.Position);
 
                 World.RemoveEntity(entity);
             }

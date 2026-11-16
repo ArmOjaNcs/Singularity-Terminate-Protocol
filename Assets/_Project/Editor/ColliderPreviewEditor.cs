@@ -25,14 +25,15 @@ namespace Gameplay.View
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("Config"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("ShowHitBox"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("ShowNavigationBox"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_config"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_showHitBox"));
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("_showNavigationBox"));
 
-            CreatureConfig config = _preview.Config;
+            ColliderEntityConfig config = _preview.Config;
+
             if (config != null)
             {
-                DrawCreatureConfig(config);
+                DrawColliderConfig(config);
             }
             else
             {
@@ -48,7 +49,7 @@ namespace Gameplay.View
                 SceneView.RepaintAll();
         }
 
-        private static void DrawCreatureConfig(CreatureConfig config)
+        private static void DrawColliderConfig(ColliderEntityConfig config)
         {
             EditorGUILayout.Space();
             EditorGUILayout.LabelField("Creature Colliders", EditorStyles.boldLabel);
@@ -128,7 +129,7 @@ namespace Gameplay.View
             EditorGUI.indentLevel--;
         }
 
-        private static void CreateColliderConfig(CreatureConfig config, bool hitBox)
+        private static void CreateColliderConfig(ColliderEntityConfig config, bool hitBox)
         {
             Undo.RecordObject(config, hitBox ? "Create Hit Box" : "Create Navigation Box");
             ColliderConfig collider = new ColliderConfig
@@ -216,7 +217,6 @@ namespace Gameplay.View
             if (GUI.changed)
                 SceneView.RepaintAll();
         }
-
     }
 }
 #endif

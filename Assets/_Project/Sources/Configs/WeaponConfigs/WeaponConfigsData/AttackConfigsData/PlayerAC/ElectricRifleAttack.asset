@@ -41,7 +41,7 @@ MonoBehaviour:
   RicochetChance: 100
   AllowRicochetRepeatTargets: 1
   HitInterval: 0
-  TargetType: 0
+  TargetType: 0000000002000000
   HitPolicy: 3
   AnimationPolicy: 1
   ProjectileSequencePolicy: 0
