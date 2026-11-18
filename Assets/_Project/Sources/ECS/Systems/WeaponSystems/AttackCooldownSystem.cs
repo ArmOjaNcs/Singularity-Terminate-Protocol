@@ -18,6 +18,7 @@ namespace ECS.WeaponSystems
         private Stash<WeaponComponent> _weaponStash;
         private Stash<AttackComponent> _attackStash;
         private Stash<AttackStatusComponent> _attackStatusStash;
+        private Stash<AttackSequenceComponent> _sequenceStash;
         private Stash<TargetComponent> _targetStash;
         private Stash<AttackRequest> _attackRequestStash;
         private Stash<DeathComponent> _deathStash;
@@ -42,6 +43,7 @@ namespace ECS.WeaponSystems
             _weaponStash = World.GetStash<WeaponComponent>();
             _attackStash = World.GetStash<AttackComponent>();
             _attackStatusStash = World.GetStash<AttackStatusComponent>();
+            _sequenceStash = World.GetStash<AttackSequenceComponent>();
             _targetStash = World.GetStash<TargetComponent>();
             _attackRequestStash = World.GetStash<AttackRequest>();
             _deathStash = World.GetStash<DeathComponent>();
@@ -74,7 +76,12 @@ namespace ECS.WeaponSystems
                 ref AttackStatusComponent attackStatus =
                     ref _attackStatusStash.Get(weapon);
 
-                if (attackStatus.IsAttacking)
+                bool swordMainSeriesFinished =
+                    weaponComponent.Type == WeaponType.Sword &&
+                    _sequenceStash.Has(weapon) &&
+                    _sequenceStash.Get(weapon).SwordMainSeriesFinished;
+
+                if (attackStatus.IsAttacking && !swordMainSeriesFinished)
                     continue;
 
                 if (attack.CurrentCooldown > 0f)
@@ -86,6 +93,9 @@ namespace ECS.WeaponSystems
 
                     attack.CurrentCooldown = 0f;
                 }
+
+                if (attackStatus.IsAttacking)
+                    continue;
 
                 if (_attackRequestStash.Has(weapon))
                     continue;

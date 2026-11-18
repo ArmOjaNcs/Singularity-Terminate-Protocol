@@ -38,6 +38,12 @@ namespace Gameplay.View
             gameObject.SetActive(value);
         }
 
+        public void SetVisualEnabled(bool value)
+        {
+            if (Renderer != null)
+                Renderer.enabled = value;
+        }
+
         public void SetFacingLeft(bool value)
         {
             if (Renderer == null || Renderer.flipX == value)

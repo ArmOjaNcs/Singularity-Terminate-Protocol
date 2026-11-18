@@ -371,13 +371,18 @@ namespace ECS.CommonSystems
             Entity owner =
                 _weaponStash.Get(weapon).Owner;
 
-            if ((!request.HasImpactPosition && !_positionStash.Has(owner)) ||
+            bool knockbackFromOwner =
+                request.Context.KnockbackOrigin ==
+                    KnockbackOriginType.WeaponOwner ||
+                !request.HasImpactPosition;
+
+            if ((knockbackFromOwner && !_positionStash.Has(owner)) ||
                 !_positionStash.Has(request.Target))
                 return;
 
-            Vector3 sourcePosition = request.HasImpactPosition
-                ? request.ImpactPosition
-                : _positionStash.Get(owner).Position;
+            Vector3 sourcePosition = knockbackFromOwner
+                ? _positionStash.Get(owner).Position
+                : request.ImpactPosition;
 
             Vector3 targetPosition =
                 _positionStash.Get(request.Target).Position;

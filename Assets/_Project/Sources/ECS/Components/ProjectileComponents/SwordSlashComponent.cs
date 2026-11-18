@@ -1,4 +1,3 @@
-using ECS.AttackComponents;
 using Scellecs.Morpeh;
 
 namespace ECS.ProjectileComponents
@@ -8,7 +7,5 @@ namespace ECS.ProjectileComponents
         public int SequenceId;
         public int SwingIndex;
         public bool MirrorY;
-        public bool CompletionReported;
-        public ProjectileSequencePolicy SequencePolicy;
     }
 }

@@ -24,6 +24,9 @@ MonoBehaviour:
   AttackCooldown: 2
   DistanceFromSource: 1
   ProjectileScale: 1
+  SwordThrustDistance: 1
+  SwordZigZagWidth: 1
+  ScaleAttackGeometryWithProjectile: 1
   Trajectory:
     Duration: 0.2
     FlightDistance: 0
@@ -44,4 +47,5 @@ MonoBehaviour:
   TargetType: 0000000002000000
   HitPolicy: 1
   AnimationPolicy: 1
-  ProjectileSequencePolicy: 1
+  CompletionPolicy: 1
+  RicochetPolicy: 3

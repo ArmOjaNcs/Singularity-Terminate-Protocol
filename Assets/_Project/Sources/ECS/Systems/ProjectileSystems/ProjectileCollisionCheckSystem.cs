@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.DamageComponents;
 using ECS.EnemyComponents;
@@ -26,6 +27,7 @@ namespace ECS.ProjectileSystems
         private Filter _playerFilter;
 
         private Stash<ProjectileComponent> _projectileStash;
+        private Stash<AreaExpansionComponent> _areaExpansionStash;
         private Stash<WeaponComponent> _weaponStash;
         private Stash<StatsComponent> _statsStash;
         private Stash<HitBoxComponent> _hitBoxStash;
@@ -65,6 +67,7 @@ namespace ECS.ProjectileSystems
                 .Build();
 
             _projectileStash = World.GetStash<ProjectileComponent>();
+            _areaExpansionStash = World.GetStash<AreaExpansionComponent>();
             _weaponStash = World.GetStash<WeaponComponent>();
             _statsStash = World.GetStash<StatsComponent>();
             _hitBoxStash = World.GetStash<HitBoxComponent>();
@@ -142,6 +145,8 @@ namespace ECS.ProjectileSystems
 
                     CreateRicochetRequest(projectile, target);
                     projectileComponent.RicochetPending =
+                        projectileComponent.RicochetPolicy !=
+                            RicochetPolicyType.None &&
                         projectileComponent.RicochetChance > 0f;
 
                     if (projectileComponent.HitPolicy != HitPolicyType.Pierce)
@@ -185,7 +190,8 @@ namespace ECS.ProjectileSystems
         {
             ProjectileComponent projectileComponent =
                 _projectileStash.Get(projectile);
-            if (projectileComponent.RicochetChance <= 0f)
+            if (projectileComponent.RicochetPolicy == RicochetPolicyType.None ||
+                projectileComponent.RicochetChance <= 0f)
                 return;
             Entity request = World.CreateEntity();
 
@@ -195,10 +201,11 @@ namespace ECS.ProjectileSystems
                 Weapon = projectileComponent.Weapon,
                 HitTarget = hitTarget,
                 SequenceId = projectileComponent.SequenceId,
-                SequencePolicy = projectileComponent.SequencePolicy,
-                HitPosition = _positionStash.Has(hitTarget)
-                    ? _positionStash.Get(hitTarget).Position
-                    : _positionStash.Get(projectile).Position
+                HitPosition = projectileComponent.WeaponType == WeaponType.Sword
+                    ? _positionStash.Get(projectile).Position
+                    : _positionStash.Has(hitTarget)
+                        ? _positionStash.Get(hitTarget).Position
+                        : _positionStash.Get(projectile).Position
             });
         }
 
@@ -369,6 +376,11 @@ namespace ECS.ProjectileSystems
                         DamageType = DamageType.Direct,
                         SourceType = sourceType,
                         WeaponType = projectileComponent.WeaponType,
+                        KnockbackOrigin = projectileComponent.WeaponType ==
+                                              WeaponType.Axe &&
+                                          !_areaExpansionStash.Has(projectile)
+                            ? KnockbackOriginType.WeaponOwner
+                            : KnockbackOriginType.ImpactPosition,
                     },
                 });
         }

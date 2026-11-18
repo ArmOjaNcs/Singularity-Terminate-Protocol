@@ -21,6 +21,9 @@ namespace ECS.AttackComponents
         public float TargetSearchRadius;
         public float DistanceFromSource;
         public float ProjectileScale;
+        public float SwordThrustDistance;
+        public float SwordZigZagWidth;
+        public bool ScaleAttackGeometryWithProjectile;
         public TrajectoryComponent Trajectory;
         public AttackPatternComponent Pattern;
         public bool HomingEnabled;
@@ -34,6 +37,7 @@ namespace ECS.AttackComponents
         public AttackTargetType[] TargetTypes;
         public HitPolicyType HitPolicy;
         public AttackAnimationPolicyType AnimationPolicy;
-        public ProjectileSequencePolicy ProjectileSequencePolicy;
+        public AttackCompletionPolicy CompletionPolicy;
+        public RicochetPolicyType RicochetPolicy;
     }
 }

@@ -16,6 +16,7 @@ namespace ECS.ProjectileSystems
         private Stash<ProjectileComponent> _projectileStash;
         private Stash<ProjectileVisualFlipComponent> _visualFlipStash;
         private Stash<SwordSlashComponent> _swordSlashStash;
+        private Stash<SwordThrustComponent> _swordThrustStash;
         private Stash<ArcTrajectoryComponent> _arcTrajectoryStash;
         private Stash<RipperTrajectoryComponent> _ripperTrajectoryStash;
 
@@ -38,6 +39,7 @@ namespace ECS.ProjectileSystems
             _visualFlipStash =
                 World.GetStash<ProjectileVisualFlipComponent>();
             _swordSlashStash = World.GetStash<SwordSlashComponent>();
+            _swordThrustStash = World.GetStash<SwordThrustComponent>();
             _arcTrajectoryStash = World.GetStash<ArcTrajectoryComponent>();
             _ripperTrajectoryStash =
                 World.GetStash<RipperTrajectoryComponent>();
@@ -75,12 +77,37 @@ namespace ECS.ProjectileSystems
                     continue;
                 }
 
-                if (projectile.CurrentLifetime < 0f ||
-                    (_swordSlashStash.Has(entity) &&
-                     _arcTrajectoryStash.Has(entity) &&
-                     _arcTrajectoryStash.Get(entity).CurrentTime < 0f))
+                bool isSwordThrust = _swordSlashStash.Has(entity) &&
+                                     _swordThrustStash.Has(entity);
+                bool trajectoryNotStarted = projectile.CurrentLifetime < 0f;
+                if (isSwordThrust)
                 {
-                    if (projectile.ViewActivated)
+                    trajectoryNotStarted =
+                        _swordThrustStash.Get(entity).CurrentTime < 0f;
+                }
+                else if (_swordSlashStash.Has(entity) &&
+                         _arcTrajectoryStash.Has(entity))
+                {
+                    trajectoryNotStarted =
+                        _arcTrajectoryStash.Get(entity).CurrentTime < 0f;
+                }
+
+                if (trajectoryNotStarted)
+                {
+                    if (isSwordThrust)
+                    {
+                        // Keep delayed sword views reserved in the pool.
+                        // Hiding the GameObject makes ObjectPool treat it as
+                        // free and can assign it to another live sword hit.
+                        if (!projectile.ViewActivated)
+                        {
+                            view.SetActive(true);
+                            projectile.ViewActivated = true;
+                        }
+
+                        view.SetVisualEnabled(false);
+                    }
+                    else if (projectile.ViewActivated)
                     {
                         view.SetActive(false);
                         projectile.ViewActivated = false;
@@ -94,6 +121,9 @@ namespace ECS.ProjectileSystems
                     view.SetActive(true);
                     projectile.ViewActivated = true;
                 }
+
+                if (isSwordThrust)
+                    view.SetVisualEnabled(true);
 
                 Transform viewTransform = view.transform;
 

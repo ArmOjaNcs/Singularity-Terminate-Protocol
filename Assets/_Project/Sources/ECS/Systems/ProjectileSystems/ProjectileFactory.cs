@@ -93,7 +93,8 @@ namespace ECS.ProjectileSystems
 
             creation.ElapsedTime = 0f;
             int cyclesPerAttack = Mathf.Max(0, attack.CyclesPerAttack);
-            if (weaponType == WeaponType.Axe)
+            if (weaponType == WeaponType.Axe ||
+                weaponType == WeaponType.Sword)
             {
                 cyclesPerAttack = Mathf.Min(
                     cyclesPerAttack,
@@ -118,6 +119,16 @@ namespace ECS.ProjectileSystems
             sequence.AssignedSectorIndex = -1;
             sequence.AxeSweepClockwise = false;
             sequence.HasAxeSweepDirection = false;
+            sequence.SwordStartSector = 0;
+            sequence.HasSwordStartSector = false;
+            sequence.SwordUsedSectorMask = 0;
+            sequence.SwordMainSeriesFinished = false;
+            sequence.SwordRicochetCycle = false;
+            sequence.SwordRicochetOrigin = Vector3.zero;
+            if (sequence.SwordCycles == null)
+                sequence.SwordCycles = new List<SwordAttackCycleState>();
+            else
+                sequence.SwordCycles.Clear();
             sequence.ReleasesCreated = 0;
             sequence.OutstandingProjectiles = 0;
             sequence.RicochetsCount = 0;
@@ -138,11 +149,7 @@ namespace ECS.ProjectileSystems
                     ? attack.CyclesPerAttack <= 0
                     : creation.RemainingCount <= 0)
             {
-                if (attack.ProjectileSequencePolicy ==
-                    ProjectileSequencePolicy.ComboOnTarget)
-                    FinishCombo(weapon);
-                else
-                    FinishCreation(weapon);
+                StopCreation(weapon);
                 return;
             }
 
@@ -150,15 +157,29 @@ namespace ECS.ProjectileSystems
                 return;
 
             if (weaponType == WeaponType.Sword)
+            {
+                if (attack.CycleInterval <= 0f)
+                {
+                    while (creation.RemainingCount > 0)
+                    {
+                        creation.RemainingCount--;
+                        if (!CreateRelease(weapon))
+                            return;
+                    }
+                }
+                else if (creation.RemainingCount > 0)
+                {
+                    creation.IsWaitingForCycle = true;
+                    creation.ElapsedTime = 0f;
+                }
                 return;
+            }
 
             creation.RemainingCount--;
 
             if (creation.RemainingCount <= 0)
             {
-                if (attack.ProjectileSequencePolicy !=
-                    ProjectileSequencePolicy.ComboOnTarget)
-                    FinishCreation(weapon);
+                StopCreation(weapon);
             }
         }
 
@@ -191,17 +212,13 @@ namespace ECS.ProjectileSystems
             if (!_weaponStash.Has(weapon) ||
                 !HasProjectileConfig(_weaponStash.Get(weapon).Type))
             {
-                if (attack.ProjectileSequencePolicy !=
-                    ProjectileSequencePolicy.ComboOnTarget)
-                    FinishCreation(weapon);
+                StopCreation(weapon);
                 return;
             }
 
             if (creation.RemainingCount <= 0)
             {
-                if (attack.ProjectileSequencePolicy !=
-                    ProjectileSequencePolicy.ComboOnTarget)
-                    FinishCreation(weapon);
+                StopCreation(weapon);
                 return;
             }
 
@@ -215,8 +232,8 @@ namespace ECS.ProjectileSystems
                     creation.RemainingCount--;
                 }
 
-                if (attack.ProjectileSequencePolicy !=
-                    ProjectileSequencePolicy.ComboOnTarget)
+                if (attack.CompletionPolicy !=
+                    AttackCompletionPolicy.AfterTrajectories)
                     FinishCreation(weapon);
                 return;
             }
@@ -236,8 +253,8 @@ namespace ECS.ProjectileSystems
 
             if (creation.RemainingCount <= 0)
             {
-                if (attack.ProjectileSequencePolicy !=
-                    ProjectileSequencePolicy.ComboOnTarget)
+                if (attack.CompletionPolicy !=
+                    AttackCompletionPolicy.AfterTrajectories)
                     FinishCreation(weapon);
             }
         }
@@ -268,9 +285,6 @@ namespace ECS.ProjectileSystems
                 ref AttackSequenceComponent sequence =
                     ref _sequenceStash.Get(weapon);
                 sequence.LockedTarget = default;
-                sequence.RicochetsCount = 0;
-                sequence.RicochetPending = false;
-                sequence.PendingTarget = default;
             }
 
             if (!CreateRelease(weapon))
@@ -280,7 +294,8 @@ namespace ECS.ProjectileSystems
                 creation.RemainingCount--;
 
             creation.ElapsedTime = 0f;
-            creation.IsWaitingForCycle = false;
+            creation.IsWaitingForCycle = !comboRestart &&
+                                         creation.RemainingCount > 0;
             creation.IsComboRestart = false;
         }
 
@@ -290,7 +305,7 @@ namespace ECS.ProjectileSystems
                 !_attackStash.Has(weapon) ||
                 !_positionStash.Has(weapon))
             {
-                FinishCreation(weapon);
+                StopCreation(weapon);
                 return false;
             }
 
@@ -299,7 +314,7 @@ namespace ECS.ProjectileSystems
 
             if (config == null || config.Collider == null)
             {
-                FinishCreation(weapon);
+                StopCreation(weapon);
                 return false;
             }
 
@@ -311,8 +326,7 @@ namespace ECS.ProjectileSystems
                 ref _creationStash.Get(weapon);
 
             Entity target;
-            if (attack.ProjectileSequencePolicy ==
-                ProjectileSequencePolicy.ComboOnTarget &&
+            if (attack.RicochetPolicy == RicochetPolicyType.AttackSeries &&
                 sequence.LockedTarget != default)
             {
                 target = sequence.LockedTarget;
@@ -367,19 +381,39 @@ namespace ECS.ProjectileSystems
                     {
                         direction = _ripperSequenceStash.Get(weapon).AttackDirection;
                     }
-                    else if (attack.ProjectileSequencePolicy ==
-                                 ProjectileSequencePolicy.ComboOnTarget &&
+                    else if (attack.RicochetPolicy ==
+                                 RicochetPolicyType.AttackSeries &&
                              sequence.LockedTarget != default)
                     {
-                        creation.RemainingCount = 0;
+                        StopCreation(weapon);
                         return false;
                     }
                     else
                     {
-                        FinishCreation(weapon);
+                        StopCreation(weapon);
                         return false;
                     }
                 }
+            }
+
+            if (weaponType == WeaponType.Sword)
+            {
+                if (sequence.SwordRicochetCycle && target != default &&
+                    !_world.IsDisposed(target) && _positionStash.Has(target))
+                {
+                    direction = _positionStash.Get(target).Position -
+                                sequence.SwordRicochetOrigin;
+                    direction.z = 0f;
+                    if (direction.sqrMagnitude > 0.0001f)
+                        direction.Normalize();
+                }
+
+                direction = GetSwordDirection(ref sequence, direction);
+                RegisterSwordCycle(
+                    ref sequence,
+                    sequence.Id,
+                    sequence.ReleasesCreated,
+                    GetCardinalSector(direction));
             }
 
             _creators.TryGetValue(
@@ -393,8 +427,7 @@ namespace ECS.ProjectileSystems
             int projectileCount = Mathf.Max(1, attack.ShotsPerCycle);
             Entity[] projectiles = new Entity[projectileCount];
 
-            if (attack.ProjectileSequencePolicy ==
-                    ProjectileSequencePolicy.ComboOnTarget &&
+            if (attack.RicochetPolicy == RicochetPolicyType.AttackSeries &&
                 sequence.LockedTarget == default)
             {
                 sequence.LockedTarget = target;
@@ -450,8 +483,6 @@ namespace ECS.ProjectileSystems
                 sequence.VisitedTargets.Add(target);
 
             if (target != default &&
-                attack.ProjectileSequencePolicy !=
-                    ProjectileSequencePolicy.ComboOnTarget &&
                 !attack.Pattern.SelectTargetPerCycle &&
                 sequence.AttackTarget == default)
             {
@@ -465,8 +496,8 @@ namespace ECS.ProjectileSystems
             {
                 sequence.LockedTarget = default;
             }
-            if (attack.ProjectileSequencePolicy ==
-                ProjectileSequencePolicy.ComboOnTarget)
+            if (attack.CompletionPolicy ==
+                AttackCompletionPolicy.AfterTrajectories)
             {
                 sequence.OutstandingProjectiles += projectiles.Length;
             }
@@ -506,8 +537,9 @@ namespace ECS.ProjectileSystems
                 RicochetChance = attack.RicochetChance,
                 AllowRicochetRepeatTargets = attack.AllowRicochetRepeatTargets,
                 TargetSearchRadius = attack.RicochetTargetSearchRadius,
-                SequencePolicy = attack.ProjectileSequencePolicy,
+                RicochetPolicy = attack.RicochetPolicy,
                 SequenceId = sequenceId,
+                CycleIndex = swingIndex,
                 SwingIndex = swingIndex,
                 Direction = direction,
                 TargetTypes = attack.TargetTypes,
@@ -515,7 +547,8 @@ namespace ECS.ProjectileSystems
                 HitPolicy = attack.HitPolicy,
                 CollisionEnabled = true,
                 CleanupRequested = false,
-                ViewActivated = true
+                ViewActivated = true,
+                AttackCompletionReported = false
             });
 
             _positionStash.Set(projectile, new PositionComponent
@@ -684,6 +717,97 @@ namespace ECS.ProjectileSystems
             return true;
         }
 
+        private static Vector3 GetSwordDirection(
+            ref AttackSequenceComponent sequence,
+            Vector3 targetDirection)
+        {
+            int preferredSector = GetCardinalSector(targetDirection);
+            if (sequence.SwordRicochetCycle)
+            {
+                int offset = Random.Range(1, 4);
+                return GetCardinalDirection(
+                    (sequence.SwordStartSector + offset) % 4);
+            }
+
+            int sector;
+            if (!sequence.HasSwordStartSector)
+            {
+                sector = preferredSector;
+                sequence.SwordStartSector = sector;
+                sequence.HasSwordStartSector = true;
+            }
+            else
+            {
+                sector = FindNextFreeSector(
+                    preferredSector,
+                    sequence.SwordUsedSectorMask);
+                if (sector < 0)
+                    sector = preferredSector;
+            }
+
+            sequence.SwordUsedSectorMask |= 1 << sector;
+            return GetCardinalDirection(sector);
+        }
+
+        private static int GetCardinalSector(Vector3 direction)
+        {
+            if (direction.sqrMagnitude <= 0.0001f)
+                return 0;
+
+            if (Mathf.Abs(direction.x) >= Mathf.Abs(direction.y))
+                return direction.x < 0f ? 2 : 0;
+
+            return direction.y < 0f ? 3 : 1;
+        }
+
+        private static void RegisterSwordCycle(
+            ref AttackSequenceComponent sequence,
+            int sequenceId,
+            int cycleIndex,
+            int swordFacingSector)
+        {
+            if (sequence.SwordCycles == null)
+                sequence.SwordCycles = new List<SwordAttackCycleState>();
+
+            int stateIndex = sequence.SwordCycles.FindIndex(
+                state => state.SequenceId == sequenceId &&
+                         state.CycleIndex == cycleIndex);
+            if (stateIndex >= 0)
+                return;
+
+            sequence.SwordCycles.Add(new SwordAttackCycleState
+            {
+                SequenceId = sequenceId,
+                CycleIndex = cycleIndex,
+                SwordFacingSector = swordFacingSector,
+                LastProjectileSwingIndex = -1
+            });
+        }
+
+        private static int FindNextFreeSector(int preferredSector, int usedMask)
+        {
+            for (int offset = 0; offset < AxeProjectileCreator.SectorCount; offset++)
+            {
+                int sector = (preferredSector + offset) %
+                             AxeProjectileCreator.SectorCount;
+                if ((usedMask & (1 << sector)) == 0)
+                    return sector;
+            }
+
+            return -1;
+        }
+
+        private static Vector3 GetCardinalDirection(int sector)
+        {
+            return sector switch
+            {
+                0 => Vector3.right,
+                1 => Vector3.up,
+                2 => Vector3.left,
+                _ => Vector3.down
+            };
+        }
+
         private void FinishCreation(Entity weapon)
         {
             if (_creationStash.Has(weapon))
@@ -705,13 +829,29 @@ namespace ECS.ProjectileSystems
                 _sequenceStash.Get(weapon).IsActive = false;
         }
 
-        private void FinishCombo(Entity weapon)
+        private void StopCreation(Entity weapon)
+        {
+            if (_attackStash.Has(weapon) &&
+                _attackStash.Get(weapon).CompletionPolicy ==
+                    AttackCompletionPolicy.AfterTrajectories)
+            {
+                StopTrackedAttack(weapon);
+                return;
+            }
+
+            FinishCreation(weapon);
+        }
+
+        private void StopTrackedAttack(Entity weapon)
         {
             if (_creationStash.Has(weapon))
             {
                 ref ProjectileCreationComponent creation =
                     ref _creationStash.Get(weapon);
                 creation.RemainingCount = 0;
+                creation.ElapsedTime = 0f;
+                creation.IsWaitingForCycle = false;
+                creation.IsComboRestart = false;
             }
         }
     }

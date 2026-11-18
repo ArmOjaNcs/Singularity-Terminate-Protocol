@@ -9,66 +9,69 @@ namespace ECS.ProjectileSystems
 {
     public sealed class SwordProjectileCreator : IProjectileCreator
     {
-        private readonly World _world;
         private readonly ArcProjectileConfig _config;
         private readonly Stash<AttackComponent> _attackStash;
         private readonly Stash<AttackSequenceComponent> _sequenceStash;
-        private readonly Stash<TargetComponent> _targetStash;
         private readonly Stash<PositionComponent> _positionStash;
         private readonly Stash<ProjectileComponent> _projectileStash;
         private readonly Stash<RotationComponent> _rotationStash;
         private readonly Stash<HitBoxComponent> _hitBoxStash;
-        private readonly Stash<ArcTrajectoryComponent> _arcTrajectoryStash;
+        private readonly Stash<SwordThrustComponent> _thrustStash;
         private readonly Stash<SwordSlashComponent> _swordSlashStash;
 
         public SwordProjectileCreator(World world, ArcProjectileConfig config)
         {
-            _world = world;
             _config = config;
             _attackStash = world.GetStash<AttackComponent>();
             _sequenceStash = world.GetStash<AttackSequenceComponent>();
-            _targetStash = world.GetStash<TargetComponent>();
             _positionStash = world.GetStash<PositionComponent>();
             _projectileStash = world.GetStash<ProjectileComponent>();
             _rotationStash = world.GetStash<RotationComponent>();
             _hitBoxStash = world.GetStash<HitBoxComponent>();
-            _arcTrajectoryStash = world.GetStash<ArcTrajectoryComponent>();
+            _thrustStash = world.GetStash<SwordThrustComponent>();
             _swordSlashStash = world.GetStash<SwordSlashComponent>();
         }
 
         public void Create(Entity weapon, Entity[] projectiles)
         {
-            if (_config == null ||
-                !_attackStash.Has(weapon) ||
-                !_sequenceStash.Has(weapon))
-            {
+            if (_config == null || !_attackStash.Has(weapon) ||
+                !_positionStash.Has(weapon))
                 return;
-            }
 
-            ref AttackComponent attack = ref _attackStash.Get(weapon);
+            AttackComponent attack = _attackStash.Get(weapon);
             ref AttackSequenceComponent sequence =
                 ref _sequenceStash.Get(weapon);
+            Vector3 forward = projectiles.Length > 0 &&
+                              _projectileStash.Has(projectiles[0])
+                ? _projectileStash.Get(projectiles[0]).Direction
+                : Vector3.right;
+            forward.z = 0f;
+            forward = forward.sqrMagnitude > 0.0001f
+                ? forward.normalized
+                : Vector3.right;
 
-            Entity target = sequence.LockedTarget;
-            if (target == default && _targetStash.Has(weapon))
-                target = _targetStash.Get(weapon).Target;
-
-            Vector3 fallbackDirection = Vector3.right;
-            if (projectiles.Length > 0 &&
-                _projectileStash.Has(projectiles[0]))
+            Vector3 lateral = new Vector3(-forward.y, forward.x, 0f);
+            Vector3 playerPosition = _positionStash.Get(weapon).Position;
+            Vector3 patternOrigin = sequence.SwordRicochetCycle
+                ? sequence.SwordRicochetOrigin
+                : Vector3.zero;
+            float step = Mathf.Max(0.1f, attack.SwordThrustDistance);
+            float width = Mathf.Max(0.1f, attack.SwordZigZagWidth);
+            Vector3 initialOffset = sequence.SwordRicochetCycle
+                ? Vector3.zero
+                : forward * attack.DistanceFromSource;
+            Vector3 firstCorner = patternOrigin + initialOffset;
+            Vector3[] starts = new Vector3[projectiles.Length];
+            Vector3[] ends = new Vector3[projectiles.Length];
+            for (int index = 0; index < projectiles.Length; index++)
             {
-                fallbackDirection = _projectileStash.Get(projectiles[0]).Direction;
-                fallbackDirection.z = 0f;
-                if (fallbackDirection.sqrMagnitude > 0.0001f)
-                    fallbackDirection.Normalize();
+                starts[index] = index == 0 ? firstCorner : ends[index - 1];
+                float lateralStep = index == 0
+                    ? -width
+                    : (index % 2 == 1 ? 2f * width : -2f * width);
+                ends[index] = starts[index] + forward * step +
+                              lateral * lateralStep;
             }
-
-            Vector3 attackAreaPosition = target != default &&
-                                         !_world.IsDisposed(target) &&
-                                         _positionStash.Has(target)
-                ? _positionStash.Get(target).Position
-                : _positionStash.Get(weapon).Position +
-                  fallbackDirection * attack.TargetSearchRadius;
 
             for (int index = 0; index < projectiles.Length; index++)
             {
@@ -76,61 +79,55 @@ namespace ECS.ProjectileSystems
                 if (!_projectileStash.Has(projectileEntity) ||
                     !_positionStash.Has(projectileEntity) ||
                     !_hitBoxStash.Has(projectileEntity))
-                {
                     continue;
-                }
+
+                Vector3 segment = ends[index] - starts[index];
+                Vector3 direction = segment.normalized;
+                float angle = Mathf.Atan2(direction.y, direction.x) *
+                              Mathf.Rad2Deg;
+                float startDelay = attack.ShotInterval * index;
 
                 ref ProjectileComponent projectile =
                     ref _projectileStash.Get(projectileEntity);
-                float startDelay = attack.ShotInterval * index;
-                Vector3 direction = projectile.Direction;
-                direction.z = 0f;
-                if (direction.sqrMagnitude <= 0.0001f)
-                    continue;
-                direction.Normalize();
-
-                int swingIndex = projectile.SwingIndex + index;
-                bool reverseSwing = swingIndex % 2 != 0;
-                bool mirrorY = reverseSwing ^ (direction.x < 0f);
-                float startAngle = reverseSwing
-                    ? -_config.StartAngle
-                    : _config.StartAngle;
-                float endAngle = reverseSwing
-                    ? -_config.EndAngle
-                    : _config.EndAngle;
-
-                _rotationStash.Set(projectileEntity, new RotationComponent());
-                _arcTrajectoryStash.Set(projectileEntity,
-                    new ArcTrajectoryComponent
-                    {
-                        Direction = direction,
-                        Anchor = ArcTrajectoryAnchor.FixedPosition,
-                        AnchorPosition = attackAreaPosition,
-                        ColliderOffset = _config.ColliderOffset,
-                        DistanceFromSource = attack.DistanceFromSource,
-                        Radius = _config.TrajectoryRadius,
-                        StartAngle = startAngle,
-                        EndAngle = endAngle,
-                        StartRotationAngle = startAngle,
-                        EndRotationAngle = endAngle,
-                        Duration = attack.Trajectory.Duration,
-                        CurrentTime = -startDelay,
-                        BaseColliderCenter =
-                            _hitBoxStash.Get(projectileEntity).Collider.Center
-                    });
-
+                projectile.Direction = direction;
+                projectile.SwingIndex = index;
                 projectile.CurrentLifetime = -startDelay;
                 if (startDelay > 0f)
                     projectile.CollisionEnabled = false;
+
+                bool followOwner = !sequence.SwordRicochetCycle;
+                Vector3 startPosition = followOwner
+                    ? playerPosition + starts[index]
+                    : starts[index];
+                Vector3 endPosition = followOwner
+                    ? playerPosition + ends[index]
+                    : ends[index];
+                _positionStash.Get(projectileEntity).Position = startPosition;
+                _rotationStash.Set(projectileEntity,
+                    new RotationComponent { Angle = angle });
+                _thrustStash.Set(projectileEntity,
+                    new SwordThrustComponent
+                    {
+                        Owner = weapon,
+                        StartPosition = followOwner ? starts[index] : startPosition,
+                        EndPosition = followOwner ? ends[index] : endPosition,
+                        FollowOwner = followOwner,
+                        Duration = Mathf.Max(0.01f, attack.Trajectory.Duration),
+                        CurrentTime = -startDelay
+                    });
+
+                ref HitBoxComponent hitBox =
+                    ref _hitBoxStash.Get(projectileEntity);
+                ColliderComponent collider = hitBox.Collider;
+                collider.Angle = angle;
+                hitBox.Collider = collider;
 
                 _swordSlashStash.Set(projectileEntity,
                     new SwordSlashComponent
                     {
                         SequenceId = projectile.SequenceId,
-                        SwingIndex = projectile.SwingIndex,
-                        MirrorY = mirrorY,
-                        CompletionReported = false,
-                        SequencePolicy = projectile.SequencePolicy
+                        SwingIndex = index,
+                        MirrorY = forward.x < 0f
                     });
             }
         }

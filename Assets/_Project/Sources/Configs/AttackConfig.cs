@@ -20,6 +20,9 @@ namespace Configs
         public float AttackCooldown;
         public float DistanceFromSource;
         public float ProjectileScale = 1f;
+        public float SwordThrustDistance = 1f;
+        public float SwordZigZagWidth = 1f;
+        public bool ScaleAttackGeometryWithProjectile;
         public TrajectoryConfig Trajectory;
         public AttackPatternConfig Pattern;
         public bool HomingEnabled;
@@ -34,6 +37,7 @@ namespace Configs
         public AttackTargetType[] TargetType;
         public HitPolicyType HitPolicy;
         public AttackAnimationPolicyType AnimationPolicy;
-        public ProjectileSequencePolicy ProjectileSequencePolicy;
+        public AttackCompletionPolicy CompletionPolicy;
+        public RicochetPolicyType RicochetPolicy;
     }
 }

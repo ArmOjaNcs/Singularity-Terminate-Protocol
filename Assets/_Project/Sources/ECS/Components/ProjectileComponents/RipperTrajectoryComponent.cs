@@ -1,4 +1,3 @@
-using ECS.AttackComponents;
 using Scellecs.Morpeh;
 using UnityEngine;
 
@@ -8,7 +7,6 @@ namespace ECS.ProjectileComponents
     {
         public int SequenceId;
         public int SwingIndex;
-        public ProjectileSequencePolicy SequencePolicy;
         public Vector3 AttackDirection;
         public Vector3 Direction;
         public Vector3 StartOffset;
@@ -18,6 +16,5 @@ namespace ECS.ProjectileComponents
         public float ShakeAmplitude;
         public float ShakeFrequency;
         public bool MirrorY;
-        public bool CompletionReported;
     }
 }

@@ -10,5 +10,6 @@ namespace ECS.CommonComponents
         public CreatureType SourceType;
         public WeaponType WeaponType;
         public EffectType EffectType;
+        public KnockbackOriginType KnockbackOrigin;
     }
 }

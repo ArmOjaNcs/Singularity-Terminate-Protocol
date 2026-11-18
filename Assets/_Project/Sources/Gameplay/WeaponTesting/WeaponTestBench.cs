@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using Cinemachine;
 using Configs;
@@ -65,6 +66,9 @@ namespace Gameplay.WeaponTesting
         private float _measurementRemaining;
         private readonly List<WeaponTestDummy> _spawnedDummies = new List<WeaponTestDummy>();
         private readonly List<Entity> _entitiesToRemove = new List<Entity>();
+        private readonly Dictionary<string, string> _floatInputBuffers =
+            new Dictionary<string, string>();
+        private string _activeFloatInput;
 
         private enum DummyFormation
         {
@@ -312,6 +316,7 @@ namespace Gameplay.WeaponTesting
             _testSystems.AddSystem(new StraightTrajectorySystem());
             _testSystems.AddSystem(new ElectricTrajectorySystem(grid));
             _testSystems.AddSystem(new ArcTrajectorySystem());
+            _testSystems.AddSystem(new SwordThrustSystem());
             _testSystems.AddSystem(new GrenadeLauncherFlightSystem());
             _testSystems.AddSystem(new RocketLauncherFlightSystem());
             _testSystems.AddSystem(new AreaExpansionSystem());
@@ -327,7 +332,7 @@ namespace Gameplay.WeaponTesting
             _testSystems.AddSystem(new DamageSystem());
             _testSystems.AddSystem(new EffectSystem());
             _testSystems.AddSystem(new RicochetSystem(grid));
-            _testSystems.AddSystem(new ProjectileSequenceSystem());
+            _testSystems.AddSystem(new AttackSequenceSystem());
             _testSystems.AddSystem(new TraumaStatusSystem());
             _testSystems.AddSystem(new TwistStatusSystem());
             if (navigationGrid != null)
@@ -420,24 +425,30 @@ namespace Gameplay.WeaponTesting
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Label("Center", GUILayout.Width(55));
-            _formationCenter.x = ParseFloatField(_formationCenter.x, 60);
-            _formationCenter.y = ParseFloatField(_formationCenter.y, 60);
+            _formationCenter.x = DrawFloatField(
+                "Dummy.Formation.CenterX", _formationCenter.x, 60);
+            _formationCenter.y = DrawFloatField(
+                "Dummy.Formation.CenterY", _formationCenter.y, 60);
             if (_dummyFormation == DummyFormation.Square)
             {
                 GUILayout.Label("W × H", GUILayout.Width(45));
-                _formationSize.x = ParseFloatField(_formationSize.x, 55);
-                _formationSize.y = ParseFloatField(_formationSize.y, 55);
+                _formationSize.x = DrawFloatField(
+                    "Dummy.Formation.Width", _formationSize.x, 55);
+                _formationSize.y = DrawFloatField(
+                    "Dummy.Formation.Height", _formationSize.y, 55);
             }
             else
             {
                 GUILayout.Label(
                     _dummyFormation == DummyFormation.Ring ? "Inner radius" : "Radius",
                     GUILayout.Width(_dummyFormation == DummyFormation.Ring ? 80 : 48));
-                _ringRadius = Mathf.Max(0f, ParseFloatField(_ringRadius, 60));
+                _ringRadius = Mathf.Max(0f, DrawFloatField(
+                    "Dummy.Formation.Radius", _ringRadius, 60));
                 if (_dummyFormation == DummyFormation.Ring)
                 {
                     GUILayout.Label("Thickness", GUILayout.Width(68));
-                    _ringThickness = Mathf.Max(0f, ParseFloatField(_ringThickness, 55));
+                    _ringThickness = Mathf.Max(0f, DrawFloatField(
+                        "Dummy.Formation.Thickness", _ringThickness, 55));
                     GUILayout.Label("Layers", GUILayout.Width(48));
                     int.TryParse(GUILayout.TextField(_ringLayers.ToString(), GUILayout.Width(45)), out _ringLayers);
                     _ringLayers = Mathf.Clamp(_ringLayers, 1, 12);
@@ -449,9 +460,11 @@ namespace Gameplay.WeaponTesting
             GUILayout.Label("Measurement targets", GUI.skin.box);
             GUILayout.BeginHorizontal();
             GUILayout.Label("Dummy Max Health", GUILayout.Width(160));
-            float.TryParse(GUILayout.TextField(_dummyHealth.ToString(), GUILayout.Width(100)), out _dummyHealth);
+            _dummyHealth = DrawFloatField(
+                "Dummy.Health", _dummyHealth, 100);
             GUILayout.Label("Defence %", GUILayout.Width(80));
-            float.TryParse(GUILayout.TextField(_dummyDefence.ToString(), GUILayout.Width(80)), out _dummyDefence);
+            _dummyDefence = DrawFloatField(
+                "Dummy.Defence", _dummyDefence, 80);
             GUILayout.EndHorizontal();
             _dummyHealth = Mathf.Max(1f, _dummyHealth);
             _dummyDefence = Mathf.Clamp(_dummyDefence, 0f, 100f);
@@ -461,7 +474,8 @@ namespace Gameplay.WeaponTesting
             GUILayout.BeginHorizontal();
             GUILayout.Label("Duration (s)", GUILayout.Width(100));
             if (!_measurementRunning)
-                float.TryParse(GUILayout.TextField(_measurementDuration.ToString("0.##"), GUILayout.Width(90)), out _measurementDuration);
+                _measurementDuration = DrawFloatField(
+                    "Measurement.Duration", _measurementDuration, 90);
             else
                 GUILayout.Label($"Remaining: {Mathf.Max(0f, _measurementRemaining):0.0}s", GUILayout.Width(150));
             _measurementDuration = Mathf.Max(0.1f, _measurementDuration);
@@ -496,7 +510,11 @@ namespace Gameplay.WeaponTesting
                     GUI.skin.box,
                     GUILayout.Width(380));
                 AttackComponent attack = _attackStash.Get(selected.Entity);
-                bool changed = DrawFields(ref attack, typeof(AttackComponent), "Attack");
+                bool changed = DrawFields(
+                    ref attack,
+                    typeof(AttackComponent),
+                    "Attack",
+                    $"Attack.{selected.Config.Type}");
                 if (changed) _attackStash.Set(selected.Entity, attack);
 
                 WeaponEffectsComponent effects = _effectsStash.Get(selected.Entity);
@@ -509,7 +527,9 @@ namespace Gameplay.WeaponTesting
                         if (effect == null) continue;
                         GUILayout.BeginVertical(GUI.skin.box, GUILayout.Width(360));
                         GUILayout.Label(effect.Type.ToString(), GUI.skin.box, GUILayout.Width(220));
-                        DrawObjectFields(effect);
+                        DrawObjectFields(
+                            effect,
+                            $"Effects.{selected.Config.Type}.{i}.{effect.Type}");
                         GUILayout.EndVertical();
                     }
                 }
@@ -519,29 +539,79 @@ namespace Gameplay.WeaponTesting
             GUI.matrix = previousMatrix;
         }
 
-        private static float ParseFloatField(float value, float width)
+        private float DrawFloatField(string controlName, float value, float width)
         {
-            string text = GUILayout.TextField(value.ToString("0.##"), GUILayout.Width(width));
-            return float.TryParse(text, out float parsed) ? parsed : value;
+            bool wasActive = _activeFloatInput == controlName;
+            string text = wasActive &&
+                          _floatInputBuffers.TryGetValue(controlName, out string buffered)
+                ? buffered
+                : value.ToString("0.##", CultureInfo.InvariantCulture);
+
+            GUI.SetNextControlName(controlName);
+            string edited = GUILayout.TextField(text, GUILayout.Width(width));
+            bool isFocused = GUI.GetNameOfFocusedControl() == controlName;
+
+            if (isFocused)
+            {
+                _activeFloatInput = controlName;
+                _floatInputBuffers[controlName] = edited;
+                return TryParseFloat(edited, out float parsed) ? parsed : value;
+            }
+
+            _floatInputBuffers.Remove(controlName);
+            if (wasActive)
+            {
+                if (_activeFloatInput == controlName)
+                    _activeFloatInput = null;
+
+                return TryParseFloat(edited, out float parsed) ? parsed : value;
+            }
+
+            return value;
         }
 
-        private static bool DrawFields<T>(ref T value, Type type, string title) where T : struct
+        private static bool TryParseFloat(string text, out float value)
+        {
+            string normalized = text.Trim().Replace(',', '.');
+            return float.TryParse(
+                       normalized,
+                       NumberStyles.Float,
+                       CultureInfo.InvariantCulture,
+                       out value) &&
+                   !float.IsNaN(value) &&
+                   !float.IsInfinity(value);
+        }
+
+        private bool DrawFields<T>(
+            ref T value,
+            Type type,
+            string title,
+            string fieldPath) where T : struct
         {
             GUILayout.Label(title, GUI.skin.box, GUILayout.Width(210));
             object boxed = value;
-            bool changed = DrawFieldsOnObject(boxed, type, 180, 130);
+            bool changed = DrawFieldsOnObject(
+                boxed,
+                type,
+                fieldPath,
+                180,
+                130);
             if (changed) value = (T)boxed;
             return changed;
         }
 
-        private static bool DrawObjectFields(object value)
+        private bool DrawObjectFields(object value, string fieldPath)
         {
-            return value != null && DrawFieldsOnObject(value, value.GetType());
+            return value != null && DrawFieldsOnObject(
+                value,
+                value.GetType(),
+                fieldPath);
         }
 
-        private static bool DrawFieldsOnObject(
+        private bool DrawFieldsOnObject(
             object value,
             Type type,
+            string fieldPath,
             int labelWidth = 180,
             int valueWidth = 130)
         {
@@ -567,6 +637,7 @@ namespace Gameplay.WeaponTesting
                     nestedValueChanged = DrawFieldsOnObject(
                         old,
                         fieldType,
+                        $"{fieldPath}.{field.Name}",
                         nestedLabelWidth,
                         valueWidth);
                     GUILayout.EndVertical();
@@ -585,11 +656,20 @@ namespace Gameplay.WeaponTesting
                     ? "Random direction fallback"
                     : field.Name;
                 GUILayout.Label(displayName, GUILayout.Width(labelWidth));
-                if (fieldType == typeof(int) || fieldType == typeof(float))
+                if (fieldType == typeof(float))
                 {
-                    string input = GUILayout.TextField(Convert.ToString(old), GUILayout.Width(valueWidth));
-                    if (fieldType == typeof(int) && int.TryParse(input, out int intValue)) next = intValue;
-                    if (fieldType == typeof(float) && float.TryParse(input, out float floatValue)) next = floatValue;
+                    next = DrawFloatField(
+                        $"{fieldPath}.{field.Name}",
+                        (float)old,
+                        valueWidth);
+                }
+                else if (fieldType == typeof(int))
+                {
+                    string input = GUILayout.TextField(
+                        Convert.ToString(old, CultureInfo.InvariantCulture),
+                        GUILayout.Width(valueWidth));
+                    if (int.TryParse(input, out int intValue))
+                        next = intValue;
                 }
                 else if (fieldType == typeof(bool)) next = GUILayout.Toggle((bool)old, "");
                 else if (fieldType.IsEnum)

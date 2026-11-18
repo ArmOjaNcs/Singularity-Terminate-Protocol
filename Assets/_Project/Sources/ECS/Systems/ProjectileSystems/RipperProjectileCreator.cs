@@ -134,7 +134,6 @@ namespace ECS.ProjectileSystems
                     {
                         SequenceId = projectile.SequenceId,
                         SwingIndex = projectile.SwingIndex,
-                        SequencePolicy = projectile.SequencePolicy,
                         AttackDirection = attackDirection,
                         Direction = direction,
                         StartOffset = railCenterOffset,
@@ -146,8 +145,7 @@ namespace ECS.ProjectileSystems
                         CurrentTime = 0f,
                         ShakeAmplitude = attack.Trajectory.ShakeAmplitude,
                         ShakeFrequency = attack.Trajectory.ShakeFrequency,
-                        MirrorY = mirrorY,
-                        CompletionReported = false
+                        MirrorY = mirrorY
                     });
             }
         }

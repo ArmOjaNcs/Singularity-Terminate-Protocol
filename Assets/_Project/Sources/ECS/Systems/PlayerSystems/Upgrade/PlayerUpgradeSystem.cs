@@ -201,8 +201,22 @@ namespace ECS.PlayerSystems
                     attack.ProjectileLifetime += (float)Math.Round(attack.ProjectileLifetime * (amount / 100f), 2);
                     break;
                 case WeaponStats.ProjectileScale:
-                    attack.ProjectileScale += (float)Math.Round(attack.ProjectileScale * (amount / 100f), 2);
+                {
+                    float previousScale = attack.ProjectileScale;
+                    attack.ProjectileScale += (float)Math.Round(
+                        attack.ProjectileScale * (amount / 100f), 2);
+                    if (attack.ScaleAttackGeometryWithProjectile &&
+                        previousScale > 0f)
+                    {
+                        float scaleRatio = attack.ProjectileScale / previousScale;
+                        attack.DistanceFromSource *= scaleRatio;
+                        attack.SwordThrustDistance *= scaleRatio;
+                        attack.SwordZigZagWidth *= scaleRatio;
+                        attack.Trajectory.FlightDistance *= scaleRatio;
+                        attack.Trajectory.ZigZagAmplitude *= scaleRatio;
+                    }
                     break;
+                }
                 case WeaponStats.Homing:
                     attack.HomingEnabled = true;
                     break;

@@ -241,6 +241,7 @@ namespace Core.Game
             _gameplaySystems.AddSystem(new StraightTrajectorySystem());
             _gameplaySystems.AddSystem(new ElectricTrajectorySystem(_spatialGrid));
             _gameplaySystems.AddSystem(new ArcTrajectorySystem());
+            _gameplaySystems.AddSystem(new SwordThrustSystem());
             _gameplaySystems.AddSystem(new GrenadeLauncherFlightSystem());
             _gameplaySystems.AddSystem(new RocketLauncherFlightSystem());
             _gameplaySystems.AddSystem(new AreaExpansionSystem());
@@ -258,7 +259,7 @@ namespace Core.Game
             _gameplaySystems.AddSystem(new ColorRuntimeSystem());
             _gameplaySystems.AddSystem(new EffectSystem());
             _gameplaySystems.AddSystem(new RicochetSystem(_spatialGrid));
-            _gameplaySystems.AddSystem(new ProjectileSequenceSystem());
+            _gameplaySystems.AddSystem(new AttackSequenceSystem());
             _gameplaySystems.AddSystem(new TraumaStatusSystem());
             _gameplaySystems.AddSystem(new KnockbackSystem(_navigationGrid));
             _gameplaySystems.AddSystem(new TwistStatusSystem());

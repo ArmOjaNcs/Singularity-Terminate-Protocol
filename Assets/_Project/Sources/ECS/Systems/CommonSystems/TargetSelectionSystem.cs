@@ -81,8 +81,8 @@ namespace ECS.CommonSystems
                     : default;
 
                 if (sequence.IsActive &&
-                    attack.ProjectileSequencePolicy ==
-                    ProjectileSequencePolicy.ComboOnTarget &&
+                    attack.RicochetPolicy ==
+                    RicochetPolicyType.AttackSeries &&
                     sequence.LockedTarget != default)
                 {
                     if (CommonFunctions.IsValidTarget(sequence.LockedTarget, attack.TargetTypes, _damageableFilter, _enemyFilter, _playerFilter) &&

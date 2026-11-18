@@ -24,8 +24,9 @@ namespace ECS.ProjectileComponents
         public bool AllowRicochetRepeatTargets;
         public Entity TemporarilyIgnoredTarget;
         public float TargetSearchRadius;
-        public ProjectileSequencePolicy SequencePolicy;
+        public RicochetPolicyType RicochetPolicy;
         public int SequenceId;
+        public int CycleIndex;
         public int SwingIndex;
 
         public Vector3 Direction;
@@ -36,5 +37,6 @@ namespace ECS.ProjectileComponents
         public bool RicochetPending;
         public bool CollisionEnabled;
         public bool ViewActivated;
+        public bool AttackCompletionReported;
     }
 }

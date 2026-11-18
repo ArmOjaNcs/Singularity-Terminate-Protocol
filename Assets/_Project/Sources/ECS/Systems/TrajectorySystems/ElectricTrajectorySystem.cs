@@ -65,6 +65,13 @@ namespace ECS.TrajectorySystems
 
                 if (!HasLivingTarget(trajectory.Target))
                 {
+                    if (projectile.RicochetsCount >= projectile.MaxRicochets)
+                    {
+                        MoveAlongCurrentDirection(entity, ref projectile,
+                            ref trajectory, deltaTime);
+                        continue;
+                    }
+
                     if (TryRetarget(entity, ref projectile, ref trajectory,
                             currentPosition))
                     {

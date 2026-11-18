@@ -2,6 +2,7 @@ using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.EnemyComponents;
 using ECS.ProjectileComponents;
+using ECS.WeaponComponents;
 using Gameplay.Spatial;
 using Scellecs.Morpeh;
 using System.Collections.Generic;
@@ -79,6 +80,8 @@ namespace ECS.ProjectileSystems
                     ref _projectileStash.Get(request.Projectile);
 
                 if (projectile.CleanupRequested ||
+                    projectile.RicochetPolicy == RicochetPolicyType.None ||
+                    projectile.TargetTypes == null ||
                     projectile.TargetTypes.Contains(AttackTargetType.Enemy) == false ||
                     projectile.RicochetChance <= 0f ||
                     projectile.TargetSearchRadius <= 0f)
@@ -96,14 +99,15 @@ namespace ECS.ProjectileSystems
                     continue;
                 }
 
-                if (request.SequencePolicy ==
-                    ProjectileSequencePolicy.ComboOnTarget)
+                switch (projectile.RicochetPolicy)
                 {
-                    TryQueueComboRicochet(request, ref projectile);
-                }
-                else
-                {
-                    TryApplyProjectileRicochet(request, ref projectile);
+                    case RicochetPolicyType.AttackSeries:
+                        TryQueueAttackSeriesRicochet(request, ref projectile);
+                        break;
+                    case RicochetPolicyType.PerProjectile:
+                    case RicochetPolicyType.GuidedProjectile:
+                        TryApplyProjectileRicochet(request, ref projectile);
+                        break;
                 }
 
                 projectile.RicochetPending = false;
@@ -116,11 +120,17 @@ namespace ECS.ProjectileSystems
             RicochetRequest request,
             ref ProjectileComponent projectile)
         {
-            bool isElectricProjectile =
+            bool isGuidedProjectile =
+                projectile.RicochetPolicy ==
+                    RicochetPolicyType.GuidedProjectile &&
                 _electricTrajectoryStash.Has(request.Projectile);
-            if (!isElectricProjectile &&
-                projectile.RicochetsCount >= projectile.MaxRicochets)
+            if (projectile.RicochetsCount >= projectile.MaxRicochets)
+            {
+                if (isGuidedProjectile)
+                    _electricTrajectoryStash.Get(request.Projectile).Target = default;
+
                 return;
+            }
 
             bool selected = _targetSelector.TrySelectNearest(
                     request.Projectile,
@@ -149,11 +159,12 @@ namespace ECS.ProjectileSystems
                     out direction);
             }
 
-            // ElectricRifle keeps one projectile for the whole attack cycle.
+            // A guided projectile keeps moving after a hit and steers to the
+            // selected target instead of starting a new projectile.
             // If the only living target is the one just hit, the selector can
             // reject it (for example when projectile and target centers match).
             // Keep that target and send the projectile through a short detour.
-            if (!selected && isElectricProjectile &&
+            if (!selected && isGuidedProjectile &&
                 IsLivingEnemy(request.HitTarget))
             {
                 target = request.HitTarget;
@@ -189,7 +200,7 @@ namespace ECS.ProjectileSystems
                     MinimumHitSuppressionDuration,
                     HitSuppressionDistance / Mathf.Max(0.01f, projectile.Speed));
 
-            if (_electricTrajectoryStash.Has(request.Projectile))
+            if (isGuidedProjectile)
             {
                 ref ElectricTrajectoryComponent trajectory =
                     ref _electricTrajectoryStash.Get(request.Projectile);
@@ -251,6 +262,7 @@ namespace ECS.ProjectileSystems
                 trajectory.Direction = direction;
                 trajectory.CurrentTime = 0f;
             }
+
         }
 
         private bool IsLivingEnemy(Entity target)
@@ -276,7 +288,7 @@ namespace ECS.ProjectileSystems
             return radius + collider.Center.magnitude;
         }
 
-        private void TryQueueComboRicochet(
+        private void TryQueueAttackSeriesRicochet(
             RicochetRequest request,
             ref ProjectileComponent projectile)
         {
@@ -290,10 +302,21 @@ namespace ECS.ProjectileSystems
                 ref _sequenceStash.Get(request.Weapon);
             AttackComponent attack = _attackStash.Get(request.Weapon);
 
-            if (!sequence.IsActive ||
+            if (attack.RicochetPolicy != RicochetPolicyType.AttackSeries ||
+                !sequence.IsActive ||
                 sequence.Id != request.SequenceId ||
                 sequence.RicochetsCount >= attack.MaxRicochets)
             {
+                return;
+            }
+
+            if (projectile.WeaponType == WeaponType.Sword)
+            {
+                TryQueueSwordCycleRicochet(
+                    request,
+                    projectile,
+                    attack,
+                    ref sequence);
                 return;
             }
 
@@ -349,6 +372,110 @@ namespace ECS.ProjectileSystems
                     sequence.PendingRicochetTargets[0];
             }
             sequence.RicochetPending = true;
+        }
+
+        private void TryQueueSwordCycleRicochet(
+            RicochetRequest request,
+            ProjectileComponent projectile,
+            AttackComponent attack,
+            ref AttackSequenceComponent sequence)
+        {
+            if (sequence.SwordCycles == null)
+                return;
+
+            int cycleStateIndex = sequence.SwordCycles.FindIndex(
+                cycle => cycle.SequenceId == request.SequenceId &&
+                         cycle.CycleIndex == projectile.CycleIndex);
+            if (cycleStateIndex < 0)
+                return;
+
+            SwordAttackCycleState cycle =
+                sequence.SwordCycles[cycleStateIndex];
+            if (cycle.HasPendingRicochet &&
+                IsLivingEnemy(cycle.PendingRicochetTarget))
+            {
+                return;
+            }
+
+            cycle.HasPendingRicochet = false;
+            cycle.PendingRicochetTarget = default;
+            sequence.SwordCycles[cycleStateIndex] = cycle;
+
+            int pendingRicochetCount = CountPendingSwordRicochets(
+                sequence.SwordCycles);
+            int availableRicochets = attack.MaxRicochets -
+                                     sequence.RicochetsCount -
+                                     pendingRicochetCount;
+            if (availableRicochets <= 0)
+                return;
+
+            _targetExclusions.Clear();
+            AddTargets(_targetExclusions, sequence.VisitedTargets);
+            AddPendingSwordTargets(
+                _targetExclusions,
+                sequence.SwordCycles);
+
+            bool selected = _targetSelector.TrySelectNearest(
+                request.Projectile,
+                request.HitTarget,
+                request.HitPosition,
+                projectile.TargetSearchRadius,
+                _candidates,
+                _targetExclusions,
+                false,
+                out Entity nextTarget,
+                out _);
+
+            if (!selected && projectile.AllowRicochetRepeatTargets)
+            {
+                selected = _targetSelector.TrySelectNearest(
+                    request.Projectile,
+                    request.HitTarget,
+                    request.HitPosition,
+                    projectile.TargetSearchRadius,
+                    _candidates,
+                    _targetExclusions,
+                    true,
+                    out nextTarget,
+                    out _);
+            }
+
+            if (!selected)
+                return;
+
+            cycle.PendingRicochetTarget = nextTarget;
+            cycle.HasPendingRicochet = true;
+            sequence.SwordCycles[cycleStateIndex] = cycle;
+            sequence.PendingTarget = nextTarget;
+            sequence.RicochetPending = true;
+        }
+
+        private static int CountPendingSwordRicochets(
+            List<SwordAttackCycleState> swordCycles)
+        {
+            int count = 0;
+            for (int i = 0; i < swordCycles.Count; i++)
+            {
+                if (swordCycles[i].HasPendingRicochet)
+                    count++;
+            }
+
+            return count;
+        }
+
+        private static void AddPendingSwordTargets(
+            List<Entity> destination,
+            List<SwordAttackCycleState> swordCycles)
+        {
+            for (int i = 0; i < swordCycles.Count; i++)
+            {
+                SwordAttackCycleState cycle = swordCycles[i];
+                if (cycle.HasPendingRicochet &&
+                    !destination.Contains(cycle.PendingRicochetTarget))
+                {
+                    destination.Add(cycle.PendingRicochetTarget);
+                }
+            }
         }
 
         private static void AddTargets(

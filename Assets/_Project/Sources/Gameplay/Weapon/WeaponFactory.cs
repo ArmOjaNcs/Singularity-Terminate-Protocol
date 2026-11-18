@@ -94,6 +94,10 @@ namespace ECS.WeaponSystems
                 TargetSearchRadius = config.AttackConfig.TargetSearchRadius,
                 DistanceFromSource = config.AttackConfig.DistanceFromSource,
                 ProjectileScale = config.AttackConfig.ProjectileScale,
+                SwordThrustDistance = config.AttackConfig.SwordThrustDistance,
+                SwordZigZagWidth = config.AttackConfig.SwordZigZagWidth,
+                ScaleAttackGeometryWithProjectile =
+                    config.AttackConfig.ScaleAttackGeometryWithProjectile,
                 Trajectory = new TrajectoryComponent
                 {
                     Duration = config.AttackConfig.Trajectory.Duration,
@@ -120,8 +124,8 @@ namespace ECS.WeaponSystems
                 HitPolicy = config.AttackConfig.HitPolicy,
                 HitInterval = config.AttackConfig.HitInterval,
                 AnimationPolicy = config.AttackConfig.AnimationPolicy,
-                ProjectileSequencePolicy =
-                    config.AttackConfig.ProjectileSequencePolicy
+                CompletionPolicy = config.AttackConfig.CompletionPolicy,
+                RicochetPolicy = config.AttackConfig.RicochetPolicy
             });
 
             _attackStatusStash.Set(weapon, new AttackStatusComponent

@@ -43,4 +43,5 @@ MonoBehaviour:
   TargetType: 01000000
   HitPolicy: 1
   AnimationPolicy: 0
-  ProjectileSequencePolicy: 0
+  CompletionPolicy: 0
+  RicochetPolicy: 0
