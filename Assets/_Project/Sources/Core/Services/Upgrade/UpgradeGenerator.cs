@@ -95,7 +95,7 @@ public class UpgradeGenerator
     }
 
     private void AddWeaponUpgrades<T>(List<T> upgrades, PlayerInventoryComponent inventory)
-        where T : UpgradeConfig
+        where T : WeaponStatUpgradeConfig
     {
         ReactiveDictionary<string, int> activeWeapons = upgrades is List<WeaponStatUpgradeConfig>
             ? inventory.ActiveWeapons
@@ -111,6 +111,9 @@ public class UpgradeGenerator
                 continue;
 
             var upgrade = upgrades[UnityEngine.Random.Range(0, upgrades.Count)];
+
+            if (upgrade.ExceptWeaponTypes.Contains(currentWeapon.Type))
+                continue;
 
             UpgradeState upgradeState = new UpgradeState
             {
@@ -128,7 +131,7 @@ public class UpgradeGenerator
     }
 
     private void AddNewWeaponUpgrades<T>(List<T> upgrades, PlayerInventoryComponent inventory)
-        where T : UpgradeConfig
+        where T : ExtendedUpgradeConfig
     {
         ReactiveDictionary<string, int> activeDictionary = new ReactiveDictionary<string, int>();
         int currentWeaponsAmount = 0;

@@ -215,8 +215,10 @@ namespace ECS.PlayerSystems
                         attack.Trajectory.FlightDistance *= scaleRatio;
                         attack.Trajectory.ZigZagAmplitude *= scaleRatio;
                     }
+
                     break;
                 }
+
                 case WeaponStats.Homing:
                     attack.HomingEnabled = true;
                     break;

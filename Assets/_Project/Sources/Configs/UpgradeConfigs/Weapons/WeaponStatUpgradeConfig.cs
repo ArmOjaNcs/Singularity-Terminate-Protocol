@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using ECS.WeaponComponents;
 using UnityEngine;
 
 namespace UpgradeConfigs
@@ -7,5 +9,6 @@ namespace UpgradeConfigs
     {
         public WeaponStats Stat;
         public int Amount = 5;
+        public List<WeaponType> ExceptWeaponTypes;
     }
 }

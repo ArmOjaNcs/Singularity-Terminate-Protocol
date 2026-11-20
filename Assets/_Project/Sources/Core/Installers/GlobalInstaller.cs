@@ -65,10 +65,10 @@ namespace Core.Installers
             Container.Bind<UpgradeGenerator>().AsSingle();
             Container.Bind<WeaponFactory>().AsSingle();
 
-            List<UpgradeConfig> upgradeConfigsList =
+            List<ExtendedUpgradeConfig> upgradeConfigsList =
                 _weapons
-                .Concat<UpgradeConfig>(_turrets)
-                .Concat<UpgradeConfig>(_skillUpgrades)
+                .Concat<ExtendedUpgradeConfig>(_turrets)
+                .Concat<ExtendedUpgradeConfig>(_skillUpgrades)
                 .ToList();
 
             Container.Bind<UpgradeStorage>().AsSingle().WithArguments(upgradeConfigsList);

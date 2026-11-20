@@ -13,11 +13,13 @@ MonoBehaviour:
   m_Name: Sword
   m_EditorClassIdentifier: 
   UpgradeId: PlasmaSword
-  Title: "\u041C\u0435\u0447"
   Description: "\u041D\u0430\u043D\u043E\u0441\u0438\u0442 3 \u0431\u044B\u0441\u0442\u0440\u044B\u0445
     \u0443\u0434\u0430\u0440\u0430 \u043D\u0430 \u043A\u043E\u0440\u043E\u0442\u043A\u043E\u043C
     \u0440\u0430\u0441\u0441\u0442\u043E\u044F\u043D\u0438\u0438 "
-  Icon: {fileID: 21300000, guid: c259c697c5443804a9229d7b8645d922, type: 3}
+  UpgradeType: 0
   RequiredUpgradeIds: []
+  Title: "\u041C\u0435\u0447"
+  Icon: {fileID: 21300000, guid: c259c697c5443804a9229d7b8645d922, type: 3}
+  MaxLevel: 5
   Type: 7
-  IsBaseWeapon: 1
+  Config: {fileID: 11400000, guid: 529e24ad84668fa4893008b69767caaa, type: 2}

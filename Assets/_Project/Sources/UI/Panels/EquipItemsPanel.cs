@@ -24,7 +24,7 @@ public class EquipItemsPanel : MonoBehaviour
         }
     }
 
-    public void UpdateItem(UpgradeConfig config)
+    public void UpdateItem(ExtendedUpgradeConfig config)
     {
         if (_items.Count == 0)
             throw new ArgumentNullException(nameof(_items));

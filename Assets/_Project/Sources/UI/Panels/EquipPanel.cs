@@ -1,6 +1,7 @@
 using System;
 using ECS.PlayerComponents;
 using UniRx;
+using Unity.VisualScripting.FullSerializer;
 using UnityEngine;
 using UpgradeConfigs;
 using Zenject;
@@ -21,7 +22,7 @@ namespace UI
             SubscribeOnInventoryChanges(inventory);
         }
 
-        public void UpdateItem(UpgradeConfig upgrade)
+        public void UpdateItem(ExtendedUpgradeConfig upgrade)
         {
             switch (upgrade.UpgradeType)
             {
@@ -51,7 +52,7 @@ namespace UI
 
             foreach (var upgrade in inventory.ActiveWeapons)
             {
-                UpgradeConfig config = _storage.GetConfig(upgrade.Key);
+                ExtendedUpgradeConfig config = _storage.GetConfig(upgrade.Key);
 
                 if (config != null)
                     UpdateItem(config);
@@ -60,17 +61,6 @@ namespace UI
 
         private void SubscribeOnInventoryChanges(PlayerInventoryComponent inventory)
         {
-            inventory.ActiveSkills.ObserveAdd()
-                .Subscribe(upgrade =>
-                {
-                    UpgradeConfig config = _storage.GetConfig(upgrade.Key);
-
-                    if (config.UpgradeType == UpgradeType.NewWeapon || config.UpgradeType == UpgradeType.NewTurret ||
-                       (config.UpgradeType == UpgradeType.Item && upgrade.Value == 1))
-                        UpdateItem(config);
-                })
-                .AddTo(this);
-
             inventory.MaxWeapons
                 .Subscribe(amount => _weaponsPanel.UpdateCount(amount))
                 .AddTo(this);
@@ -81,6 +71,26 @@ namespace UI
 
             inventory.MaxSkills
                 .Subscribe(amount => _itemsPanel.UpdateCount(amount))
+                .AddTo(this);
+
+            inventory.ActiveSkills.ObserveAdd()
+                .Subscribe(upgrade =>
+                {
+                    ExtendedUpgradeConfig config = _storage.GetConfig(upgrade.Key);
+
+                    if (config.UpgradeType == UpgradeType.Item && upgrade.Value == 1)
+                        UpdateItem(config);
+                })
+                .AddTo(this);
+
+            inventory.ActiveWeapons.ObserveAdd()
+                .Subscribe(upgrade =>
+                {
+                ExtendedUpgradeConfig config = _storage.GetConfig(upgrade.Key);
+
+                if (config.UpgradeType == UpgradeType.NewWeapon || config.UpgradeType == UpgradeType.NewTurret)
+                    UpdateItem(config);
+                })
                 .AddTo(this);
         }
     }

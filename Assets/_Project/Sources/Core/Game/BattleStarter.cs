@@ -7,6 +7,7 @@ using ECS.CommonComponents;
 using ECS.CommonSystems;
 using ECS.DamageableItemSystems;
 using ECS.DamageSystems;
+using ECS.DebugSystems;
 using ECS.EnemySystems;
 using ECS.PlayerComponents;
 using ECS.PlayerSystems;
@@ -207,6 +208,7 @@ namespace Core.Game
             AddViewSystems();
             AddLifecycleSystems();
             AddBattleSystems();
+            AddDebugSystems();
 
             _world.AddSystemsGroup(0, _gameplaySystems);
         }
@@ -314,6 +316,11 @@ namespace Core.Game
         {
             _gameplaySystems.AddSystem(new BattleTimerSystem(_maxBattleTime, _timerPanel));
             _gameplaySystems.AddSystem(new BattleStatisticsSystem(_battleStatistics));
+        }
+
+        private void AddDebugSystems()
+        {
+            _gameplaySystems.AddSystem(new DebugLevelUpSystem());
         }
 
         private void CreatePlayer()
