@@ -403,7 +403,7 @@ namespace ECS.ProjectileSystems
                         SourceType = sourceType,
                         WeaponType = projectileComponent.WeaponType,
                         KnockbackOrigin = (projectileComponent.WeaponType == WeaponType.Axe ||
-                                           projectileComponent.WeaponType == WeaponType.AxeGuard) &&
+                                           projectileComponent.WeaponType == WeaponType.BladeGuard) &&
                                           !_areaExpansionStash.Has(projectile)
                             ? KnockbackOriginType.WeaponOwner
                             : KnockbackOriginType.ImpactPosition,

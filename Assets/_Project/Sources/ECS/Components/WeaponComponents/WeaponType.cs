@@ -18,9 +18,11 @@ namespace ECS.WeaponComponents
         FrostRifle = 13,
         RocketLauncher = 14,
         Shuriken = 15,
-        AxeGuard = 16,
+        BladeGuard = 16,
         Volt = 17,
         OmegaRipper = 18,
+        TacticalComplex = 19,
+        Armageddon6 = 20,
     }
 
     public static class WeaponTypeExtensions

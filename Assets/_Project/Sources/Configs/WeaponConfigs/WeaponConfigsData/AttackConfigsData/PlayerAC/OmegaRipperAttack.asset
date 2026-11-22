@@ -11,21 +11,26 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 53e4892c4eeb58b4c9097e58712adab9, type: 3}
   m_Name: OmegaRipperAttack
-  m_EditorClassIdentifier:
+  m_EditorClassIdentifier: 
   CyclesPerAttack: 4
   ShotsPerCycle: 3
   MaxCyclesPerAttack: 4
   MaxShotsPerCycle: 3
   Pierce: 0
+  EmpHitInterval: 0
   MaxRicochets: 0
   CycleInterval: 0
   ShotInterval: 0
   Damage: 10
   AttackCooldown: 2
-  DistanceFromSource: 0.75
+  DistanceFromSource: 1.5
   ProjectileScale: 1
+  SwordThrustDistance: 1
+  SwordZigZagWidth: 1
+  ScaleAttackGeometryWithProjectile: 0
   Trajectory:
     Duration: 0.35
+    Revolutions: 0
     FlightDistance: 0
     FlightDistanceTolerance: 0
     ZigZagAmplitude: 0

@@ -58,7 +58,7 @@ namespace ECS.ProjectileSystems
                 if (creation.IsInitialized || !attackStatus.IsAttacking)
                     continue;
 
-                _projectileFactory.Begin(weapon);
+                _projectileFactory.Begin(weapon, deltaTime);
             }
 
             foreach (Entity weapon in _creationFilter)

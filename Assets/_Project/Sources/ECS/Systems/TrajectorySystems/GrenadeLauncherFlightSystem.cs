@@ -1,5 +1,6 @@
 using ECS.CommonComponents;
 using ECS.ProjectileComponents;
+using ECS.ProjectileSystems;
 using Gameplay.View;
 using Scellecs.Morpeh;
 using UnityEngine;
@@ -10,6 +11,7 @@ namespace ECS.TrajectorySystems
     {
         public World World { get; set; }
 
+        private readonly ProjectileFactory _projectileFactory;
         private Filter _filter;
         private Stash<GrenadeFlightComponent> _flightStash;
         private Stash<ProjectileComponent> _projectileStash;
@@ -18,6 +20,11 @@ namespace ECS.TrajectorySystems
         private Stash<RotationComponent> _rotationStash;
         private Stash<HitBoxComponent> _hitBoxStash;
         private Stash<ProjectileViewComponent> _viewStash;
+
+        public GrenadeLauncherFlightSystem(ProjectileFactory projectileFactory)
+        {
+            _projectileFactory = projectileFactory;
+        }
 
         public void OnAwake()
         {
@@ -42,8 +49,24 @@ namespace ECS.TrajectorySystems
         {
             foreach (Entity entity in _filter)
             {
-                if (_projectileStash.Get(entity).CurrentLifetime < 0f)
+                ref ProjectileComponent projectile = ref _projectileStash.Get(entity);
+                if (projectile.CleanupRequested)
                     continue;
+
+                if (_flightStash.Get(entity).IsAwaitingLaunch)
+                {
+                    if (projectile.CurrentLifetime < -ProjectileFactory.ArmageddonTimingTolerance ||
+                        !_projectileFactory.TryLaunchArmageddonGrenade(entity))
+                    {
+                        continue;
+                    }
+
+                    projectile.CurrentLifetime = Mathf.Max(0f, projectile.CurrentLifetime);
+                }
+                else if (projectile.CurrentLifetime < 0f)
+                {
+                    continue;
+                }
 
                 ref GrenadeFlightComponent flight = ref _flightStash.Get(entity);
                 flight.Elapsed += deltaTime;
@@ -73,24 +96,26 @@ namespace ECS.TrajectorySystems
                 if (progress < 1f)
                     continue;
 
-                float explosionDuration = flight.ExplosionDuration;
+                GrenadeFlightComponent completedFlight = flight;
                 ColliderComponent baseCollider = _hitBoxStash.Get(entity).Collider;
                 _flightStash.Remove(entity);
                 _areaStash.Set(entity, new AreaExpansionComponent
                 {
                     BaseCollider = baseCollider,
-                    Duration = Mathf.Max(0.01f, explosionDuration),
+                    Duration = Mathf.Max(0.01f, completedFlight.ExplosionDuration),
                     Elapsed = 0f,
                     ReachedMaximum = false
                 });
 
-                ref ProjectileComponent projectile = ref _projectileStash.Get(entity);
                 projectile.CollisionEnabled = true;
                 projectile.HitPolicy = HitPolicyType.OncePerTarget;
 
                 if (_viewStash.Has(entity) &&
                     _viewStash.Get(entity).View is ExplosiveProjectileView view)
                     view.BeginExplosion();
+
+                if (completedFlight.ClusterProjectileScale > 0f)
+                    _projectileFactory.SpawnArmageddonSubmunitions(entity, completedFlight, baseCollider);
             }
         }
 

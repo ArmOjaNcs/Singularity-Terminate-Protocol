@@ -12,5 +12,7 @@ namespace ECS.ProjectileComponents
         public float Duration;
         public float Elapsed;
         public float ExplosionDuration;
+        public float ClusterProjectileScale;
+        public bool IsAwaitingLaunch;
     }
 }

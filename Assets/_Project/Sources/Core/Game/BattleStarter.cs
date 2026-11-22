@@ -188,7 +188,8 @@ namespace Core.Game
             _projectileFactory = new ProjectileFactory(
                 _world,
                 _projectileDatabase,
-                _projectileContainer);
+                _projectileContainer,
+                _spatialGrid);
 
             _damageableItemsFactory = new DamageableItemsFactory(
                 _world,
@@ -244,8 +245,9 @@ namespace Core.Game
             _gameplaySystems.AddSystem(new ElectricTrajectorySystem(_spatialGrid));
             _gameplaySystems.AddSystem(new ArcTrajectorySystem());
             _gameplaySystems.AddSystem(new SwordThrustSystem());
-            _gameplaySystems.AddSystem(new GrenadeLauncherFlightSystem());
+            _gameplaySystems.AddSystem(new GrenadeLauncherFlightSystem(_projectileFactory));
             _gameplaySystems.AddSystem(new RocketLauncherFlightSystem());
+            _gameplaySystems.AddSystem(new TacticalRocketFlightSystem());
             _gameplaySystems.AddSystem(new EmpWaveSystem(_projectileDatabase, _projectileContainer));
             _gameplaySystems.AddSystem(new AreaExpansionSystem());
             _gameplaySystems.AddSystem(new RipperTrajectorySystem());

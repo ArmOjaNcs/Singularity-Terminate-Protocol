@@ -14,9 +14,13 @@ namespace ECS.ProjectileSystems
 {
     public sealed class ProjectileFactory
     {
+        internal const float ArmageddonTimingTolerance = 0.00001f;
+
         private readonly World _world;
         private readonly ProjectileDatabase _database;
         private readonly Transform _container;
+        private readonly SpatialGrid _grid;
+        private ObjectPool<AnimatedView> _armageddonSubmunitionViews;
 
         private readonly Dictionary<WeaponType, ObjectPool<AnimatedView>> _views =
             new Dictionary<WeaponType, ObjectPool<AnimatedView>>();
@@ -41,11 +45,13 @@ namespace ECS.ProjectileSystems
         public ProjectileFactory(
             World world,
             ProjectileDatabase database,
-            Transform container)
+            Transform container,
+            SpatialGrid grid)
         {
             _world = world;
             _database = database;
             _container = container;
+            _grid = grid;
 
             _weaponStash = world.GetStash<WeaponComponent>();
             _attackStash = world.GetStash<AttackComponent>();
@@ -64,7 +70,7 @@ namespace ECS.ProjectileSystems
             InitializeConfigs();
         }
 
-        public void Begin(Entity weapon)
+        public void Begin(Entity weapon, float currentUpdateDeltaTime)
         {
             if (!_weaponStash.Has(weapon) ||
                 !_attackStash.Has(weapon) ||
@@ -91,7 +97,8 @@ namespace ECS.ProjectileSystems
             ref AttackStatusComponent attackStatus =
                 ref _attackStatusStash.Get(weapon);
 
-            creation.ElapsedTime = 0f;
+            // CreationSystem also updates a newly started attack in this tick.
+            creation.ElapsedTime = weaponType == WeaponType.Armageddon6 ? -currentUpdateDeltaTime : 0f;
             int cyclesPerAttack = Mathf.Max(0, attack.CyclesPerAttack);
             bool usesSwordAttack = weaponType.UsesSwordAttack();
             if (weaponType == WeaponType.Axe || usesSwordAttack)
@@ -237,8 +244,11 @@ namespace ECS.ProjectileSystems
             }
 
             creation.ElapsedTime += deltaTime;
+            float timingTolerance = _weaponStash.Get(weapon).Type == WeaponType.Armageddon6
+                ? ArmageddonTimingTolerance
+                : 0f;
 
-            while (creation.ElapsedTime >= attack.CycleInterval &&
+            while (creation.ElapsedTime + timingTolerance >= attack.CycleInterval &&
                    creation.RemainingCount > 0)
             {
                 creation.ElapsedTime -= attack.CycleInterval;
@@ -476,7 +486,8 @@ namespace ECS.ProjectileSystems
                 shot.CollisionEnabled = false;
             }
 
-            if (target != default &&
+            if (config is not ArmageddonProjectileConfig &&
+                target != default &&
                 !sequence.VisitedTargets.Contains(target))
                 sequence.VisitedTargets.Add(target);
 
@@ -518,9 +529,7 @@ namespace ECS.ProjectileSystems
                 _positionStash.Get(weapon).Position +
                 direction * attack.DistanceFromSource;
 
-            Entity projectile = _world.CreateEntity();
-
-            _projectileStash.Set(projectile, new ProjectileComponent
+            var data = new ProjectileComponent
             {
                 Weapon = weapon,
                 WeaponType = weaponComponent.Type,
@@ -547,26 +556,31 @@ namespace ECS.ProjectileSystems
                 CleanupRequested = false,
                 ViewActivated = true,
                 AttackCompletionReported = false
-            });
-
-            _positionStash.Set(projectile, new PositionComponent
+            };
+            var collider = new ColliderComponent
             {
-                Position = spawnPosition
-            });
+                Type = config.Collider.Type,
+                Radius = config.Collider.Radius,
+                Length = config.Collider.Length,
+                Size = config.Collider.Size,
+                Center = config.Collider.Center,
+                CapsuleOrientation = config.Collider.CapsuleOrientation
+            };
+            return CreateProjectile(data, spawnPosition,
+                ColliderScaler.Scale(collider, attack.ProjectileScale), attack.ProjectileScale, pool);
+        }
 
-            _hitBoxStash.Set(projectile, new HitBoxComponent
-            {
-                Collider = ColliderScaler.Scale(new ColliderComponent
-                {
-                    Type = config.Collider.Type,
-                    Radius = config.Collider.Radius,
-                    Length = config.Collider.Length,
-                    Size = config.Collider.Size,
-                    Center = config.Collider.Center,
-                    Angle = 0f,
-                    CapsuleOrientation = config.Collider.CapsuleOrientation
-                }, attack.ProjectileScale)
-            });
+        private Entity CreateProjectile(
+            ProjectileComponent data,
+            Vector3 spawnPosition,
+            ColliderComponent collider,
+            float viewScale,
+            ObjectPool<AnimatedView> pool)
+        {
+            Entity projectile = _world.CreateEntity();
+            _projectileStash.Set(projectile, data);
+            _positionStash.Set(projectile, new PositionComponent { Position = spawnPosition });
+            _hitBoxStash.Set(projectile, new HitBoxComponent { Collider = collider });
 
             _projectileHitStash.Set(projectile, new ProjectileHitComponent
             {
@@ -581,7 +595,7 @@ namespace ECS.ProjectileSystems
                 if (view != null)
                 {
                     view.SetEntity(projectile);
-                    view.SetScaleMultiplier(attack.ProjectileScale);
+                    view.SetScaleMultiplier(viewScale);
 
                     _projectileViewStash.Set(
                         projectile,
@@ -595,6 +609,46 @@ namespace ECS.ProjectileSystems
             }
 
             return projectile;
+        }
+
+        internal void SpawnArmageddonSubmunitions(
+            Entity grenade,
+            GrenadeFlightComponent flight,
+            ColliderComponent explosionCollider)
+        {
+            const int count = 3;
+            const float scale = 0.5f;
+            ProjectileComponent data = _projectileStash.Get(grenade);
+            if (!_weaponStash.Has(data.Weapon) ||
+                GetConfig(data.WeaponType) is not ArmageddonProjectileConfig config)
+            {
+                return;
+            }
+
+            var creator = (GrenadeLauncherProjectileCreator)_creators[data.WeaponType];
+            Vector3 start = flight.LandingPosition;
+            Vector3 forward = data.Direction;
+            ColliderComponent collider = ColliderScaler.Scale(explosionCollider, scale);
+            data.CurrentLifetime = 0f;
+            data.Lifetime = 0f;
+            data.Damage *= config.SubmunitionDamageMultiplier;
+            data.CollisionEnabled = false;
+            data.AttackCompletionReported = true;
+
+            for (int i = 0; i < count; i++)
+            {
+                data.Direction = Quaternion.Euler(0f, 0f, i * (360f / count)) * forward;
+                Entity entity = CreateProjectile(data, start, collider,
+                    flight.ClusterProjectileScale * scale, _armageddonSubmunitionViews);
+                creator.Launch(entity, start, start + data.Direction * config.SubmunitionDistance,
+                    config.ArcOffset * scale);
+            }
+        }
+
+        internal bool TryLaunchArmageddonGrenade(Entity grenade)
+        {
+            var creator = (GrenadeLauncherProjectileCreator)_creators[WeaponType.Armageddon6];
+            return creator.TryLaunchClusterGrenade(grenade);
         }
 
         private void InitializeConfigs()
@@ -621,6 +675,13 @@ namespace ECS.ProjectileSystems
                 if (_creators.ContainsKey(config.WeaponType))
                     continue;
 
+                if (config is ArmageddonProjectileConfig armageddonConfig &&
+                    armageddonConfig.SubmunitionPrefab != null)
+                {
+                    _armageddonSubmunitionViews = new ObjectPool<AnimatedView>(
+                        armageddonConfig.SubmunitionPrefab, config.PoolCapacity, _container);
+                }
+
                 IProjectileCreator creator = CreateCreator(config);
 
                 if (creator != null)
@@ -630,6 +691,12 @@ namespace ECS.ProjectileSystems
 
         private IProjectileCreator CreateCreator(ProjectileConfig config)
         {
+            if (config is TacticalComplexProjectileConfig tacticalConfig &&
+                config.WeaponType == WeaponType.TacticalComplex)
+            {
+                return new TacticalComplexProjectileCreator(_world, tacticalConfig);
+            }
+
             if (config is RocketLauncherProjectileConfig rocketConfig &&
                 config.WeaponType == WeaponType.RocketLauncher)
             {
@@ -637,9 +704,10 @@ namespace ECS.ProjectileSystems
             }
 
             if (config is GrenadeLauncherProjectileConfig grenadeConfig &&
-                config.WeaponType == WeaponType.GrenadeLauncher)
+                (config.WeaponType == WeaponType.GrenadeLauncher ||
+                 config.WeaponType == WeaponType.Armageddon6))
             {
-                return new GrenadeLauncherProjectileCreator(_world, grenadeConfig);
+                return new GrenadeLauncherProjectileCreator(_world, grenadeConfig, _grid);
             }
 
             if (config.WeaponType == WeaponType.ElectricRifle || config.WeaponType == WeaponType.Volt)

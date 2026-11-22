@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53e4892c4eeb58b4c9097e58712adab9, type: 3}
+  m_Name: ArmageddonAttack
+  m_EditorClassIdentifier:
+  CyclesPerAttack: 2
+  ShotsPerCycle: 3
+  MaxCyclesPerAttack: 2
+  MaxShotsPerCycle: 3
+  Pierce: 0
+  MaxRicochets: 0
+  CycleInterval: 0.75
+  ShotInterval: 0.1
+  Damage: 8
+  AttackCooldown: 2.5
+  DistanceFromSource: 0.45
+  ProjectileScale: 1
+  Trajectory:
+    Duration: 0.2
+    FlightDistance: 3.5
+    FlightDistanceTolerance: 10
+    ZigZagAmplitude: 0.3
+    ZigZagFrequency: 8
+  Pattern:
+    SpreadAngle: 24
+    RandomDirectionFallback: 1
+    SelectTargetPerCycle: 1
+  HomingEnabled: 0
+  RicochetTargetSearchRadius: 0
+  TargetSearchRadius: 10
+  ProjectileSpeed: 8
+  ProjectileLifetime: 6
+  RicochetChance: 0
+  AllowRicochetRepeatTargets: 0
+  HitInterval: 0
+  TargetType: 0000000002000000
+  HitPolicy: 1
+  AnimationPolicy: 1
+  CompletionPolicy: 0
+  RicochetPolicy: 0

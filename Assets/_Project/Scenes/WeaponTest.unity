@@ -179,6 +179,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6debfa107eb04ed9a8f50eba6abf7fc5, type: 2}
   - {fileID: 11400000, guid: 5bdc017a743442c69a3a2e2ef3f2190b, type: 2}
   - {fileID: 11400000, guid: 155e0e4b5830460e86250fed44e17acd, type: 2}
+  - {fileID: 11400000, guid: 48aff8c8658a45ffb44bb678e53082b6, type: 2}
+  - {fileID: 11400000, guid: 30a99991d8bb0671f0d1c60be0dcdd66, type: 2}
   _playerConfig: {fileID: 11400000, guid: 8414f36279bd95547858f5b582b5ac65, type: 2}
   _dummyConfig: {fileID: 11400000, guid: 7387145dc7544aee94ee2404e5c13474, type: 2}
   _projectileDatabase: {fileID: 11400000, guid: 0c6afa97b5b16d448b2487bb4c1de857, type: 2}

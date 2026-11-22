@@ -53,7 +53,7 @@ namespace ECS.ProjectileSystems
             ref AttackSequenceComponent sequence =
                 ref _sequenceStash.Get(weapon);
 
-            if (_config.WeaponType == WeaponType.AxeGuard)
+            if (_config.WeaponType == WeaponType.BladeGuard)
             {
                 CreateGuardRing(weapon, projectiles, attack, sequence.Id);
                 return;

@@ -291,7 +291,8 @@ namespace Gameplay.WeaponTesting
             _projectileFactory = new ProjectileFactory(
                 _world,
                 _projectileDatabase,
-                _projectileContainer);
+                _projectileContainer,
+                grid);
 
             _testSystems = _world.CreateSystemsGroup();
 
@@ -317,8 +318,9 @@ namespace Gameplay.WeaponTesting
             _testSystems.AddSystem(new ElectricTrajectorySystem(grid));
             _testSystems.AddSystem(new ArcTrajectorySystem());
             _testSystems.AddSystem(new SwordThrustSystem());
-            _testSystems.AddSystem(new GrenadeLauncherFlightSystem());
+            _testSystems.AddSystem(new GrenadeLauncherFlightSystem(_projectileFactory));
             _testSystems.AddSystem(new RocketLauncherFlightSystem());
+            _testSystems.AddSystem(new TacticalRocketFlightSystem());
             _testSystems.AddSystem(new EmpWaveSystem(_projectileDatabase, _projectileContainer));
             _testSystems.AddSystem(new AreaExpansionSystem());
             _testSystems.AddSystem(new RipperTrajectorySystem());
