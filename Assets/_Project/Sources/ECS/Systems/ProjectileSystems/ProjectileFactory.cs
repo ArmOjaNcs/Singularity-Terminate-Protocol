@@ -93,15 +93,15 @@ namespace ECS.ProjectileSystems
 
             creation.ElapsedTime = 0f;
             int cyclesPerAttack = Mathf.Max(0, attack.CyclesPerAttack);
-            if (weaponType == WeaponType.Axe ||
-                weaponType == WeaponType.Sword)
+            bool usesSwordAttack = weaponType.UsesSwordAttack();
+            if (weaponType == WeaponType.Axe || usesSwordAttack)
             {
                 cyclesPerAttack = Mathf.Min(
                     cyclesPerAttack,
                     AxeProjectileCreator.SectorCount);
             }
 
-            creation.RemainingCount = weaponType == WeaponType.Sword
+            creation.RemainingCount = usesSwordAttack
                 ? Mathf.Max(0, cyclesPerAttack - 1)
                 : cyclesPerAttack;
             creation.IsWaitingForCycle = false;
@@ -145,9 +145,7 @@ namespace ECS.ProjectileSystems
 
             attackStatus.CreationFinished = false;
 
-            if (weaponType == WeaponType.Sword
-                    ? attack.CyclesPerAttack <= 0
-                    : creation.RemainingCount <= 0)
+            if (cyclesPerAttack <= 0)
             {
                 StopCreation(weapon);
                 return;
@@ -156,7 +154,7 @@ namespace ECS.ProjectileSystems
             if (!CreateRelease(weapon))
                 return;
 
-            if (weaponType == WeaponType.Sword)
+            if (usesSwordAttack)
             {
                 if (attack.CycleInterval <= 0f)
                 {
@@ -203,7 +201,7 @@ namespace ECS.ProjectileSystems
             ref AttackComponent attack = ref _attackStash.Get(weapon);
 
             if (_weaponStash.Has(weapon) &&
-                _weaponStash.Get(weapon).Type == WeaponType.Sword)
+                _weaponStash.Get(weapon).Type.UsesSwordAttack())
             {
                 UpdateSwordCycles(weapon, deltaTime);
                 return;
@@ -372,7 +370,7 @@ namespace ECS.ProjectileSystems
                 else
                 {
                     bool hasCachedRipperDirection =
-                        weaponType == WeaponType.Ripper &&
+                        weaponType.UsesRipperAttack() &&
                         _ripperSequenceStash.Has(weapon) &&
                         _ripperSequenceStash.Get(weapon).IsInitialized &&
                         _ripperSequenceStash.Get(weapon).SequenceId == sequence.Id;
@@ -396,7 +394,7 @@ namespace ECS.ProjectileSystems
                 }
             }
 
-            if (weaponType == WeaponType.Sword)
+            if (weaponType.UsesSwordAttack())
             {
                 if (sequence.SwordRicochetCycle && target != default &&
                     !_world.IsDisposed(target) && _positionStash.Has(target))
@@ -456,10 +454,10 @@ namespace ECS.ProjectileSystems
                     ref _projectileStash.Get(projectiles[i]);
                 float shotInterval = attack.ShotInterval;
                 if (weaponType == WeaponType.Axe ||
-                    weaponType == WeaponType.Ripper)
+                    weaponType.UsesRipperAttack())
                 {
                     float trajectoryDuration = attack.Trajectory.Duration;
-                    if (weaponType == WeaponType.Ripper)
+                    if (weaponType.UsesRipperAttack())
                     {
                         trajectoryDuration *=
                             RipperProjectileCreator.MotionDurationMultiplier;
@@ -490,7 +488,7 @@ namespace ECS.ProjectileSystems
             }
 
             sequence.ReleasesCreated++;
-            if (weaponType == WeaponType.Sword &&
+            if (weaponType.UsesSwordAttack() &&
                 creation.RemainingCount > 0 &&
                 !creation.IsComboRestart)
             {
@@ -644,17 +642,17 @@ namespace ECS.ProjectileSystems
                 return new GrenadeLauncherProjectileCreator(_world, grenadeConfig);
             }
 
-            if (config.WeaponType == WeaponType.ElectricRifle)
+            if (config.WeaponType == WeaponType.ElectricRifle || config.WeaponType == WeaponType.Volt)
                 return new ElectricRifleProjectileCreator(_world);
 
             if (config is RipperProjectileConfig ripperConfig &&
-                config.WeaponType == WeaponType.Ripper)
+                config.WeaponType.UsesRipperAttack())
             {
                 return new RipperProjectileCreator(_world, ripperConfig);
             }
 
             if (config is ArcProjectileConfig swordArcConfig &&
-                config.WeaponType == WeaponType.Sword)
+                config.WeaponType.UsesSwordAttack())
             {
                 return new SwordProjectileCreator(_world, swordArcConfig);
             }
@@ -724,7 +722,7 @@ namespace ECS.ProjectileSystems
             int preferredSector = GetCardinalSector(targetDirection);
             if (sequence.SwordRicochetCycle)
             {
-                int offset = Random.Range(1, 4);
+                int offset = Random.Range(0, 4);
                 return GetCardinalDirection(
                     (sequence.SwordStartSector + offset) % 4);
             }

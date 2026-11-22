@@ -1,0 +1,49 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53e4892c4eeb58b4c9097e58712adab9, type: 3}
+  m_Name: VoltAttack
+  m_EditorClassIdentifier:
+  CyclesPerAttack: 1
+  ShotsPerCycle: 1
+  MaxCyclesPerAttack: 4
+  MaxShotsPerCycle: 1
+  Pierce: 0
+  EmpHitInterval: 2
+  MaxRicochets: 6
+  CycleInterval: 0.1
+  ShotInterval: 0
+  Damage: 5
+  AttackCooldown: 3
+  DistanceFromSource: 0.45
+  ProjectileScale: 1
+  Trajectory:
+    Duration: 0.5
+    FlightDistance: 0
+    FlightDistanceTolerance: 0
+    ZigZagAmplitude: 0.5
+    ZigZagFrequency: 5
+  Pattern:
+    SpreadAngle: 0
+    RandomDirectionFallback: 1
+    SelectTargetPerCycle: 0
+  RicochetTargetSearchRadius: 5
+  TargetSearchRadius: 10
+  ProjectileSpeed: 10
+  ProjectileLifetime: 6
+  RicochetChance: 100
+  AllowRicochetRepeatTargets: 1
+  HitInterval: 0
+  TargetType: 0000000002000000
+  HitPolicy: 3
+  AnimationPolicy: 1
+  CompletionPolicy: 0
+  RicochetPolicy: 2

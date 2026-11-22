@@ -246,6 +246,7 @@ namespace Core.Game
             _gameplaySystems.AddSystem(new SwordThrustSystem());
             _gameplaySystems.AddSystem(new GrenadeLauncherFlightSystem());
             _gameplaySystems.AddSystem(new RocketLauncherFlightSystem());
+            _gameplaySystems.AddSystem(new EmpWaveSystem(_projectileDatabase, _projectileContainer));
             _gameplaySystems.AddSystem(new AreaExpansionSystem());
             _gameplaySystems.AddSystem(new RipperTrajectorySystem());
             _gameplaySystems.AddSystem(new ProjectileViewSystem());

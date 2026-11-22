@@ -319,6 +319,7 @@ namespace Gameplay.WeaponTesting
             _testSystems.AddSystem(new SwordThrustSystem());
             _testSystems.AddSystem(new GrenadeLauncherFlightSystem());
             _testSystems.AddSystem(new RocketLauncherFlightSystem());
+            _testSystems.AddSystem(new EmpWaveSystem(_projectileDatabase, _projectileContainer));
             _testSystems.AddSystem(new AreaExpansionSystem());
             _testSystems.AddSystem(new RipperTrajectorySystem());
             _testSystems.AddSystem(new ProjectileViewSystem());

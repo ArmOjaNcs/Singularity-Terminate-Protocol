@@ -77,7 +77,7 @@ namespace ECS.WeaponSystems
                     ref _attackStatusStash.Get(weapon);
 
                 bool swordMainSeriesFinished =
-                    weaponComponent.Type == WeaponType.Sword &&
+                    weaponComponent.Type.UsesSwordAttack() &&
                     _sequenceStash.Has(weapon) &&
                     _sequenceStash.Get(weapon).SwordMainSeriesFinished;
 

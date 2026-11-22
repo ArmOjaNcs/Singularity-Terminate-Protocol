@@ -51,6 +51,7 @@ namespace ECS.TrajectorySystems
                     continue;
                 }
 
+                projectile.CollisionEnabled = !projectile.CleanupRequested;
                 trajectory.CurrentTime = Mathf.Min(
                     trajectory.Duration,
                     trajectory.CurrentTime + Mathf.Max(0f, deltaTime));

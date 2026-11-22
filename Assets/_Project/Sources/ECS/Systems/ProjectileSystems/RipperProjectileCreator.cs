@@ -94,8 +94,9 @@ namespace ECS.ProjectileSystems
             float apothem = Mathf.Max(0.01f, attack.DistanceFromSource);
             float sweepLength = apothem * 2f;
 
-            foreach (Entity projectileEntity in projectiles)
+            for (int shotIndex = 0; shotIndex < projectiles.Length; shotIndex++)
             {
+                Entity projectileEntity = projectiles[shotIndex];
                 if (!_projectileStash.Has(projectileEntity) ||
                     !_positionStash.Has(projectileEntity) ||
                     !_hitBoxStash.Has(projectileEntity))
@@ -114,6 +115,11 @@ namespace ECS.ProjectileSystems
                         attackDirection.x,
                         0f);
                 }
+                if (_config.WeaponType == WeaponType.OmegaRipper && (shotIndex & 1) != 0)
+                {
+                    attackDirection = Quaternion.AngleAxis(45f, Vector3.forward) * attackDirection;
+                }
+
                 Vector3 railCenterOffset = attackDirection * apothem;
 
                 // The saw advances along its local X axis, then returns along it.

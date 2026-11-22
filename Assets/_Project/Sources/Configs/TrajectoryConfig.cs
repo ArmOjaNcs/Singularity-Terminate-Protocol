@@ -7,6 +7,8 @@ namespace Configs
     public struct TrajectoryConfig
     {
         [Min(0f)] public float Duration;
+        [Min(0f), Tooltip("Number of full turns AxeGuard makes during one attack.")]
+        public float Revolutions;
         [Min(0f)] public float FlightDistance;
         [Min(0f)] public float FlightDistanceTolerance;
         [Min(0f)] public float ZigZagAmplitude;

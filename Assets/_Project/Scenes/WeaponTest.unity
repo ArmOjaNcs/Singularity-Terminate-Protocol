@@ -168,13 +168,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _weaponConfigs:
   - {fileID: 11400000, guid: 529e24ad84668fa4893008b69767caaa, type: 2}
+  - {fileID: 11400000, guid: cb99091e928045618b75cc2068f4c980, type: 2}
   - {fileID: 11400000, guid: 5b045256455b0174bba4e60113162d12, type: 2}
+  - {fileID: 11400000, guid: 70c468302b584be8934e80c1d3a2bf36, type: 2}
   - {fileID: 11400000, guid: 40c5995f08111b64faf0b4cd40275e63, type: 2}
   - {fileID: 11400000, guid: 3795b4760551f8e4ba8994aba673a1ef, type: 2}
   - {fileID: 11400000, guid: 14dab66088d449cd8f09e53dafe32f50, type: 2}
+  - {fileID: 11400000, guid: a1f02f98038b49b4a8ba05f926f511c8, type: 2}
   - {fileID: 11400000, guid: 991479d837d34b95bcefa4e0c909bb6b, type: 2}
   - {fileID: 11400000, guid: 6debfa107eb04ed9a8f50eba6abf7fc5, type: 2}
   - {fileID: 11400000, guid: 5bdc017a743442c69a3a2e2ef3f2190b, type: 2}
+  - {fileID: 11400000, guid: 155e0e4b5830460e86250fed44e17acd, type: 2}
   _playerConfig: {fileID: 11400000, guid: 8414f36279bd95547858f5b582b5ac65, type: 2}
   _dummyConfig: {fileID: 11400000, guid: 7387145dc7544aee94ee2404e5c13474, type: 2}
   _projectileDatabase: {fileID: 11400000, guid: 0c6afa97b5b16d448b2487bb4c1de857, type: 2}

@@ -143,6 +143,12 @@ namespace ECS.ProjectileSystems
 
                     CreateDamageRequest(projectile, target);
 
+                    if (projectileComponent.WeaponType == WeaponType.Volt &&
+                        !_areaExpansionStash.Has(projectile) && _enemyFilter.Has(target))
+                    {
+                        RegisterVoltHit(projectileComponent, _positionStash.Get(target).Position);
+                    }
+
                     CreateRicochetRequest(projectile, target);
                     projectileComponent.RicochetPending =
                         projectileComponent.RicochetPolicy !=
@@ -201,7 +207,7 @@ namespace ECS.ProjectileSystems
                 Weapon = projectileComponent.Weapon,
                 HitTarget = hitTarget,
                 SequenceId = projectileComponent.SequenceId,
-                HitPosition = projectileComponent.WeaponType == WeaponType.Sword
+                HitPosition = projectileComponent.WeaponType.UsesSwordAttack()
                     ? _positionStash.Get(projectile).Position
                     : _positionStash.Has(hitTarget)
                         ? _positionStash.Get(hitTarget).Position
@@ -349,6 +355,26 @@ namespace ECS.ProjectileSystems
                 targetCollider);
         }
 
+        private void RegisterVoltHit(ProjectileComponent shot, Vector3 position)
+        {
+            ref WeaponComponent weapon = ref _weaponStash.Get(shot.Weapon);
+            if (weapon.HitsUntilEmpWave > 0)
+            {
+                weapon.HitsUntilEmpWave--;
+                return;
+            }
+
+            int interval = World.GetStash<AttackComponent>().Get(shot.Weapon).EmpHitInterval;
+            weapon.HitsUntilEmpWave = Mathf.Max(1, interval) - 1;
+            World.GetStash<EmpWaveRequest>().Set(World.CreateEntity(), new EmpWaveRequest
+            {
+                Weapon = shot.Weapon,
+                Position = position,
+                Damage = shot.Damage,
+                TargetTypes = shot.TargetTypes
+            });
+        }
+
         private void CreateDamageRequest(Entity projectile, Entity target)
         {
             ref ProjectileComponent projectileComponent =
@@ -376,8 +402,8 @@ namespace ECS.ProjectileSystems
                         DamageType = DamageType.Direct,
                         SourceType = sourceType,
                         WeaponType = projectileComponent.WeaponType,
-                        KnockbackOrigin = projectileComponent.WeaponType ==
-                                              WeaponType.Axe &&
+                        KnockbackOrigin = (projectileComponent.WeaponType == WeaponType.Axe ||
+                                           projectileComponent.WeaponType == WeaponType.AxeGuard) &&
                                           !_areaExpansionStash.Has(projectile)
                             ? KnockbackOriginType.WeaponOwner
                             : KnockbackOriginType.ImpactPosition,

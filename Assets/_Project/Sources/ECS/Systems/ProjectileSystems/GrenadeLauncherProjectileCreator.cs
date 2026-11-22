@@ -18,7 +18,6 @@ namespace ECS.ProjectileSystems
         private readonly Stash<GrenadeFlightComponent> _flightStash;
         private readonly Stash<RotationComponent> _rotationStash;
         private readonly Stash<HitBoxComponent> _hitBoxStash;
-        private readonly Stash<ProjectileViewComponent> _viewStash;
 
         public GrenadeLauncherProjectileCreator(
             World world,
@@ -33,7 +32,6 @@ namespace ECS.ProjectileSystems
             _flightStash = world.GetStash<GrenadeFlightComponent>();
             _rotationStash = world.GetStash<RotationComponent>();
             _hitBoxStash = world.GetStash<HitBoxComponent>();
-            _viewStash = world.GetStash<ProjectileViewComponent>();
         }
 
         public void Create(Entity weapon, Entity[] projectiles)
@@ -131,10 +129,6 @@ namespace ECS.ProjectileSystems
                 collider.Center = Vector2.zero;
                 collider.Radius = Mathf.Max(0f, collider.Radius);
                 _hitBoxStash.Get(projectileEntity).Collider = collider;
-
-                if (_viewStash.Has(projectileEntity) &&
-                    _viewStash.Get(projectileEntity).View is Gameplay.View.GrenadeLauncherProjectileView view)
-                    view.BeginFlight();
             }
         }
 

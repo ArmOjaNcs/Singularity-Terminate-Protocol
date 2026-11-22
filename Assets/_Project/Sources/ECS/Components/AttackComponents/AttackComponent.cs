@@ -11,6 +11,7 @@ namespace ECS.AttackComponents
         public int MaxCyclesPerAttack;
         public int MaxShotsPerCycle;
         public int Pierce;
+        public int EmpHitInterval;
         public int MaxRicochets;
 
         public float CycleInterval;

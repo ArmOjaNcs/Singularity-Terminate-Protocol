@@ -1,7 +1,6 @@
 using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.ProjectileComponents;
-using Gameplay.View;
 using ProjectileConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
@@ -19,7 +18,6 @@ namespace ECS.ProjectileSystems
         private readonly Stash<RocketFlightComponent> _flightStash;
         private readonly Stash<RotationComponent> _rotationStash;
         private readonly Stash<HitBoxComponent> _hitBoxStash;
-        private readonly Stash<ProjectileViewComponent> _viewStash;
 
         public RocketLauncherProjectileCreator(
             World world,
@@ -34,7 +32,6 @@ namespace ECS.ProjectileSystems
             _flightStash = world.GetStash<RocketFlightComponent>();
             _rotationStash = world.GetStash<RotationComponent>();
             _hitBoxStash = world.GetStash<HitBoxComponent>();
-            _viewStash = world.GetStash<ProjectileViewComponent>();
         }
 
         public void Create(Entity weapon, Entity[] projectiles)
@@ -125,12 +122,6 @@ namespace ECS.ProjectileSystems
                 collider.Type = ColliderType.Circle;
                 collider.Center = Vector2.zero;
                 _hitBoxStash.Get(projectileEntity).Collider = collider;
-
-                if (_viewStash.Has(projectileEntity) &&
-                    _viewStash.Get(projectileEntity).View is RocketLauncherProjectileView view)
-                {
-                    view.BeginFlight();
-                }
             }
         }
     }

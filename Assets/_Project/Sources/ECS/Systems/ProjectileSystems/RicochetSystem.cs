@@ -310,7 +310,7 @@ namespace ECS.ProjectileSystems
                 return;
             }
 
-            if (projectile.WeaponType == WeaponType.Sword)
+            if (projectile.WeaponType.UsesSwordAttack())
             {
                 TryQueueSwordCycleRicochet(
                     request,

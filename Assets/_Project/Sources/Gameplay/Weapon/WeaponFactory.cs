@@ -84,6 +84,7 @@ namespace ECS.WeaponSystems
                 MaxCyclesPerAttack = Mathf.Max(1, config.AttackConfig.MaxCyclesPerAttack),
                 MaxShotsPerCycle = Mathf.Max(1, config.AttackConfig.MaxShotsPerCycle),
                 Pierce = config.AttackConfig.Pierce,
+                EmpHitInterval = config.AttackConfig.EmpHitInterval,
                 MaxRicochets = config.AttackConfig.MaxRicochets,
 
                 CycleInterval = config.AttackConfig.CycleInterval,
@@ -101,6 +102,7 @@ namespace ECS.WeaponSystems
                 Trajectory = new TrajectoryComponent
                 {
                     Duration = config.AttackConfig.Trajectory.Duration,
+                    Revolutions = config.AttackConfig.Trajectory.Revolutions,
                     FlightDistance = config.AttackConfig.Trajectory.FlightDistance,
                     FlightDistanceTolerance = config.AttackConfig.Trajectory.FlightDistanceTolerance,
                     ZigZagAmplitude = config.AttackConfig.Trajectory.ZigZagAmplitude,
@@ -153,7 +155,7 @@ namespace ECS.WeaponSystems
                         Scellecs.Morpeh.Entity>()
                 });
 
-            if (config.Type == WeaponType.Ripper)
+            if (config.Type.UsesRipperAttack())
             {
                 _world.GetStash<RipperSequenceComponent>().Set(
                     weapon,

@@ -92,13 +92,13 @@ namespace ECS.ProjectileSystems
                         _arcTrajectoryStash.Get(entity).CurrentTime < 0f;
                 }
 
+                bool reserveViewDuringDelay = isSwordThrust || view is ExplosiveProjectileView ||
+                                              _ripperTrajectoryStash.Has(entity);
                 if (trajectoryNotStarted)
                 {
-                    if (isSwordThrust)
+                    if (reserveViewDuringDelay)
                     {
-                        // Keep delayed sword views reserved in the pool.
-                        // Hiding the GameObject makes ObjectPool treat it as
-                        // free and can assign it to another live sword hit.
+                        // Deactivating the GameObject would release this view to the pool.
                         if (!projectile.ViewActivated)
                         {
                             view.SetActive(true);
@@ -122,7 +122,7 @@ namespace ECS.ProjectileSystems
                     projectile.ViewActivated = true;
                 }
 
-                if (isSwordThrust)
+                if (reserveViewDuringDelay)
                     view.SetVisualEnabled(true);
 
                 Transform viewTransform = view.transform;

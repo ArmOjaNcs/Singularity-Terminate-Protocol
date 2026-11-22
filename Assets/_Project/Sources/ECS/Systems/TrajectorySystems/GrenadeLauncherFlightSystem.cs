@@ -89,7 +89,7 @@ namespace ECS.TrajectorySystems
                 projectile.HitPolicy = HitPolicyType.OncePerTarget;
 
                 if (_viewStash.Has(entity) &&
-                    _viewStash.Get(entity).View is GrenadeLauncherProjectileView view)
+                    _viewStash.Get(entity).View is ExplosiveProjectileView view)
                     view.BeginExplosion();
             }
         }

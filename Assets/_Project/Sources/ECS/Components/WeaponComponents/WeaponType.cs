@@ -17,5 +17,22 @@ namespace ECS.WeaponComponents
         Shotgun = 12,
         FrostRifle = 13,
         RocketLauncher = 14,
+        Shuriken = 15,
+        AxeGuard = 16,
+        Volt = 17,
+        OmegaRipper = 18,
+    }
+
+    public static class WeaponTypeExtensions
+    {
+        public static bool UsesRipperAttack(this WeaponType type)
+        {
+            return type == WeaponType.Ripper || type == WeaponType.OmegaRipper;
+        }
+
+        public static bool UsesSwordAttack(this WeaponType type)
+        {
+            return type == WeaponType.Sword || type == WeaponType.Shuriken;
+        }
     }
 }

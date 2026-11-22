@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 12b58f4153834815a861d00ea86e06d5, type: 3}
+  m_Name: VoltProjectile
+  m_EditorClassIdentifier:
+  WeaponType: 17
+  Prefab: {fileID: 5290974922434242153, guid: 3779768ffcae46f88f064dabeeab9d7d, type: 3}
+  PoolCapacity: 30
+  WavePrefab: {fileID: 5290974922434242153, guid: 2c21be06397a462ea024c7f99ff6e327, type: 3}
+  WaveRadius: 2
+  WaveDuration: 0.4
+  Collider:
+    Type: 0
+    Radius: 0.2
+    Length: 0.35
+    Size: {x: 0, y: 0}
+    Center: {x: 0.05, y: 0}
+    CapsuleOrientation: 0

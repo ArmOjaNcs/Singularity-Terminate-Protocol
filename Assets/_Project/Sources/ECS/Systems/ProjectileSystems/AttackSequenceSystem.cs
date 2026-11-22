@@ -72,7 +72,7 @@ namespace ECS.ProjectileSystems
                 Entity pendingTarget;
 
                 AttackComponent attack = _attackStash.Get(weapon);
-                if (_weaponStash.Get(weapon).Type == WeaponType.Sword &&
+                if (_weaponStash.Get(weapon).Type.UsesSwordAttack() &&
                     attack.CompletionPolicy ==
                         AttackCompletionPolicy.AfterTrajectories)
                 {
@@ -213,7 +213,7 @@ namespace ECS.ProjectileSystems
                     continue;
 
                 if (trajectoryCompleted &&
-                    projectile.WeaponType == WeaponType.Sword &&
+                    projectile.WeaponType.UsesSwordAttack() &&
                     _thrustStash.Has(projectileEntity) &&
                     _positionStash.Has(projectileEntity) &&
                     _sequenceStash.Has(projectile.Weapon) &&
@@ -379,7 +379,7 @@ namespace ECS.ProjectileSystems
                 ref _attackStatusStash.Get(weapon);
             AttackComponent attack = _attackStash.Get(weapon);
             int oldSequenceId = sequence.Id;
-            bool isSword = _weaponStash.Get(weapon).Type == WeaponType.Sword;
+            bool isSword = _weaponStash.Get(weapon).Type.UsesSwordAttack();
 
             CancelProjectiles(weapon, oldSequenceId);
 

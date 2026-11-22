@@ -12,6 +12,7 @@ namespace Configs
         [Min(1)] public int MaxCyclesPerAttack = 12;
         [Min(1)] public int MaxShotsPerCycle = 12;
         public int Pierce;
+        public int EmpHitInterval;
         public int MaxRicochets;
 
         public float CycleInterval;

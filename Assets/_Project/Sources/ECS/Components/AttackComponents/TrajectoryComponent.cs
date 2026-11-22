@@ -6,6 +6,7 @@ namespace ECS.AttackComponents
     public struct TrajectoryComponent : IComponent
     {
         public float Duration;
+        public float Revolutions;
         public float FlightDistance;
         public float FlightDistanceTolerance;
         public float ZigZagAmplitude;

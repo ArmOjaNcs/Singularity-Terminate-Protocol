@@ -143,7 +143,7 @@ namespace ECS.TrajectorySystems
             projectile.HitPolicy = HitPolicyType.OncePerTarget;
 
             if (_viewStash.Has(entity) &&
-                _viewStash.Get(entity).View is RocketLauncherProjectileView view)
+                _viewStash.Get(entity).View is ExplosiveProjectileView view)
             {
                 view.BeginExplosion();
             }
