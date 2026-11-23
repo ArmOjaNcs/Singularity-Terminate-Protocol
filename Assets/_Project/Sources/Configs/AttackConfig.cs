@@ -1,6 +1,7 @@
 using ECS.AttackComponents;
 using ECS.ProjectileComponents;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 namespace Configs
 {
@@ -12,7 +13,6 @@ namespace Configs
         [Min(1)] public int MaxCyclesPerAttack = 12;
         [Min(1)] public int MaxShotsPerCycle = 12;
         public int Pierce;
-        public int EmpHitInterval;
         public int MaxRicochets;
 
         public float CycleInterval;
@@ -21,8 +21,6 @@ namespace Configs
         public float AttackCooldown;
         public float DistanceFromSource;
         public float ProjectileScale = 1f;
-        public float SwordThrustDistance = 1f;
-        public float SwordZigZagWidth = 1f;
         public bool ScaleAttackGeometryWithProjectile;
         public TrajectoryConfig Trajectory;
         public AttackPatternConfig Pattern;
@@ -40,5 +38,17 @@ namespace Configs
         public AttackAnimationPolicyType AnimationPolicy;
         public AttackCompletionPolicy CompletionPolicy;
         public RicochetPolicyType RicochetPolicy;
+
+        // Preserve values in older assets that still reference the base attack script.
+        [SerializeField, HideInInspector, FormerlySerializedAs("SwordThrustDistance")]
+        private float _legacySwordThrustDistance = 1f;
+        [SerializeField, HideInInspector, FormerlySerializedAs("SwordZigZagWidth")]
+        private float _legacySwordZigZagWidth = 1f;
+        [SerializeField, HideInInspector, FormerlySerializedAs("EmpHitInterval")]
+        private int _legacyEmpHitInterval;
+
+        internal virtual float ThrustDistance => _legacySwordThrustDistance;
+        internal virtual float ZigZagWidth => _legacySwordZigZagWidth;
+        internal virtual int HitsPerEmpWave => _legacyEmpHitInterval;
     }
 }

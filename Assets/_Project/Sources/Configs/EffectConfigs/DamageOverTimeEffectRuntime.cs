@@ -3,12 +3,18 @@ using EffectComponents;
 
 namespace ECS.EffectComponents
 {
-    public class ShockEffectRuntime : IEffectRuntime
+    public sealed class DamageOverTimeEffectRuntime : IEffectRuntime
     {
-        public EffectType Type => EffectType.Shock;
+        public EffectType Type { get; }
         public int MaxStacks;
         public float DamagePerStackPerSecond;
         public float Duration;
+
         public TwistEffectRuntime TwistOnDamage;
+
+        public DamageOverTimeEffectRuntime(EffectType type)
+        {
+            Type = type;
+        }
     }
 }

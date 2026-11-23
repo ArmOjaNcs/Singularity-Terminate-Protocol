@@ -8,7 +8,6 @@ using ECS.ProjectileComponents;
 using ECS.WeaponComponents;
 using Gameplay;
 using Gameplay.Spatial;
-using Gameplay.View;
 using Scellecs.Morpeh;
 using UnityEngine;
 
@@ -19,6 +18,7 @@ namespace ECS.ProjectileSystems
         public World World { get; set; }
 
         private readonly SpatialGrid _grid;
+        private readonly SecondaryProjectileSpawner _secondaryProjectiles;
         private readonly List<Entity> _candidates = new List<Entity>();
 
         private Filter _filter;
@@ -33,14 +33,17 @@ namespace ECS.ProjectileSystems
         private Stash<HitBoxComponent> _hitBoxStash;
         private Stash<PositionComponent> _positionStash;
         private Stash<DamageRequest> _damageRequestStash;
-        private Stash<CleanupRequest> _cleanupRequestStash;
-        private Stash<ProjectileViewComponent> _projectileViewStash;
+        private ProjectileCleanup _cleanup;
         private Stash<ProjectileHitComponent> _projectileHitStash;
         private Stash<RicochetRequest> _ricochetRequestStash;
+        private Stash<ShrapnelFragmentComponent> _shrapnelStash;
+        private Stash<VoltAttackComponent> _voltAttackStash;
+        private Stash<EmpWaveRequest> _empWaveRequestStash;
 
-        public ProjectileCollisionCheckSystem(SpatialGrid grid)
+        public ProjectileCollisionCheckSystem(SpatialGrid grid, SecondaryProjectileSpawner secondaryProjectiles)
         {
             _grid = grid;
+            _secondaryProjectiles = secondaryProjectiles;
         }
 
         public void OnAwake()
@@ -73,14 +76,20 @@ namespace ECS.ProjectileSystems
             _hitBoxStash = World.GetStash<HitBoxComponent>();
             _positionStash = World.GetStash<PositionComponent>();
             _damageRequestStash = World.GetStash<DamageRequest>();
-            _cleanupRequestStash = World.GetStash<CleanupRequest>();
-            _projectileViewStash = World.GetStash<ProjectileViewComponent>();
+            _cleanup = new ProjectileCleanup(World);
             _projectileHitStash = World.GetStash<ProjectileHitComponent>();
             _ricochetRequestStash = World.GetStash<RicochetRequest>();
+            _shrapnelStash = World.GetStash<ShrapnelFragmentComponent>();
+            _voltAttackStash = World.GetStash<VoltAttackComponent>();
+            _empWaveRequestStash = World.GetStash<EmpWaveRequest>();
         }
 
         public void OnUpdate(float deltaTime)
         {
+            bool viewportChecked = false;
+            bool hasViewport = false;
+            Rect viewport = default;
+
             foreach (Entity projectile in _filter)
             {
                 ref ProjectileComponent projectileComponent = ref _projectileStash.Get(projectile);
@@ -96,22 +105,52 @@ namespace ECS.ProjectileSystems
 
                 ColliderComponent projectileCollider =
                     _hitBoxStash.Get(projectile).Collider;
-                Vector3 projectilePosition =
-                    ColliderGeometry.GetColliderWorldCenter(
-                        _positionStash.Get(projectile).Position,
-                        projectileCollider);
+                Vector3 projectilePosition = ColliderGeometry.GetColliderWorldCenter(
+                    _positionStash.Get(projectile).Position, projectileCollider);
+                bool isShrapnelFragment = _shrapnelStash.Has(projectile);
+                bool isShrapnelCharge = projectileComponent.WeaponType == WeaponType.ShrapnelStorm &&
+                    !isShrapnelFragment;
+                bool hitViewport = false;
+                if (isShrapnelCharge)
+                {
+                    if (!viewportChecked)
+                    {
+                        hasViewport = ProjectileViewport.TryGetBounds(out viewport);
+                        viewportChecked = true;
+                    }
+
+                    if (hasViewport)
+                    {
+                        Vector3 travel = projectileComponent.Direction * projectileComponent.Speed * deltaTime;
+                        hitViewport = ProjectileViewport.TryGetImpact(
+                            viewport, projectileCollider.Radius, projectilePosition - travel,
+                            projectilePosition, out Vector3 impact);
+                        if (hitViewport)
+                        {
+                            _positionStash.Get(projectile).Position += impact - projectilePosition;
+                            projectilePosition = impact;
+                        }
+                    }
+                }
 
                 ClearIgnoredTargetAfterSeparation(
                     projectile,
                     ref projectileComponent);
 
                 float queryRadius = GetQueryRadius(projectile);
+                Entity shrapnelImpactTarget = default;
 
                 _grid.Query(projectilePosition, queryRadius, _candidates);
 
                 for (int i = 0; i < _candidates.Count; i++)
                 {
                     Entity target = _candidates[i];
+
+                    if (isShrapnelFragment &&
+                        (target == _shrapnelStash.Get(projectile).SourceTarget || !_enemyFilter.Has(target)))
+                    {
+                        continue;
+                    }
 
                     if (target == projectileComponent.Weapon ||
                         _hitBoxStash.Has(target) == false ||
@@ -143,6 +182,24 @@ namespace ECS.ProjectileSystems
 
                     CreateDamageRequest(projectile, target);
 
+                    if (isShrapnelFragment)
+                    {
+                        ReflectShrapnelFragment(projectile, target, projectilePosition, ref projectileComponent);
+                        break;
+                    }
+
+                    if (isShrapnelCharge)
+                    {
+                        if (_enemyFilter.Has(target))
+                        {
+                            shrapnelImpactTarget = target;
+                            break;
+                        }
+
+                        if (hitViewport)
+                            break;
+                    }
+
                     if (projectileComponent.WeaponType == WeaponType.Volt &&
                         !_areaExpansionStash.Has(projectile) && _enemyFilter.Has(target))
                     {
@@ -164,7 +221,7 @@ namespace ECS.ProjectileSystems
 
                     if (projectileComponent.Pierce <= 0)
                     {
-                        RequestCleanup(projectile);
+                        _cleanup.Request(projectile);
                         break;
                     }
 
@@ -172,7 +229,29 @@ namespace ECS.ProjectileSystems
                     if (projectileComponent.RicochetPending)
                         break;
                 }
+
+                if (hitViewport || shrapnelImpactTarget != default)
+                {
+                    _cleanup.Request(projectile);
+                    _secondaryProjectiles.SpawnShrapnelImpact(projectile, shrapnelImpactTarget);
+                }
             }
+        }
+
+        private void ReflectShrapnelFragment(
+            Entity projectile, Entity target, Vector3 impactPosition, ref ProjectileComponent fragment)
+        {
+            Vector3 center = ColliderGeometry.GetColliderWorldCenter(
+                _positionStash.Get(target).Position, _hitBoxStash.Get(target).Collider);
+            Vector2 normal = impactPosition - center;
+            Vector2 direction = fragment.Direction;
+            if (Vector2.Dot(direction, normal) >= 0f)
+                normal = _shrapnelStash.Get(projectile).PreviousPosition - center;
+            if (Vector2.Dot(direction, normal) >= 0f)
+                normal = -direction;
+
+            fragment.Direction = Vector2.Reflect(direction, normal.normalized);
+            fragment.TemporarilyIgnoredTarget = target;
         }
 
         private void ClearIgnoredTargetAfterSeparation(
@@ -357,16 +436,10 @@ namespace ECS.ProjectileSystems
 
         private void RegisterVoltHit(ProjectileComponent shot, Vector3 position)
         {
-            ref WeaponComponent weapon = ref _weaponStash.Get(shot.Weapon);
-            if (weapon.HitsUntilEmpWave > 0)
-            {
-                weapon.HitsUntilEmpWave--;
+            if (!_voltAttackStash.Has(shot.Weapon) || !_voltAttackStash.Get(shot.Weapon).RegisterHit())
                 return;
-            }
 
-            int interval = World.GetStash<AttackComponent>().Get(shot.Weapon).EmpHitInterval;
-            weapon.HitsUntilEmpWave = Mathf.Max(1, interval) - 1;
-            World.GetStash<EmpWaveRequest>().Set(World.CreateEntity(), new EmpWaveRequest
+            _empWaveRequestStash.Set(World.CreateEntity(), new EmpWaveRequest
             {
                 Weapon = shot.Weapon,
                 Position = position,
@@ -408,32 +481,6 @@ namespace ECS.ProjectileSystems
                             ? KnockbackOriginType.WeaponOwner
                             : KnockbackOriginType.ImpactPosition,
                     },
-                });
-        }
-
-        private void RequestCleanup(Entity projectile)
-        {
-            ref ProjectileComponent projectileComponent =
-                ref _projectileStash.Get(projectile);
-
-            projectileComponent.CleanupRequested = true;
-
-            if (_projectileViewStash.Has(projectile))
-            {
-                AnimatedView view =
-                    _projectileViewStash.Get(projectile).View;
-
-                if (view != null)
-                    view.SetActive(false);
-            }
-
-            Entity request = World.CreateEntity();
-
-            _cleanupRequestStash.Set(
-                request,
-                new CleanupRequest
-                {
-                    Candidate = projectile,
                 });
         }
 

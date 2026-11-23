@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 53e4892c4eeb58b4c9097e58712adab9, type: 3}
+  m_Script: {fileID: 11500000, guid: be6f683afd91465ca95c47c480d98c58, type: 3}
   m_Name: SwordAttack
   m_EditorClassIdentifier: 
   CyclesPerAttack: 1
@@ -24,8 +24,8 @@ MonoBehaviour:
   AttackCooldown: 2
   DistanceFromSource: 1
   ProjectileScale: 1
-  SwordThrustDistance: 1
-  SwordZigZagWidth: 1
+  _thrustDistance: 1
+  _zigZagWidth: 1
   ScaleAttackGeometryWithProjectile: 1
   Trajectory:
     Duration: 0.2

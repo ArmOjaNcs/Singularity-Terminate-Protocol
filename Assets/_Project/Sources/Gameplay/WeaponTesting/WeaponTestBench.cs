@@ -13,7 +13,6 @@ using ECS.PlayerComponents;
 using ECS.PlayerSystems;
 using ECS.ProjectileComponents;
 using ECS.ProjectileSystems;
-using ECS.TrajectorySystems;
 using ECS.WeaponComponents;
 using ECS.WeaponSystems;
 using ECS.ViewComponents;
@@ -60,7 +59,7 @@ namespace Gameplay.WeaponTesting
         private Vector2 _scroll;
         private BattleStatistics _statistics;
         private SystemsGroup _testSystems;
-        private ProjectileFactory _projectileFactory;
+        private ProjectileReleaseScheduler _releases;
         private GameObject _playerObject;
         private bool _measurementRunning;
         private float _measurementRemaining;
@@ -81,6 +80,8 @@ namespace Gameplay.WeaponTesting
 
         private Stash<WeaponComponent> _weaponStash;
         private Stash<AttackComponent> _attackStash;
+        private Stash<SwordAttackComponent> _swordAttackStash;
+        private Stash<VoltAttackComponent> _voltAttackStash;
         private Stash<WeaponEffectsComponent> _effectsStash;
         private Stash<AttackRequest> _requestStash;
         private Stash<AttackStatusComponent> _statusStash;
@@ -95,6 +96,8 @@ namespace Gameplay.WeaponTesting
             public WeaponConfig Config;
             public Entity Entity;
             public AttackComponent InitialAttack;
+            public SwordAttackComponent InitialSwordAttack;
+            public int InitialHitsPerEmpWave;
             public List<IEffectRuntime> InitialEffects;
             public AttackTargetType[] EnabledTargetTypes;
             public bool Enabled = true;
@@ -106,6 +109,8 @@ namespace Gameplay.WeaponTesting
             _statistics = new BattleStatistics();
             _weaponStash = _world.GetStash<WeaponComponent>();
             _attackStash = _world.GetStash<AttackComponent>();
+            _swordAttackStash = _world.GetStash<SwordAttackComponent>();
+            _voltAttackStash = _world.GetStash<VoltAttackComponent>();
             _effectsStash = _world.GetStash<WeaponEffectsComponent>();
             _requestStash = _world.GetStash<AttackRequest>();
             _statusStash = _world.GetStash<AttackStatusComponent>();
@@ -139,6 +144,8 @@ namespace Gameplay.WeaponTesting
                     Config = config,
                     Entity = weapon,
                     InitialAttack = _attackStash.Get(weapon),
+                    InitialSwordAttack = _swordAttackStash.Has(weapon) ? _swordAttackStash.Get(weapon) : default,
+                    InitialHitsPerEmpWave = _voltAttackStash.Has(weapon) ? _voltAttackStash.Get(weapon).HitsPerEmpWave : 0,
                     InitialEffects = CloneEffects(_effectsStash.Get(weapon).Effects)
                 });
             }
@@ -288,11 +295,12 @@ namespace Gameplay.WeaponTesting
         private void SetupTestSystems()
         {
             SpatialGrid grid = new SpatialGrid(0.5f);
-            _projectileFactory = new ProjectileFactory(
+            var weaponCombat = new WeaponCombatSystems(
                 _world,
                 _projectileDatabase,
                 _projectileContainer,
                 grid);
+            _releases = weaponCombat.Releases;
 
             _testSystems = _world.CreateSystemsGroup();
 
@@ -309,33 +317,16 @@ namespace Gameplay.WeaponTesting
             _testSystems.AddSystem(new MoveAnimationSystem());
             _testSystems.AddSystem(new SpatialGridSystem(grid));
             _testSystems.AddSystem(new TargetSelectionSystem(grid));
-            _testSystems.AddSystem(new AttackCooldownSystem());
-            _testSystems.AddSystem(new AttackSystem());
-            _testSystems.AddSystem(new AttackExecutionSystem(_projectileFactory));
-
-            _testSystems.AddSystem(new ProjectileCreationSystem(_projectileFactory));
-            _testSystems.AddSystem(new StraightTrajectorySystem());
-            _testSystems.AddSystem(new ElectricTrajectorySystem(grid));
-            _testSystems.AddSystem(new ArcTrajectorySystem());
-            _testSystems.AddSystem(new SwordThrustSystem());
-            _testSystems.AddSystem(new GrenadeLauncherFlightSystem(_projectileFactory));
-            _testSystems.AddSystem(new RocketLauncherFlightSystem());
-            _testSystems.AddSystem(new TacticalRocketFlightSystem());
-            _testSystems.AddSystem(new EmpWaveSystem(_projectileDatabase, _projectileContainer));
-            _testSystems.AddSystem(new AreaExpansionSystem());
-            _testSystems.AddSystem(new RipperTrajectorySystem());
-            _testSystems.AddSystem(new ProjectileViewSystem());
+            weaponCombat.AddAttacks(_testSystems);
+            weaponCombat.AddProjectileMotion(_testSystems);
             _testSystems.AddSystem(new ProjectileSortingSystem());
-            _testSystems.AddSystem(new ProjectileCollisionCheckSystem(grid));
-            _testSystems.AddSystem(new ProjectileLifeTimeSystem());
+            weaponCombat.AddProjectileHits(_testSystems);
 
             _testSystems.AddSystem(new BurnStatusSystem());
             _testSystems.AddSystem(new BleedStatusSystem());
             _testSystems.AddSystem(new DamageOverTimeStatusSystem());
             _testSystems.AddSystem(new DamageSystem());
-            _testSystems.AddSystem(new EffectSystem());
-            _testSystems.AddSystem(new RicochetSystem(grid));
-            _testSystems.AddSystem(new AttackSequenceSystem());
+            weaponCombat.AddHitEffects(_testSystems);
             _testSystems.AddSystem(new TraumaStatusSystem());
             _testSystems.AddSystem(new TwistStatusSystem());
             if (navigationGrid != null)
@@ -361,10 +352,12 @@ namespace Gameplay.WeaponTesting
         private static IEffectRuntime CloneEffect(IEffectRuntime effect)
         {
             if (effect == null) return null;
-            object clone = Activator.CreateInstance(effect.GetType());
+            object clone = effect is DamageOverTimeEffectRuntime
+                ? new DamageOverTimeEffectRuntime(effect.Type)
+                : Activator.CreateInstance(effect.GetType());
             foreach (FieldInfo field in effect.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public))
                 field.SetValue(clone, field.GetValue(effect));
-            if (effect is ShockEffectRuntime source && clone is ShockEffectRuntime target && source.TwistOnDamage != null)
+            if (effect is DamageOverTimeEffectRuntime source && clone is DamageOverTimeEffectRuntime target)
                 target.TwistOnDamage = (TwistEffectRuntime)CloneEffect(source.TwistOnDamage);
             return (IEffectRuntime)clone;
         }
@@ -498,11 +491,14 @@ namespace Gameplay.WeaponTesting
             foreach (WeaponEntry entry in _weapons)
             {
                 GUILayout.Label($"{entry.Config.Type}: direct {_statistics.GetDirectDamage(entry.Entity):0.##}");
-                if (entry.Config.Effects == null) continue;
-                foreach (EffectConfig effectConfig in entry.Config.Effects)
+                EffectCollection effects = _effectsStash.Get(entry.Entity).Effects;
+                if (effects == null)
+                    continue;
+
+                foreach (IEffectRuntime effect in effects.Effects)
                 {
-                    if (effectConfig != null)
-                        GUILayout.Label($"  {entry.Config.Type} → {effectConfig.Type}: {_statistics.GetEffectDamage(entry.Entity, effectConfig.Type):0.##}");
+                    GUILayout.Label(
+                        $"  {entry.Config.Type} → {effect.Type}: {_statistics.GetEffectDamage(entry.Entity, effect.Type):0.##}");
                 }
             }
 
@@ -519,6 +515,20 @@ namespace Gameplay.WeaponTesting
                     "Attack",
                     $"Attack.{selected.Config.Type}");
                 if (changed) _attackStash.Set(selected.Entity, attack);
+
+                if (_swordAttackStash.Has(selected.Entity))
+                {
+                    SwordAttackComponent sword = _swordAttackStash.Get(selected.Entity);
+                    if (DrawFields(ref sword, typeof(SwordAttackComponent), "Sword", $"Sword.{selected.Config.Type}"))
+                        _swordAttackStash.Set(selected.Entity, sword);
+                }
+
+                if (_voltAttackStash.Has(selected.Entity))
+                {
+                    VoltAttackComponent volt = _voltAttackStash.Get(selected.Entity);
+                    if (DrawFields(ref volt, typeof(VoltAttackComponent), "EMP", "Attack.Volt.EMP"))
+                        _voltAttackStash.Set(selected.Entity, volt);
+                }
 
                 WeaponEffectsComponent effects = _effectsStash.Get(selected.Entity);
                 if (effects.Effects != null)
@@ -723,7 +733,7 @@ namespace Gameplay.WeaponTesting
             ref AttackComponent attack = ref _attackStash.Get(entry.Entity);
             if (!enabled)
             {
-                _projectileFactory?.Cancel(entry.Entity);
+                _releases?.Cancel(entry.Entity);
                 entry.EnabledTargetTypes = attack.TargetTypes == null
                     ? new AttackTargetType[0]
                     : (AttackTargetType[])attack.TargetTypes.Clone();
@@ -751,6 +761,11 @@ namespace Gameplay.WeaponTesting
             if (!entry.Enabled)
                 attack.TargetTypes = new AttackTargetType[0];
             _attackStash.Set(entry.Entity, attack);
+            if (_swordAttackStash.Has(entry.Entity))
+                _swordAttackStash.Set(entry.Entity, entry.InitialSwordAttack);
+            if (_voltAttackStash.Has(entry.Entity))
+                _voltAttackStash.Get(entry.Entity).HitsPerEmpWave = entry.InitialHitsPerEmpWave;
+
             EffectCollection effects = new EffectCollection();
             foreach (IEffectRuntime effect in entry.InitialEffects) effects.Add(CloneEffect(effect));
             _effectsStash.Set(entry.Entity, new WeaponEffectsComponent { Effects = effects });
@@ -792,7 +807,7 @@ namespace Gameplay.WeaponTesting
         {
             foreach (WeaponEntry entry in _weapons)
             {
-                _projectileFactory?.Cancel(entry.Entity);
+                _releases?.Cancel(entry.Entity);
 
                 if (_requestStash.Has(entry.Entity))
                     _requestStash.Remove(entry.Entity);

@@ -1,15 +1,40 @@
+using ECS.CommonComponents;
 using EffectComponents;
 using EffectConfigs;
+using UnityEngine;
+using WeaponConfigs;
 
 namespace ECS.EffectComponents
 {
     public static class EffectRuntimeFactory
     {
-        public static IEffectRuntime Create(EffectConfig config)
+        public static EffectCollection CreateCollection(WeaponConfig weapon)
+        {
+            var effects = new EffectCollection();
+            if (weapon.Effects == null)
+                return effects;
+
+            foreach (EffectConfig config in weapon.Effects)
+            {
+                if (config == null)
+                    continue;
+
+                IEffectRuntime effect = Create(config);
+                if (effect != null)
+                    effects.Add(effect);
+                else
+                    Debug.LogWarning(
+                        $"Weapon {weapon.Type} has an unsupported effect config '{config.name}'.", config);
+            }
+
+            return effects;
+        }
+
+        private static IEffectRuntime Create(EffectConfig config)
         {
             return config switch
             {
-                BleedConfig bleedConfig => new BleedEffectRuntime
+                BleedConfig bleedConfig => new DamageOverTimeEffectRuntime(EffectType.Bleed)
                 {
                     MaxStacks = bleedConfig.MaxStacks,
                     DamagePerStackPerSecond =
@@ -17,19 +42,12 @@ namespace ECS.EffectComponents
                     Duration = bleedConfig.Duration
                 },
 
-                ShockEffectConfig shockConfig => new ShockEffectRuntime
+                ShockEffectConfig shockConfig => new DamageOverTimeEffectRuntime(EffectType.Shock)
                 {
                     MaxStacks = shockConfig.MaxStacks,
                     DamagePerStackPerSecond = shockConfig.DamagePerStackPerSecond,
                     Duration = shockConfig.Duration,
-                    TwistOnDamage = shockConfig.TwistOnDamage == null
-                        ? null
-                        : new TwistEffectRuntime
-                        {
-                            ShakeAmplitude = shockConfig.TwistOnDamage.ShakeAmplitude,
-                            ShakeFrequency = shockConfig.TwistOnDamage.ShakeFrequency,
-                            RefreshDuration = shockConfig.TwistOnDamage.RefreshDuration
-                        }
+                    TwistOnDamage = CreateTwist(shockConfig.TwistOnDamage)
                 },
 
                 BurnConfig burnConfig => new BurnEffectRuntime
@@ -58,14 +76,22 @@ namespace ECS.EffectComponents
                     AttackDamageReductionPercent = traumaConfig.AttackDamageReductionPercent
                 },
 
-                TwistEffectConfig twistConfig => new TwistEffectRuntime
-                {
-                    ShakeAmplitude = twistConfig.ShakeAmplitude,
-                    ShakeFrequency = twistConfig.ShakeFrequency,
-                    RefreshDuration = twistConfig.RefreshDuration
-                },
+                TwistEffectConfig twistConfig => CreateTwist(twistConfig),
 
                 _ => null
+            };
+        }
+
+        private static TwistEffectRuntime CreateTwist(TwistEffectConfig config)
+        {
+            if (config == null)
+                return null;
+
+            return new TwistEffectRuntime
+            {
+                ShakeAmplitude = config.ShakeAmplitude,
+                ShakeFrequency = config.ShakeFrequency,
+                RefreshDuration = config.RefreshDuration
             };
         }
     }

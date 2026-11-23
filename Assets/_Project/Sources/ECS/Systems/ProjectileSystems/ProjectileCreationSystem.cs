@@ -16,11 +16,11 @@ namespace ECS.ProjectileSystems
         private Stash<ProjectileCreationComponent> _creationStash;
         private Stash<AttackStatusComponent> _attackStatusStash;
 
-        private readonly ProjectileFactory _projectileFactory;
+        private readonly ProjectileReleaseScheduler _releases;
 
-        public ProjectileCreationSystem(ProjectileFactory projectileFactory)
+        public ProjectileCreationSystem(ProjectileReleaseScheduler releases)
         {
-            _projectileFactory = projectileFactory;
+            _releases = releases;
         }
 
         public void OnAwake()
@@ -58,7 +58,7 @@ namespace ECS.ProjectileSystems
                 if (creation.IsInitialized || !attackStatus.IsAttacking)
                     continue;
 
-                _projectileFactory.Begin(weapon, deltaTime);
+                _releases.Begin(weapon, deltaTime);
             }
 
             foreach (Entity weapon in _creationFilter)
@@ -75,7 +75,7 @@ namespace ECS.ProjectileSystems
                 if (attackStatus.CreationFinished)
                     continue;
 
-                _projectileFactory.Update(weapon, deltaTime);
+                _releases.Update(weapon, deltaTime);
             }
         }
 

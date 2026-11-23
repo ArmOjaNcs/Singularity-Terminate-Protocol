@@ -11,7 +11,7 @@ namespace ECS.TrajectorySystems
     {
         public World World { get; set; }
 
-        private readonly ProjectileFactory _projectileFactory;
+        private readonly SecondaryProjectileSpawner _secondaryProjectiles;
         private Filter _filter;
         private Stash<GrenadeFlightComponent> _flightStash;
         private Stash<ProjectileComponent> _projectileStash;
@@ -21,9 +21,9 @@ namespace ECS.TrajectorySystems
         private Stash<HitBoxComponent> _hitBoxStash;
         private Stash<ProjectileViewComponent> _viewStash;
 
-        public GrenadeLauncherFlightSystem(ProjectileFactory projectileFactory)
+        public GrenadeLauncherFlightSystem(SecondaryProjectileSpawner secondaryProjectiles)
         {
-            _projectileFactory = projectileFactory;
+            _secondaryProjectiles = secondaryProjectiles;
         }
 
         public void OnAwake()
@@ -55,8 +55,8 @@ namespace ECS.TrajectorySystems
 
                 if (_flightStash.Get(entity).IsAwaitingLaunch)
                 {
-                    if (projectile.CurrentLifetime < -ProjectileFactory.ArmageddonTimingTolerance ||
-                        !_projectileFactory.TryLaunchArmageddonGrenade(entity))
+                    if (projectile.CurrentLifetime < -ProjectileReleaseScheduler.BurstTimingTolerance ||
+                        !_secondaryProjectiles.TryLaunchArmageddonGrenade(entity))
                     {
                         continue;
                     }
@@ -115,7 +115,7 @@ namespace ECS.TrajectorySystems
                     view.BeginExplosion();
 
                 if (completedFlight.ClusterProjectileScale > 0f)
-                    _projectileFactory.SpawnArmageddonSubmunitions(entity, completedFlight, baseCollider);
+                    _secondaryProjectiles.SpawnArmageddonSubmunitions(entity, completedFlight, baseCollider);
             }
         }
 

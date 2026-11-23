@@ -2,7 +2,6 @@ using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.ProjectileComponents;
 using ECS.WeaponComponents;
-using Gameplay.View;
 using Scellecs.Morpeh;
 using System.Collections.Generic;
 using UnityEngine;
@@ -26,8 +25,7 @@ namespace ECS.ProjectileSystems
         private Stash<TargetComponent> _targetStash;
         private Stash<DeathComponent> _deathStash;
         private Stash<PositionComponent> _positionStash;
-        private Stash<CleanupRequest> _cleanupRequestStash;
-        private Stash<ProjectileViewComponent> _viewStash;
+        private ProjectileCleanup _cleanup;
 
         public World World { get; set; }
 
@@ -57,8 +55,7 @@ namespace ECS.ProjectileSystems
             _targetStash = World.GetStash<TargetComponent>();
             _deathStash = World.GetStash<DeathComponent>();
             _positionStash = World.GetStash<PositionComponent>();
-            _cleanupRequestStash = World.GetStash<CleanupRequest>();
-            _viewStash = World.GetStash<ProjectileViewComponent>();
+            _cleanup = new ProjectileCleanup(World);
         }
 
         public void OnUpdate(float deltaTime)
@@ -250,7 +247,7 @@ namespace ECS.ProjectileSystems
                 }
 
                 if (cleanupAfterCompletion)
-                    RequestCleanup(projectileEntity);
+                    _cleanup.Request(projectileEntity);
             }
         }
 
@@ -434,8 +431,6 @@ namespace ECS.ProjectileSystems
         {
             ref AttackSequenceComponent sequence =
                 ref _sequenceStash.Get(weapon);
-            ref ProjectileCreationComponent creation =
-                ref _creationStash.Get(weapon);
 
             sequence.IsActive = false;
             sequence.SwordRicochetCycle = false;
@@ -445,11 +440,7 @@ namespace ECS.ProjectileSystems
                 sequence.PendingRicochetTargets.Clear();
             if (sequence.SwordCycles != null)
                 sequence.SwordCycles.Clear();
-            creation.IsInitialized = false;
-            creation.RemainingCount = 0;
-            creation.ElapsedTime = 0f;
-            creation.IsWaitingForCycle = false;
-            creation.IsComboRestart = false;
+            _creationStash.Get(weapon) = default;
             _attackStatusStash.Get(weapon).CreationFinished = true;
         }
 
@@ -467,30 +458,8 @@ namespace ECS.ProjectileSystems
                     continue;
                 }
 
-                RequestCleanup(projectileEntity);
+                _cleanup.Request(projectileEntity);
             }
-        }
-
-        private void RequestCleanup(Entity projectileEntity)
-        {
-            ref ProjectileComponent projectile =
-                ref _projectileStash.Get(projectileEntity);
-            if (projectile.CleanupRequested)
-                return;
-
-            projectile.CleanupRequested = true;
-            if (_viewStash.Has(projectileEntity))
-            {
-                AnimatedView view = _viewStash.Get(projectileEntity).View;
-                if (view != null)
-                    view.SetActive(false);
-            }
-
-            Entity request = World.CreateEntity();
-            _cleanupRequestStash.Set(request, new CleanupRequest
-            {
-                Candidate = projectileEntity
-            });
         }
 
         public void Dispose() { }

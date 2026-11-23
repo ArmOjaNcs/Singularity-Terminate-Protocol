@@ -58,99 +58,57 @@ namespace ECS.CommonSystems
         {
             foreach (Entity requestEntity in _filter)
             {
-                ref EffectRequest request =
-                    ref _effectRequestStash.Get(requestEntity);
-
-                Entity weapon =
-                    request.Context.Weapon;
-
-                if (weapon == default)
-                {
-                    World.RemoveEntity(requestEntity);
-                    continue;
-                }
-
-                if (!_weaponEffectsStash.Has(weapon))
-                {
-                    World.RemoveEntity(requestEntity);
-                    continue;
-                }
-
-                EffectCollection effects = _weaponEffectsStash.Get(weapon).Effects;
-
-                if (effects.TryGet<KnockbackEffectRuntime>(
-                        out KnockbackEffectRuntime knockback))
-                {
-                    CreateKnockbackRequest(request, knockback);
-                }
-
-                if (request.AppliedDamage > 0f &&
-                    _enemyTagStash.Has(request.Target) &&
-                    !_deathStash.Has(request.Target) &&
-                    effects.TryGet<TraumaEffectRuntime>(
-                        out TraumaEffectRuntime trauma))
-                {
-                    ApplyTrauma(request.Target, weapon, trauma);
-                }
-
-                if (request.AppliedDamage > 0f &&
-                    _enemyTagStash.Has(request.Target) &&
-                    !_deathStash.Has(request.Target) &&
-                    effects.TryGet<BleedEffectRuntime>(
-                        out BleedEffectRuntime bleed))
-                {
-                    ApplyDamageOverTime(request.Target, weapon, request.Context,
-                        EffectType.Bleed, bleed.MaxStacks,
-                        bleed.DamagePerStackPerSecond, bleed.Duration, null);
-                }
-
-                if (request.AppliedDamage > 0f &&
-                    _enemyTagStash.Has(request.Target) &&
-                    !_deathStash.Has(request.Target) &&
-                    effects.TryGet<ShockEffectRuntime>(out ShockEffectRuntime shock))
-                {
-                    ApplyDamageOverTime(request.Target, weapon, request.Context,
-                        EffectType.Shock, shock.MaxStacks,
-                        shock.DamagePerStackPerSecond, shock.Duration,
-                        shock.TwistOnDamage);
-                }
-
-                if (request.AppliedDamage > 0f &&
-                    _enemyTagStash.Has(request.Target) &&
-                    !_deathStash.Has(request.Target) &&
-                    effects.TryGet<BurnEffectRuntime>(
-                        out BurnEffectRuntime burn))
-                {
-                    ApplyBurn(request.Target, weapon, request.Context, burn);
-                }
-
-                if (request.AppliedDamage > 0f &&
-                    _enemyTagStash.Has(request.Target) &&
-                    !_deathStash.Has(request.Target) &&
-                    effects.TryGet<TwistEffectRuntime>(
-                        out TwistEffectRuntime twist))
-                {
-                    ApplyTwist(request.Target, weapon, twist);
-                }
-
+                EffectRequest request = _effectRequestStash.Get(requestEntity);
+                ApplyEffects(request);
                 World.RemoveEntity(requestEntity);
             }
+        }
+
+        private void ApplyEffects(in EffectRequest request)
+        {
+            Entity weapon = request.Context.Weapon;
+            if (weapon == default || !_weaponEffectsStash.Has(weapon))
+                return;
+
+            EffectCollection effects = _weaponEffectsStash.Get(weapon).Effects;
+            if (effects == null)
+                return;
+
+            if (effects.TryGet<KnockbackEffectRuntime>(EffectType.Knockback, out var knockback))
+                CreateKnockbackRequest(request, knockback);
+
+            Entity target = request.Target;
+            bool canApplyStatus = request.AppliedDamage > 0f && _enemyTagStash.Has(target) && !_deathStash.Has(target);
+            if (!canApplyStatus)
+                return;
+
+            if (effects.TryGet<TraumaEffectRuntime>(EffectType.Trauma, out var trauma))
+                ApplyTrauma(target, weapon, trauma);
+
+            if (effects.TryGet<DamageOverTimeEffectRuntime>(EffectType.Bleed, out var bleed))
+                ApplyDamageOverTime(target, weapon, request.Context, bleed);
+
+            if (effects.TryGet<DamageOverTimeEffectRuntime>(EffectType.Shock, out var shock))
+                ApplyDamageOverTime(target, weapon, request.Context, shock);
+
+            if (effects.TryGet<BurnEffectRuntime>(EffectType.Burn, out var burn))
+                ApplyBurn(target, weapon, request.Context, burn);
+
+            if (effects.TryGet<TwistEffectRuntime>(EffectType.Twist, out var twist))
+                ApplyTwist(target, weapon, twist);
         }
 
         private void ApplyDamageOverTime(
             Entity target,
             Entity sourceWeapon,
             DamageContext sourceContext,
-            EffectType effectType,
-            int maxStacks,
-            float damagePerStackPerSecond,
-            float duration,
-            TwistEffectRuntime twistOnDamage)
+            DamageOverTimeEffectRuntime effect)
         {
-            maxStacks = Mathf.Max(1, maxStacks);
-            if (duration <= 0f || damagePerStackPerSecond <= 0f)
+            int maxStacks = Mathf.Max(1, effect.MaxStacks);
+            if (effect.Duration <= 0f || effect.DamagePerStackPerSecond <= 0f)
                 return;
 
+            EffectType effectType = effect.Type;
             if (!_damageOverTimeStatusStash.Has(target))
             {
                 _damageOverTimeStatusStash.Set(target, new DamageOverTimeStatusComponent
@@ -172,10 +130,11 @@ namespace ECS.CommonSystems
             instance.EffectType = effectType;
             instance.MaxStacks = maxStacks;
             instance.Stacks = Mathf.Min(maxStacks, instance.Stacks + 1);
-            instance.DamagePerStackPerSecond = damagePerStackPerSecond;
-            instance.RemainingDuration = duration;
+            instance.DamagePerStackPerSecond = effect.DamagePerStackPerSecond;
+            instance.RemainingDuration = effect.Duration;
             instance.SourceContext = sourceContext;
-            instance.ApplyTwistOnDamage = effectType == EffectType.Shock && twistOnDamage != null;
+            TwistEffectRuntime twistOnDamage = effect.TwistOnDamage;
+            instance.ApplyTwistOnDamage = twistOnDamage != null;
             if (twistOnDamage != null)
             {
                 instance.TwistShakeAmplitude = twistOnDamage.ShakeAmplitude;

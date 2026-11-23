@@ -181,6 +181,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 155e0e4b5830460e86250fed44e17acd, type: 2}
   - {fileID: 11400000, guid: 48aff8c8658a45ffb44bb678e53082b6, type: 2}
   - {fileID: 11400000, guid: 30a99991d8bb0671f0d1c60be0dcdd66, type: 2}
+  - {fileID: 11400000, guid: c0f1d626ed03dd7442de14e317b6f668, type: 2}
+  - {fileID: 11400000, guid: 56aea6f47e1308a6b125898a867a441f, type: 2}
   _playerConfig: {fileID: 11400000, guid: 8414f36279bd95547858f5b582b5ac65, type: 2}
   _dummyConfig: {fileID: 11400000, guid: 7387145dc7544aee94ee2404e5c13474, type: 2}
   _projectileDatabase: {fileID: 11400000, guid: 0c6afa97b5b16d448b2487bb4c1de857, type: 2}
@@ -717,7 +719,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1301171113
 Transform:
   m_ObjectHideFlags: 0
@@ -727,7 +729,7 @@ Transform:
   m_GameObject: {fileID: 1301171112}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -2.5, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -745,7 +747,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83a7988b58c449b7893b8c8b8b446d40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Config: {fileID: 11400000, guid: b3a5e9706385495b9c1b46885d4cc72a, type: 2}
+  Config: {fileID: 11400000, guid: af5013ba483edc842aa3b10124fa0f57, type: 2}
   PreviewDirection: {x: 1, y: 0}
   ShowCollider: 1
   ShowTrajectory: 0

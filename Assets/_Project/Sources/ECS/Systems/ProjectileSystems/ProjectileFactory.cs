@@ -1,11 +1,12 @@
 using System.Collections.Generic;
+using Configs;
 using Core.Game;
 using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.ProjectileComponents;
 using ECS.WeaponComponents;
-using Gameplay.View;
 using Gameplay.Spatial;
+using Gameplay.View;
 using ProjectileConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
@@ -14,510 +15,59 @@ namespace ECS.ProjectileSystems
 {
     public sealed class ProjectileFactory
     {
-        internal const float ArmageddonTimingTolerance = 0.00001f;
-
         private readonly World _world;
-        private readonly ProjectileDatabase _database;
         private readonly Transform _container;
         private readonly SpatialGrid _grid;
-        private ObjectPool<AnimatedView> _armageddonSubmunitionViews;
-
-        private readonly Dictionary<WeaponType, ObjectPool<AnimatedView>> _views =
-            new Dictionary<WeaponType, ObjectPool<AnimatedView>>();
-
-        private readonly Dictionary<WeaponType, IProjectileCreator> _creators =
-            new Dictionary<WeaponType, IProjectileCreator>();
-
+        private readonly Dictionary<WeaponType, Definition> _definitions = new();
         private readonly Stash<WeaponComponent> _weaponStash;
         private readonly Stash<AttackComponent> _attackStash;
-        private readonly Stash<AttackSequenceComponent> _sequenceStash;
-        private readonly Stash<RipperSequenceComponent> _ripperSequenceStash;
         private readonly Stash<PositionComponent> _positionStash;
         private readonly Stash<ProjectileComponent> _projectileStash;
         private readonly Stash<HitBoxComponent> _hitBoxStash;
         private readonly Stash<ProjectileHitComponent> _projectileHitStash;
-        private readonly Stash<ProjectileCreationComponent> _creationStash;
-        private readonly Stash<AttackStatusComponent> _attackStatusStash;
         private readonly Stash<ProjectileViewComponent> _projectileViewStash;
-        private readonly Stash<TargetComponent> _targetStash;
-        private readonly Stash<DeathComponent> _deathStash;
 
-        public ProjectileFactory(
-            World world,
-            ProjectileDatabase database,
-            Transform container,
-            SpatialGrid grid)
+        public ProjectileFactory(World world, ProjectileDatabase database, Transform container, SpatialGrid grid)
         {
             _world = world;
-            _database = database;
             _container = container;
             _grid = grid;
-
             _weaponStash = world.GetStash<WeaponComponent>();
             _attackStash = world.GetStash<AttackComponent>();
-            _sequenceStash = world.GetStash<AttackSequenceComponent>();
-            _ripperSequenceStash = world.GetStash<RipperSequenceComponent>();
             _positionStash = world.GetStash<PositionComponent>();
             _projectileStash = world.GetStash<ProjectileComponent>();
             _hitBoxStash = world.GetStash<HitBoxComponent>();
             _projectileHitStash = world.GetStash<ProjectileHitComponent>();
-            _creationStash = world.GetStash<ProjectileCreationComponent>();
-            _attackStatusStash = world.GetStash<AttackStatusComponent>();
             _projectileViewStash = world.GetStash<ProjectileViewComponent>();
-            _targetStash = world.GetStash<TargetComponent>();
-            _deathStash = world.GetStash<DeathComponent>();
 
-            InitializeConfigs();
-        }
-
-        public void Begin(Entity weapon, float currentUpdateDeltaTime)
-        {
-            if (!_weaponStash.Has(weapon) ||
-                !_attackStash.Has(weapon) ||
-                !_positionStash.Has(weapon) ||
-                !_creationStash.Has(weapon) ||
-                !_attackStatusStash.Has(weapon))
-            {
-                return;
-            }
-
-            WeaponType weaponType = _weaponStash.Get(weapon).Type;
-
-            if (!HasProjectileConfig(weaponType))
-            {
-                FinishCreation(weapon);
-                return;
-            }
-
-            ref AttackComponent attack = ref _attackStash.Get(weapon);
-            ref AttackSequenceComponent sequence =
-                ref _sequenceStash.Get(weapon);
-            ref ProjectileCreationComponent creation =
-                ref _creationStash.Get(weapon);
-            ref AttackStatusComponent attackStatus =
-                ref _attackStatusStash.Get(weapon);
-
-            // CreationSystem also updates a newly started attack in this tick.
-            creation.ElapsedTime = weaponType == WeaponType.Armageddon6 ? -currentUpdateDeltaTime : 0f;
-            int cyclesPerAttack = Mathf.Max(0, attack.CyclesPerAttack);
-            bool usesSwordAttack = weaponType.UsesSwordAttack();
-            if (weaponType == WeaponType.Axe || usesSwordAttack)
-            {
-                cyclesPerAttack = Mathf.Min(
-                    cyclesPerAttack,
-                    AxeProjectileCreator.SectorCount);
-            }
-
-            creation.RemainingCount = usesSwordAttack
-                ? Mathf.Max(0, cyclesPerAttack - 1)
-                : cyclesPerAttack;
-            creation.IsWaitingForCycle = false;
-            creation.IsComboRestart = false;
-            creation.IsInitialized = true;
-
-            sequence.Id++;
-            sequence.IsActive = true;
-            sequence.LockedTarget = default;
-            sequence.AttackTarget = default;
-            sequence.FallbackDirection = Vector3.zero;
-            sequence.HasFallbackDirection = false;
-            sequence.UsedSectorMask = 0;
-            sequence.AssignedSectorCycle = -1;
-            sequence.AssignedSectorIndex = -1;
-            sequence.AxeSweepClockwise = false;
-            sequence.HasAxeSweepDirection = false;
-            sequence.SwordStartSector = 0;
-            sequence.HasSwordStartSector = false;
-            sequence.SwordUsedSectorMask = 0;
-            sequence.SwordMainSeriesFinished = false;
-            sequence.SwordRicochetCycle = false;
-            sequence.SwordRicochetOrigin = Vector3.zero;
-            if (sequence.SwordCycles == null)
-                sequence.SwordCycles = new List<SwordAttackCycleState>();
-            else
-                sequence.SwordCycles.Clear();
-            sequence.ReleasesCreated = 0;
-            sequence.OutstandingProjectiles = 0;
-            sequence.RicochetsCount = 0;
-            sequence.RicochetPending = false;
-            sequence.PendingTarget = default;
-            if (sequence.PendingRicochetTargets == null)
-                sequence.PendingRicochetTargets = new List<Entity>();
-            else
-                sequence.PendingRicochetTargets.Clear();
-            if (sequence.VisitedTargets == null)
-                sequence.VisitedTargets = new List<Entity>();
-            else
-                sequence.VisitedTargets.Clear();
-
-            attackStatus.CreationFinished = false;
-
-            if (cyclesPerAttack <= 0)
-            {
-                StopCreation(weapon);
-                return;
-            }
-
-            if (!CreateRelease(weapon))
+            if (database == null || database.Projectiles == null)
                 return;
 
-            if (usesSwordAttack)
+            foreach (ProjectileConfig config in database.Projectiles)
             {
-                if (attack.CycleInterval <= 0f)
-                {
-                    while (creation.RemainingCount > 0)
-                    {
-                        creation.RemainingCount--;
-                        if (!CreateRelease(weapon))
-                            return;
-                    }
-                }
-                else if (creation.RemainingCount > 0)
-                {
-                    creation.IsWaitingForCycle = true;
-                    creation.ElapsedTime = 0f;
-                }
-                return;
-            }
-
-            creation.RemainingCount--;
-
-            if (creation.RemainingCount <= 0)
-            {
-                StopCreation(weapon);
-            }
-        }
-
-        public void Update(Entity weapon, float deltaTime)
-        {
-            if (!_creationStash.Has(weapon) ||
-                !_attackStatusStash.Has(weapon) ||
-                !_attackStash.Has(weapon))
-            {
-                return;
-            }
-
-            ref ProjectileCreationComponent creation =
-                ref _creationStash.Get(weapon);
-            ref AttackStatusComponent attackStatus =
-                ref _attackStatusStash.Get(weapon);
-
-            if (!creation.IsInitialized || attackStatus.CreationFinished)
-                return;
-
-            ref AttackComponent attack = ref _attackStash.Get(weapon);
-
-            if (_weaponStash.Has(weapon) &&
-                _weaponStash.Get(weapon).Type.UsesSwordAttack())
-            {
-                UpdateSwordCycles(weapon, deltaTime);
-                return;
-            }
-
-            if (!_weaponStash.Has(weapon) ||
-                !HasProjectileConfig(_weaponStash.Get(weapon).Type))
-            {
-                StopCreation(weapon);
-                return;
-            }
-
-            if (creation.RemainingCount <= 0)
-            {
-                StopCreation(weapon);
-                return;
-            }
-
-            if (attack.CycleInterval <= 0f)
-            {
-                while (creation.RemainingCount > 0)
-                {
-                    if (!CreateRelease(weapon))
-                        return;
-
-                    creation.RemainingCount--;
-                }
-
-                if (attack.CompletionPolicy !=
-                    AttackCompletionPolicy.AfterTrajectories)
-                    FinishCreation(weapon);
-                return;
-            }
-
-            creation.ElapsedTime += deltaTime;
-            float timingTolerance = _weaponStash.Get(weapon).Type == WeaponType.Armageddon6
-                ? ArmageddonTimingTolerance
-                : 0f;
-
-            while (creation.ElapsedTime + timingTolerance >= attack.CycleInterval &&
-                   creation.RemainingCount > 0)
-            {
-                creation.ElapsedTime -= attack.CycleInterval;
-
-                if (!CreateRelease(weapon))
-                    return;
-
-                creation.RemainingCount--;
-            }
-
-            if (creation.RemainingCount <= 0)
-            {
-                if (attack.CompletionPolicy !=
-                    AttackCompletionPolicy.AfterTrajectories)
-                    FinishCreation(weapon);
-            }
-        }
-
-        public void Cancel(Entity weapon)
-        {
-            FinishCreation(weapon);
-        }
-
-        private void UpdateSwordCycles(Entity weapon, float deltaTime)
-        {
-            ref ProjectileCreationComponent creation =
-                ref _creationStash.Get(weapon);
-            if (!creation.IsWaitingForCycle)
-                return;
-
-            ref AttackComponent attack = ref _attackStash.Get(weapon);
-            creation.ElapsedTime += deltaTime;
-            if (attack.CycleInterval > 0f &&
-                creation.ElapsedTime < attack.CycleInterval)
-            {
-                return;
-            }
-
-            bool comboRestart = creation.IsComboRestart;
-            if (!comboRestart && _sequenceStash.Has(weapon))
-            {
-                ref AttackSequenceComponent sequence =
-                    ref _sequenceStash.Get(weapon);
-                sequence.LockedTarget = default;
-            }
-
-            if (!CreateRelease(weapon))
-                return;
-
-            if (!comboRestart)
-                creation.RemainingCount--;
-
-            creation.ElapsedTime = 0f;
-            creation.IsWaitingForCycle = !comboRestart &&
-                                         creation.RemainingCount > 0;
-            creation.IsComboRestart = false;
-        }
-
-        private bool CreateRelease(Entity weapon)
-        {
-            if (!_weaponStash.Has(weapon) ||
-                !_attackStash.Has(weapon) ||
-                !_positionStash.Has(weapon))
-            {
-                StopCreation(weapon);
-                return false;
-            }
-
-            WeaponType weaponType = _weaponStash.Get(weapon).Type;
-            ProjectileConfig config = GetConfig(weaponType);
-
-            if (config == null || config.Collider == null)
-            {
-                StopCreation(weapon);
-                return false;
-            }
-
-            ref AttackComponent attack = ref _attackStash.Get(weapon);
-
-            ref AttackSequenceComponent sequence =
-                ref _sequenceStash.Get(weapon);
-            ref ProjectileCreationComponent creation =
-                ref _creationStash.Get(weapon);
-
-            Entity target;
-            if (attack.RicochetPolicy == RicochetPolicyType.AttackSeries &&
-                sequence.LockedTarget != default)
-            {
-                target = sequence.LockedTarget;
-            }
-            else if (!attack.Pattern.SelectTargetPerCycle &&
-                     sequence.AttackTarget != default)
-            {
-                target = sequence.AttackTarget;
-            }
-            else if (!attack.Pattern.SelectTargetPerCycle &&
-                     sequence.HasFallbackDirection)
-            {
-                target = default;
-            }
-            else
-            {
-                target = _targetStash.Has(weapon)
-                    ? _targetStash.Get(weapon).Target
-                    : default;
-            }
-
-            if (!TryGetDirection(weapon, target, out Vector3 direction))
-            {
-                if (attack.Pattern.RandomDirectionFallback)
-                {
-                    if (!attack.Pattern.SelectTargetPerCycle &&
-                        sequence.HasFallbackDirection)
-                    {
-                        direction = sequence.FallbackDirection;
-                    }
-                    else
-                    {
-                        float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
-                        direction = new Vector3(Mathf.Cos(angle), Mathf.Sin(angle), 0f);
-
-                        if (!attack.Pattern.SelectTargetPerCycle)
-                        {
-                            sequence.FallbackDirection = direction;
-                            sequence.HasFallbackDirection = true;
-                        }
-                    }
-                }
-                else
-                {
-                    bool hasCachedRipperDirection =
-                        weaponType.UsesRipperAttack() &&
-                        _ripperSequenceStash.Has(weapon) &&
-                        _ripperSequenceStash.Get(weapon).IsInitialized &&
-                        _ripperSequenceStash.Get(weapon).SequenceId == sequence.Id;
-
-                    if (hasCachedRipperDirection)
-                    {
-                        direction = _ripperSequenceStash.Get(weapon).AttackDirection;
-                    }
-                    else if (attack.RicochetPolicy ==
-                                 RicochetPolicyType.AttackSeries &&
-                             sequence.LockedTarget != default)
-                    {
-                        StopCreation(weapon);
-                        return false;
-                    }
-                    else
-                    {
-                        StopCreation(weapon);
-                        return false;
-                    }
-                }
-            }
-
-            if (weaponType.UsesSwordAttack())
-            {
-                if (sequence.SwordRicochetCycle && target != default &&
-                    !_world.IsDisposed(target) && _positionStash.Has(target))
-                {
-                    direction = _positionStash.Get(target).Position -
-                                sequence.SwordRicochetOrigin;
-                    direction.z = 0f;
-                    if (direction.sqrMagnitude > 0.0001f)
-                        direction.Normalize();
-                }
-
-                direction = GetSwordDirection(ref sequence, direction);
-                RegisterSwordCycle(
-                    ref sequence,
-                    sequence.Id,
-                    sequence.ReleasesCreated,
-                    GetCardinalSector(direction));
-            }
-
-            _creators.TryGetValue(
-                weaponType,
-                out IProjectileCreator creator);
-
-            _views.TryGetValue(
-                weaponType,
-                out ObjectPool<AnimatedView> pool);
-
-            int projectileCount = Mathf.Max(1, attack.ShotsPerCycle);
-            Entity[] projectiles = new Entity[projectileCount];
-
-            if (attack.RicochetPolicy == RicochetPolicyType.AttackSeries &&
-                sequence.LockedTarget == default)
-            {
-                sequence.LockedTarget = target;
-            }
-
-            for (int i = 0; i < projectiles.Length; i++)
-            {
-                projectiles[i] = CreateProjectile(
-                    weapon,
-                    config,
-                    pool,
-                    direction,
-                    sequence.Id,
-                    sequence.ReleasesCreated);
-            }
-
-            if (creator != null)
-                creator.Create(weapon, projectiles);
-
-            for (int i = 0; i < projectiles.Length; i++)
-            {
-                if (!_projectileStash.Has(projectiles[i]))
+                if (config == null || _definitions.ContainsKey(config.WeaponType))
                     continue;
 
-                ref ProjectileComponent shot =
-                    ref _projectileStash.Get(projectiles[i]);
-                float shotInterval = attack.ShotInterval;
-                if (weaponType == WeaponType.Axe ||
-                    weaponType.UsesRipperAttack())
-                {
-                    float trajectoryDuration = attack.Trajectory.Duration;
-                    if (weaponType.UsesRipperAttack())
-                    {
-                        trajectoryDuration *=
-                            RipperProjectileCreator.MotionDurationMultiplier;
-                    }
-
-                    shotInterval = Mathf.Max(
-                        shotInterval,
-                        trajectoryDuration);
-                }
-
-                float startDelay = shotInterval * i;
-                if (startDelay <= 0f)
-                    continue;
-
-                shot.CurrentLifetime = -startDelay;
-                shot.CollisionEnabled = false;
+                Definition definition = config.Collider == null
+                    ? new Definition(config, null, null)
+                    : new Definition(config, CreateCreator(config), CreateViewPool(config.Prefab, config.PoolCapacity));
+                _definitions.Add(config.WeaponType, definition);
             }
-
-            if (config is not ArmageddonProjectileConfig &&
-                target != default &&
-                !sequence.VisitedTargets.Contains(target))
-                sequence.VisitedTargets.Add(target);
-
-            if (target != default &&
-                !attack.Pattern.SelectTargetPerCycle &&
-                sequence.AttackTarget == default)
-            {
-                sequence.AttackTarget = target;
-            }
-
-            sequence.ReleasesCreated++;
-            if (weaponType.UsesSwordAttack() &&
-                creation.RemainingCount > 0 &&
-                !creation.IsComboRestart)
-            {
-                sequence.LockedTarget = default;
-            }
-            if (attack.CompletionPolicy ==
-                AttackCompletionPolicy.AfterTrajectories)
-            {
-                sequence.OutstandingProjectiles += projectiles.Length;
-            }
-
-            return true;
         }
 
-        private Entity CreateProjectile(
+        internal bool TryGetDefinition(WeaponType type, out Definition definition)
+        {
+            return _definitions.TryGetValue(type, out definition) && definition.Config.Collider != null;
+        }
+
+        internal ObjectPool<AnimatedView> CreateViewPool(AnimatedView prefab, int capacity)
+        {
+            return prefab == null ? null : new ObjectPool<AnimatedView>(prefab, capacity, _container);
+        }
+
+        internal Entity Create(
             Entity weapon,
-            ProjectileConfig config,
-            ObjectPool<AnimatedView> pool,
+            in Definition definition,
             Vector3 direction,
             int sequenceId,
             int swingIndex)
@@ -557,20 +107,22 @@ namespace ECS.ProjectileSystems
                 ViewActivated = true,
                 AttackCompletionReported = false
             };
+            ColliderConfig colliderConfig = definition.Config.Collider;
             var collider = new ColliderComponent
             {
-                Type = config.Collider.Type,
-                Radius = config.Collider.Radius,
-                Length = config.Collider.Length,
-                Size = config.Collider.Size,
-                Center = config.Collider.Center,
-                CapsuleOrientation = config.Collider.CapsuleOrientation
+                Type = colliderConfig.Type,
+                Radius = colliderConfig.Radius,
+                Length = colliderConfig.Length,
+                Size = colliderConfig.Size,
+                Center = colliderConfig.Center,
+                CapsuleOrientation = colliderConfig.CapsuleOrientation
             };
-            return CreateProjectile(data, spawnPosition,
-                ColliderScaler.Scale(collider, attack.ProjectileScale), attack.ProjectileScale, pool);
+            return Create(data, spawnPosition,
+                ColliderScaler.Scale(collider, attack.ProjectileScale),
+                attack.ProjectileScale, definition.Views);
         }
 
-        private Entity CreateProjectile(
+        internal Entity Create(
             ProjectileComponent data,
             Vector3 spawnPosition,
             ColliderComponent collider,
@@ -611,84 +163,6 @@ namespace ECS.ProjectileSystems
             return projectile;
         }
 
-        internal void SpawnArmageddonSubmunitions(
-            Entity grenade,
-            GrenadeFlightComponent flight,
-            ColliderComponent explosionCollider)
-        {
-            const int count = 3;
-            const float scale = 0.5f;
-            ProjectileComponent data = _projectileStash.Get(grenade);
-            if (!_weaponStash.Has(data.Weapon) ||
-                GetConfig(data.WeaponType) is not ArmageddonProjectileConfig config)
-            {
-                return;
-            }
-
-            var creator = (GrenadeLauncherProjectileCreator)_creators[data.WeaponType];
-            Vector3 start = flight.LandingPosition;
-            Vector3 forward = data.Direction;
-            ColliderComponent collider = ColliderScaler.Scale(explosionCollider, scale);
-            data.CurrentLifetime = 0f;
-            data.Lifetime = 0f;
-            data.Damage *= config.SubmunitionDamageMultiplier;
-            data.CollisionEnabled = false;
-            data.AttackCompletionReported = true;
-
-            for (int i = 0; i < count; i++)
-            {
-                data.Direction = Quaternion.Euler(0f, 0f, i * (360f / count)) * forward;
-                Entity entity = CreateProjectile(data, start, collider,
-                    flight.ClusterProjectileScale * scale, _armageddonSubmunitionViews);
-                creator.Launch(entity, start, start + data.Direction * config.SubmunitionDistance,
-                    config.ArcOffset * scale);
-            }
-        }
-
-        internal bool TryLaunchArmageddonGrenade(Entity grenade)
-        {
-            var creator = (GrenadeLauncherProjectileCreator)_creators[WeaponType.Armageddon6];
-            return creator.TryLaunchClusterGrenade(grenade);
-        }
-
-        private void InitializeConfigs()
-        {
-            if (_database == null || _database.Projectiles == null)
-                return;
-
-            foreach (ProjectileConfig config in _database.Projectiles)
-            {
-                if (config == null || config.Collider == null)
-                    continue;
-
-                if (config.Prefab != null &&
-                    !_views.ContainsKey(config.WeaponType))
-                {
-                    _views.Add(
-                        config.WeaponType,
-                        new ObjectPool<AnimatedView>(
-                            config.Prefab,
-                            config.PoolCapacity,
-                            _container));
-                }
-
-                if (_creators.ContainsKey(config.WeaponType))
-                    continue;
-
-                if (config is ArmageddonProjectileConfig armageddonConfig &&
-                    armageddonConfig.SubmunitionPrefab != null)
-                {
-                    _armageddonSubmunitionViews = new ObjectPool<AnimatedView>(
-                        armageddonConfig.SubmunitionPrefab, config.PoolCapacity, _container);
-                }
-
-                IProjectileCreator creator = CreateCreator(config);
-
-                if (creator != null)
-                    _creators.Add(config.WeaponType, creator);
-            }
-        }
-
         private IProjectileCreator CreateCreator(ProjectileConfig config)
         {
             if (config is TacticalComplexProjectileConfig tacticalConfig &&
@@ -719,10 +193,10 @@ namespace ECS.ProjectileSystems
                 return new RipperProjectileCreator(_world, ripperConfig);
             }
 
-            if (config is ArcProjectileConfig swordArcConfig &&
+            if (config is ArcProjectileConfig &&
                 config.WeaponType.UsesSwordAttack())
             {
-                return new SwordProjectileCreator(_world, swordArcConfig);
+                return new SwordProjectileCreator(_world);
             }
 
             if (config is ArcProjectileConfig arcConfig)
@@ -734,190 +208,17 @@ namespace ECS.ProjectileSystems
             return null;
         }
 
-        private ProjectileConfig GetConfig(WeaponType weaponType)
+        internal readonly struct Definition
         {
-            if (_database == null)
-                return null;
+            public readonly ProjectileConfig Config;
+            public readonly IProjectileCreator Creator;
+            public readonly ObjectPool<AnimatedView> Views;
 
-            return _database.Get(weaponType);
-        }
-
-        private bool HasProjectileConfig(WeaponType weaponType)
-        {
-            ProjectileConfig config = GetConfig(weaponType);
-
-            return config != null && config.Collider != null;
-        }
-
-        private bool TryGetDirection(
-            Entity weapon,
-            Entity target,
-            out Vector3 direction)
-        {
-            direction = Vector3.zero;
-
-            if (weapon == default ||
-                _world.IsDisposed(weapon) ||
-                !_positionStash.Has(weapon) ||
-                target == default ||
-                _world.IsDisposed(target) ||
-                !_positionStash.Has(target) ||
-                _deathStash.Has(target))
+            public Definition(ProjectileConfig config, IProjectileCreator creator, ObjectPool<AnimatedView> views)
             {
-                return false;
-            }
-
-            direction =
-                _positionStash.Get(target).Position -
-                _positionStash.Get(weapon).Position;
-
-            direction.z = 0f;
-
-            if (direction.sqrMagnitude <= 0.0001f)
-            {
-                direction = Vector3.zero;
-                return false;
-            }
-
-            direction.Normalize();
-            return true;
-        }
-
-        private static Vector3 GetSwordDirection(
-            ref AttackSequenceComponent sequence,
-            Vector3 targetDirection)
-        {
-            int preferredSector = GetCardinalSector(targetDirection);
-            if (sequence.SwordRicochetCycle)
-            {
-                int offset = Random.Range(0, 4);
-                return GetCardinalDirection(
-                    (sequence.SwordStartSector + offset) % 4);
-            }
-
-            int sector;
-            if (!sequence.HasSwordStartSector)
-            {
-                sector = preferredSector;
-                sequence.SwordStartSector = sector;
-                sequence.HasSwordStartSector = true;
-            }
-            else
-            {
-                sector = FindNextFreeSector(
-                    preferredSector,
-                    sequence.SwordUsedSectorMask);
-                if (sector < 0)
-                    sector = preferredSector;
-            }
-
-            sequence.SwordUsedSectorMask |= 1 << sector;
-            return GetCardinalDirection(sector);
-        }
-
-        private static int GetCardinalSector(Vector3 direction)
-        {
-            if (direction.sqrMagnitude <= 0.0001f)
-                return 0;
-
-            if (Mathf.Abs(direction.x) >= Mathf.Abs(direction.y))
-                return direction.x < 0f ? 2 : 0;
-
-            return direction.y < 0f ? 3 : 1;
-        }
-
-        private static void RegisterSwordCycle(
-            ref AttackSequenceComponent sequence,
-            int sequenceId,
-            int cycleIndex,
-            int swordFacingSector)
-        {
-            if (sequence.SwordCycles == null)
-                sequence.SwordCycles = new List<SwordAttackCycleState>();
-
-            int stateIndex = sequence.SwordCycles.FindIndex(
-                state => state.SequenceId == sequenceId &&
-                         state.CycleIndex == cycleIndex);
-            if (stateIndex >= 0)
-                return;
-
-            sequence.SwordCycles.Add(new SwordAttackCycleState
-            {
-                SequenceId = sequenceId,
-                CycleIndex = cycleIndex,
-                SwordFacingSector = swordFacingSector,
-                LastProjectileSwingIndex = -1
-            });
-        }
-
-        private static int FindNextFreeSector(int preferredSector, int usedMask)
-        {
-            for (int offset = 0; offset < AxeProjectileCreator.SectorCount; offset++)
-            {
-                int sector = (preferredSector + offset) %
-                             AxeProjectileCreator.SectorCount;
-                if ((usedMask & (1 << sector)) == 0)
-                    return sector;
-            }
-
-            return -1;
-        }
-
-        private static Vector3 GetCardinalDirection(int sector)
-        {
-            return sector switch
-            {
-                0 => Vector3.right,
-                1 => Vector3.up,
-                2 => Vector3.left,
-                _ => Vector3.down
-            };
-        }
-
-        private void FinishCreation(Entity weapon)
-        {
-            if (_creationStash.Has(weapon))
-            {
-                ref ProjectileCreationComponent creation =
-                    ref _creationStash.Get(weapon);
-
-                creation.ElapsedTime = 0f;
-                creation.RemainingCount = 0;
-                creation.IsWaitingForCycle = false;
-                creation.IsComboRestart = false;
-                creation.IsInitialized = false;
-            }
-
-            if (_attackStatusStash.Has(weapon))
-                _attackStatusStash.Get(weapon).CreationFinished = true;
-
-            if (_sequenceStash.Has(weapon))
-                _sequenceStash.Get(weapon).IsActive = false;
-        }
-
-        private void StopCreation(Entity weapon)
-        {
-            if (_attackStash.Has(weapon) &&
-                _attackStash.Get(weapon).CompletionPolicy ==
-                    AttackCompletionPolicy.AfterTrajectories)
-            {
-                StopTrackedAttack(weapon);
-                return;
-            }
-
-            FinishCreation(weapon);
-        }
-
-        private void StopTrackedAttack(Entity weapon)
-        {
-            if (_creationStash.Has(weapon))
-            {
-                ref ProjectileCreationComponent creation =
-                    ref _creationStash.Get(weapon);
-                creation.RemainingCount = 0;
-                creation.ElapsedTime = 0f;
-                creation.IsWaitingForCycle = false;
-                creation.IsComboRestart = false;
+                Config = config;
+                Creator = creator;
+                Views = views;
             }
         }
     }

@@ -1,9 +1,10 @@
+using System.Collections.Generic;
+using Configs;
 using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.EffectComponents;
 using ECS.ProjectileComponents;
 using ECS.WeaponComponents;
-using EffectComponents;
 using Scellecs.Morpeh;
 using UnityEngine;
 using WeaponConfigs;
@@ -52,7 +53,8 @@ namespace ECS.WeaponSystems
                 return false;
             }
 
-            if (config.AttackConfig == null)
+            AttackConfig attackConfig = config.AttackConfig;
+            if (attackConfig == null)
             {
                 Debug.LogError(
                     $"Cannot create weapon {config.Type}: its AttackConfig is missing.");
@@ -74,60 +76,57 @@ namespace ECS.WeaponSystems
             _attackStash.Set(weapon, new AttackComponent
             {
                 CyclesPerAttack = Mathf.Clamp(
-                    config.AttackConfig.CyclesPerAttack,
+                    attackConfig.CyclesPerAttack,
                     0,
-                    Mathf.Max(1, config.AttackConfig.MaxCyclesPerAttack)),
+                    Mathf.Max(1, attackConfig.MaxCyclesPerAttack)),
                 ShotsPerCycle = Mathf.Clamp(
-                    config.AttackConfig.ShotsPerCycle,
+                    attackConfig.ShotsPerCycle,
                     0,
-                    Mathf.Max(1, config.AttackConfig.MaxShotsPerCycle)),
-                MaxCyclesPerAttack = Mathf.Max(1, config.AttackConfig.MaxCyclesPerAttack),
-                MaxShotsPerCycle = Mathf.Max(1, config.AttackConfig.MaxShotsPerCycle),
-                Pierce = config.AttackConfig.Pierce,
-                EmpHitInterval = config.AttackConfig.EmpHitInterval,
-                MaxRicochets = config.AttackConfig.MaxRicochets,
+                    Mathf.Max(1, attackConfig.MaxShotsPerCycle)),
+                MaxCyclesPerAttack = Mathf.Max(1, attackConfig.MaxCyclesPerAttack),
+                MaxShotsPerCycle = Mathf.Max(1, attackConfig.MaxShotsPerCycle),
+                Pierce = attackConfig.Pierce,
+                MaxRicochets = attackConfig.MaxRicochets,
 
-                CycleInterval = config.AttackConfig.CycleInterval,
-                ShotInterval = config.AttackConfig.ShotInterval,
-                Damage = config.AttackConfig.Damage,
-                AttackCooldown = config.AttackConfig.AttackCooldown,
-                CurrentCooldown = config.AttackConfig.AttackCooldown,
-                TargetSearchRadius = config.AttackConfig.TargetSearchRadius,
-                DistanceFromSource = config.AttackConfig.DistanceFromSource,
-                ProjectileScale = config.AttackConfig.ProjectileScale,
-                SwordThrustDistance = config.AttackConfig.SwordThrustDistance,
-                SwordZigZagWidth = config.AttackConfig.SwordZigZagWidth,
+                CycleInterval = attackConfig.CycleInterval,
+                ShotInterval = attackConfig.ShotInterval,
+                Damage = attackConfig.Damage,
+                AttackCooldown = attackConfig.AttackCooldown,
+                CurrentCooldown = attackConfig.AttackCooldown,
+                TargetSearchRadius = attackConfig.TargetSearchRadius,
+                DistanceFromSource = attackConfig.DistanceFromSource,
+                ProjectileScale = attackConfig.ProjectileScale,
                 ScaleAttackGeometryWithProjectile =
-                    config.AttackConfig.ScaleAttackGeometryWithProjectile,
+                    attackConfig.ScaleAttackGeometryWithProjectile,
                 Trajectory = new TrajectoryComponent
                 {
-                    Duration = config.AttackConfig.Trajectory.Duration,
-                    Revolutions = config.AttackConfig.Trajectory.Revolutions,
-                    FlightDistance = config.AttackConfig.Trajectory.FlightDistance,
-                    FlightDistanceTolerance = config.AttackConfig.Trajectory.FlightDistanceTolerance,
-                    ZigZagAmplitude = config.AttackConfig.Trajectory.ZigZagAmplitude,
-                    ZigZagFrequency = config.AttackConfig.Trajectory.ZigZagFrequency,
-                    ShakeAmplitude = config.AttackConfig.Trajectory.ShakeAmplitude,
-                    ShakeFrequency = config.AttackConfig.Trajectory.ShakeFrequency
+                    Duration = attackConfig.Trajectory.Duration,
+                    Revolutions = attackConfig.Trajectory.Revolutions,
+                    FlightDistance = attackConfig.Trajectory.FlightDistance,
+                    FlightDistanceTolerance = attackConfig.Trajectory.FlightDistanceTolerance,
+                    ZigZagAmplitude = attackConfig.Trajectory.ZigZagAmplitude,
+                    ZigZagFrequency = attackConfig.Trajectory.ZigZagFrequency,
+                    ShakeAmplitude = attackConfig.Trajectory.ShakeAmplitude,
+                    ShakeFrequency = attackConfig.Trajectory.ShakeFrequency
                 },
                 Pattern = new AttackPatternComponent
                 {
-                    SpreadAngle = config.AttackConfig.Pattern.SpreadAngle,
-                    RandomDirectionFallback = config.AttackConfig.Pattern.RandomDirectionFallback,
-                    SelectTargetPerCycle = config.AttackConfig.Pattern.SelectTargetPerCycle
+                    SpreadAngle = attackConfig.Pattern.SpreadAngle,
+                    RandomDirectionFallback = attackConfig.Pattern.RandomDirectionFallback,
+                    SelectTargetPerCycle = attackConfig.Pattern.SelectTargetPerCycle
                 },
-                HomingEnabled = config.AttackConfig.HomingEnabled,
-                RicochetTargetSearchRadius = config.AttackConfig.RicochetTargetSearchRadius,
-                ProjectileSpeed = config.AttackConfig.ProjectileSpeed,
-                ProjectileLifetime = config.AttackConfig.ProjectileLifetime,
-                RicochetChance = config.AttackConfig.RicochetChance,
-                AllowRicochetRepeatTargets = config.AttackConfig.AllowRicochetRepeatTargets,
-                TargetTypes = config.AttackConfig.TargetType,
-                HitPolicy = config.AttackConfig.HitPolicy,
-                HitInterval = config.AttackConfig.HitInterval,
-                AnimationPolicy = config.AttackConfig.AnimationPolicy,
-                CompletionPolicy = config.AttackConfig.CompletionPolicy,
-                RicochetPolicy = config.AttackConfig.RicochetPolicy
+                HomingEnabled = attackConfig.HomingEnabled,
+                RicochetTargetSearchRadius = attackConfig.RicochetTargetSearchRadius,
+                ProjectileSpeed = attackConfig.ProjectileSpeed,
+                ProjectileLifetime = attackConfig.ProjectileLifetime,
+                RicochetChance = attackConfig.RicochetChance,
+                AllowRicochetRepeatTargets = attackConfig.AllowRicochetRepeatTargets,
+                TargetTypes = attackConfig.TargetType,
+                HitPolicy = attackConfig.HitPolicy,
+                HitInterval = attackConfig.HitInterval,
+                AnimationPolicy = attackConfig.AnimationPolicy,
+                CompletionPolicy = attackConfig.CompletionPolicy,
+                RicochetPolicy = attackConfig.RicochetPolicy
             });
 
             _attackStatusStash.Set(weapon, new AttackStatusComponent
@@ -145,46 +144,34 @@ namespace ECS.WeaponSystems
                 IsInitialized = false
             });
 
-            _world.GetStash<AttackSequenceComponent>().Set(
-                weapon,
-                new AttackSequenceComponent
-                {
-                    Id = 0,
-                    IsActive = false,
-                    VisitedTargets = new System.Collections.Generic.List<
-                        Scellecs.Morpeh.Entity>()
-                });
+            _world.GetStash<AttackSequenceComponent>().Set(weapon, new AttackSequenceComponent
+            {
+                VisitedTargets = new List<Entity>()
+            });
 
             if (config.Type.UsesRipperAttack())
+                _world.GetStash<RipperSequenceComponent>().Add(weapon);
+
+            if (config.Type.UsesSwordAttack())
             {
-                _world.GetStash<RipperSequenceComponent>().Set(
-                    weapon,
-                    new RipperSequenceComponent());
+                _world.GetStash<SwordAttackComponent>().Set(weapon, new SwordAttackComponent
+                {
+                    ThrustDistance = attackConfig.ThrustDistance,
+                    ZigZagWidth = attackConfig.ZigZagWidth
+                });
             }
 
-            EffectCollection effects = new EffectCollection();
-
-            if (config.Effects != null)
+            if (config.Type == WeaponType.Volt)
             {
-                foreach (EffectConfigs.EffectConfig effectConfig in config.Effects)
+                _world.GetStash<VoltAttackComponent>().Set(weapon, new VoltAttackComponent
                 {
-                    IEffectRuntime effect = EffectRuntimeFactory.Create(effectConfig);
-
-                    if (effect != null)
-                        effects.Add(effect);
-                    else if (effectConfig != null)
-                    {
-                        Debug.LogWarning(
-                            $"Weapon {config.Type} has an unsupported effect config " +
-                            $"'{effectConfig.name}'.",
-                            effectConfig);
-                    }
-                }
+                    HitsPerEmpWave = attackConfig.HitsPerEmpWave
+                });
             }
 
             _weaponEffectsStash.Set(weapon, new WeaponEffectsComponent
             {
-                Effects = effects
+                Effects = EffectRuntimeFactory.CreateCollection(config)
             });
 
             _targetStash.Set(weapon, new TargetComponent());

@@ -102,8 +102,7 @@ namespace ECS.CommonSystems
 
                 if (request.Context.DamageType == DamageType.Direct)
                     CreateEffectRequest(request, appliedDamage);
-                else if (request.Context.EffectType == EffectType.Shock &&
-                         request.ApplyTwistOnDamage && appliedDamage > 0f)
+                else if (request.ApplyTwistOnDamage && appliedDamage > 0f)
                     CreateTwistStatusRequest(request);
 
                 World.RemoveEntity(requestEntity);

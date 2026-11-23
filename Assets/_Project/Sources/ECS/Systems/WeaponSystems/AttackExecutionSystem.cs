@@ -27,11 +27,11 @@ namespace ECS.WeaponSystems
         private Stash<AttackComponent> _attackStash;
         private Stash<EnemyViewComponent> _enemyViewStash;
 
-        private readonly ProjectileFactory _projectileFactory;
+        private readonly ProjectileReleaseScheduler _releases;
 
-        public AttackExecutionSystem(ProjectileFactory projectileFactory)
+        public AttackExecutionSystem(ProjectileReleaseScheduler releases)
         {
-            _projectileFactory = projectileFactory;
+            _releases = releases;
         }
 
         public void OnAwake()
@@ -79,16 +79,7 @@ namespace ECS.WeaponSystems
 
                 if (_deathStash.Has(weaponComponent.Owner))
                 {
-                    _projectileFactory.Cancel(weapon);
-
-                    if (_creationRequestStash.Has(weapon))
-                        _creationRequestStash.Remove(weapon);
-
-                    attackStatus.IsAttacking = false;
-                    attackStatus.AnimationFinished = true;
-                    attackStatus.AttackPerformed = false;
-                    attackStatus.CreationFinished = true;
-
+                    CancelAttack(weapon, ref attackStatus);
                     continue;
                 }
 
@@ -127,18 +118,9 @@ namespace ECS.WeaponSystems
             Entity owner,
             ref AttackStatusComponent attackStatus)
         {
-            _projectileFactory.Cancel(weapon);
-
-            if (_creationRequestStash.Has(weapon))
-                _creationRequestStash.Remove(weapon);
-
+            CancelAttack(weapon, ref attackStatus);
             if (_attackRequestStash.Has(weapon))
                 _attackRequestStash.Remove(weapon);
-
-            attackStatus.IsAttacking = false;
-            attackStatus.AnimationFinished = true;
-            attackStatus.AttackPerformed = false;
-            attackStatus.CreationFinished = true;
 
             if (_attackStash.Has(weapon))
             {
@@ -152,6 +134,18 @@ namespace ECS.WeaponSystems
                 if (view != null)
                     view.CancelAttack();
             }
+        }
+
+        private void CancelAttack(Entity weapon, ref AttackStatusComponent attackStatus)
+        {
+            _releases.Cancel(weapon);
+            if (_creationRequestStash.Has(weapon))
+                _creationRequestStash.Remove(weapon);
+
+            attackStatus.IsAttacking = false;
+            attackStatus.AnimationFinished = true;
+            attackStatus.AttackPerformed = false;
+            attackStatus.CreationFinished = true;
         }
 
         public void Dispose() { }

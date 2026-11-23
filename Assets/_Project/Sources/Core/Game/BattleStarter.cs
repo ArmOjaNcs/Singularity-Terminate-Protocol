@@ -12,7 +12,6 @@ using ECS.EnemySystems;
 using ECS.PlayerComponents;
 using ECS.PlayerSystems;
 using ECS.ProjectileSystems;
-using ECS.TrajectorySystems;
 using ECS.WeaponSystems;
 using EnemyConfigs;
 using Gameplay.Enemy;
@@ -64,7 +63,7 @@ namespace Core.Game
         private WeaponFactory _weaponFactory;
         private PlayerFactory _playerFactory;
         private EnemyFactory _enemyFactory;
-        private ProjectileFactory _projectileFactory;
+        private WeaponCombatSystems _weaponCombat;
         private LootFactory _lootFactory;
         private DamageableItemsFactory _damageableItemsFactory;
 
@@ -185,7 +184,7 @@ namespace Core.Game
 
             _lootFactory = new LootFactory(_world, _lootDropDatabase, _lootDatabase, _lootContainer);
 
-            _projectileFactory = new ProjectileFactory(
+            _weaponCombat = new WeaponCombatSystems(
                 _world,
                 _projectileDatabase,
                 _projectileContainer,
@@ -231,29 +230,14 @@ namespace Core.Game
 
         private void AddAttackSystems()
         {
-            _gameplaySystems.AddSystem(new AttackCooldownSystem());
-            _gameplaySystems.AddSystem(new AttackSystem());
-            _gameplaySystems.AddSystem(new AttackExecutionSystem(_projectileFactory));
-
+            _weaponCombat.AddAttacks(_gameplaySystems);
             _gameplaySystems.AddSystem(new EnemyAttackAnimationSystem());
         }
 
         private void AddProjectileSystems()
         {
-            _gameplaySystems.AddSystem(new ProjectileCreationSystem(_projectileFactory));
-            _gameplaySystems.AddSystem(new StraightTrajectorySystem());
-            _gameplaySystems.AddSystem(new ElectricTrajectorySystem(_spatialGrid));
-            _gameplaySystems.AddSystem(new ArcTrajectorySystem());
-            _gameplaySystems.AddSystem(new SwordThrustSystem());
-            _gameplaySystems.AddSystem(new GrenadeLauncherFlightSystem(_projectileFactory));
-            _gameplaySystems.AddSystem(new RocketLauncherFlightSystem());
-            _gameplaySystems.AddSystem(new TacticalRocketFlightSystem());
-            _gameplaySystems.AddSystem(new EmpWaveSystem(_projectileDatabase, _projectileContainer));
-            _gameplaySystems.AddSystem(new AreaExpansionSystem());
-            _gameplaySystems.AddSystem(new RipperTrajectorySystem());
-            _gameplaySystems.AddSystem(new ProjectileViewSystem());
-            _gameplaySystems.AddSystem(new ProjectileCollisionCheckSystem(_spatialGrid));
-            _gameplaySystems.AddSystem(new ProjectileLifeTimeSystem());
+            _weaponCombat.AddProjectileMotion(_gameplaySystems);
+            _weaponCombat.AddProjectileHits(_gameplaySystems);
         }
 
         private void AddCombatSystems()
@@ -262,9 +246,7 @@ namespace Core.Game
             _gameplaySystems.AddSystem(new DamageOverTimeStatusSystem());
             _gameplaySystems.AddSystem(new DamageSystem());
             _gameplaySystems.AddSystem(new ColorRuntimeSystem());
-            _gameplaySystems.AddSystem(new EffectSystem());
-            _gameplaySystems.AddSystem(new RicochetSystem(_spatialGrid));
-            _gameplaySystems.AddSystem(new AttackSequenceSystem());
+            _weaponCombat.AddHitEffects(_gameplaySystems);
             _gameplaySystems.AddSystem(new TraumaStatusSystem());
             _gameplaySystems.AddSystem(new KnockbackSystem(_navigationGrid));
             _gameplaySystems.AddSystem(new TwistStatusSystem());
@@ -312,7 +294,7 @@ namespace Core.Game
 
             _gameplaySystems.AddSystem(new PlayerExperienceSystem());
             _gameplaySystems.AddSystem(new LevelUpSystem(_uiService));
-            _gameplaySystems.AddSystem(new PlayerUpgradeSystem(_weaponFactory, _equipPanel));
+            _gameplaySystems.AddSystem(new PlayerUpgradeSystem(_weaponFactory));
         }
 
         private void AddBattleSystems()

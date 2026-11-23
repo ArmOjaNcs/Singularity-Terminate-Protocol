@@ -1,3 +1,4 @@
+using ECS.CommonComponents;
 using EffectComponents;
 using System;
 using System.Collections.Generic;
@@ -16,33 +17,11 @@ namespace ECS.EffectComponents
             _effects.Add(effect);
         }
 
-        public bool Has<T>() where T : class, IEffectRuntime
+        public bool TryGet<T>(EffectType type, out T runtime) where T : class, IEffectRuntime
         {
             foreach (IEffectRuntime effect in _effects)
             {
-                if (effect is T)
-                    return true;
-            }
-
-            return false;
-        }
-
-        public T Get<T>() where T : class, IEffectRuntime
-        {
-            foreach (IEffectRuntime effect in _effects)
-            {
-                if (effect is T runtime)
-                    return runtime;
-            }
-
-            return null;
-        }
-
-        public bool TryGet<T>(out T runtime) where T : class, IEffectRuntime
-        {
-            foreach (IEffectRuntime effect in _effects)
-            {
-                if (effect is T result)
+                if (effect is T result && result.Type == type)
                 {
                     runtime = result;
                     return true;

@@ -1,0 +1,13 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!221 &22100000
+AnimatorOverrideController:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ShrapnelStormImpact
+  m_Controller: {fileID: 9100000, guid: c6831f9704744f69b03d8b69e486f726, type: 2}
+  m_Clips:
+  - m_OriginalClip: {fileID: 7400000, guid: f9973c93c8ba49e6a3ed12c341dc6035, type: 2}
+    m_OverrideClip: {fileID: 7400000, guid: bfeb4ca79dba269a1156abd5c8acb94b, type: 2}

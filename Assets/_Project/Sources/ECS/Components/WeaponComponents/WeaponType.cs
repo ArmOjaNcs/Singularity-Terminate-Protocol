@@ -23,6 +23,8 @@ namespace ECS.WeaponComponents
         OmegaRipper = 18,
         TacticalComplex = 19,
         Armageddon6 = 20,
+        ShrapnelStorm = 21,
+        Volcano = 22,
     }
 
     public static class WeaponTypeExtensions

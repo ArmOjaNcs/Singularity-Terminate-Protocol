@@ -3,6 +3,7 @@ using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.EnemyComponents;
 using ECS.PlayerComponents;
+using ECS.WeaponComponents;
 using Gameplay;
 using Gameplay.Spatial;
 using Scellecs.Morpeh;
@@ -24,6 +25,7 @@ namespace ECS.CommonSystems
         private Stash<AttackComponent> _attackStash;
         private Stash<AttackSequenceComponent> _sequenceStash;
         private Stash<HitBoxComponent> _hitBoxStash;
+        private Stash<WeaponComponent> _weaponStash;
 
         public TargetSelectionSystem(SpatialGrid grid)
         {
@@ -61,6 +63,7 @@ namespace ECS.CommonSystems
             _attackStash = World.GetStash<AttackComponent>();
             _sequenceStash = World.GetStash<AttackSequenceComponent>();
             _hitBoxStash = World.GetStash<HitBoxComponent>();
+            _weaponStash = World.GetStash<WeaponComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -99,6 +102,8 @@ namespace ECS.CommonSystems
                     continue;
                 }
 
+                bool isShrapnelStorm = _weaponStash.Has(entity) &&
+                    _weaponStash.Get(entity).Type == WeaponType.ShrapnelStorm;
                 FindTarget(
                     position.Position,
                     attack.TargetSearchRadius,
@@ -107,7 +112,8 @@ namespace ECS.CommonSystems
                         : 0f,
                     attack.Trajectory.FlightDistanceTolerance,
                     attack.TargetTypes,
-                    sequence.IsActive ? sequence.VisitedTargets : null,
+                    sequence.IsActive && !isShrapnelStorm ? sequence.VisitedTargets : null,
+                    isShrapnelStorm,
                     ref target);
             }
         }
@@ -119,6 +125,7 @@ namespace ECS.CommonSystems
             float distanceTolerance,
             AttackTargetType[] targetType,
             List<Entity> excludedTargets,
+            bool enemiesOnly,
             ref TargetComponent target)
         {
             target.Target = default;
@@ -141,7 +148,8 @@ namespace ECS.CommonSystems
                     continue;
                 }
 
-                if (!CommonFunctions.IsValidTarget(candidate, targetType, _damageableFilter, _enemyFilter, _playerFilter))
+                if ((enemiesOnly && !_enemyFilter.Has(candidate)) ||
+                    !CommonFunctions.IsValidTarget(candidate, targetType, _damageableFilter, _enemyFilter, _playerFilter))
                     continue;
 
                 if (!_positionStash.Has(candidate) ||

@@ -1,7 +1,6 @@
 using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.ProjectileComponents;
-using ProjectileConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
 
@@ -9,7 +8,7 @@ namespace ECS.ProjectileSystems
 {
     public sealed class SwordProjectileCreator : IProjectileCreator
     {
-        private readonly ArcProjectileConfig _config;
+        private readonly Stash<SwordAttackComponent> _swordStash;
         private readonly Stash<AttackComponent> _attackStash;
         private readonly Stash<AttackSequenceComponent> _sequenceStash;
         private readonly Stash<PositionComponent> _positionStash;
@@ -19,9 +18,9 @@ namespace ECS.ProjectileSystems
         private readonly Stash<SwordThrustComponent> _thrustStash;
         private readonly Stash<SwordSlashComponent> _swordSlashStash;
 
-        public SwordProjectileCreator(World world, ArcProjectileConfig config)
+        public SwordProjectileCreator(World world)
         {
-            _config = config;
+            _swordStash = world.GetStash<SwordAttackComponent>();
             _attackStash = world.GetStash<AttackComponent>();
             _sequenceStash = world.GetStash<AttackSequenceComponent>();
             _positionStash = world.GetStash<PositionComponent>();
@@ -34,7 +33,7 @@ namespace ECS.ProjectileSystems
 
         public void Create(Entity weapon, Entity[] projectiles)
         {
-            if (_config == null || !_attackStash.Has(weapon) ||
+            if (!_swordStash.Has(weapon) || !_attackStash.Has(weapon) ||
                 !_positionStash.Has(weapon))
                 return;
 
@@ -55,33 +54,29 @@ namespace ECS.ProjectileSystems
             Vector3 patternOrigin = sequence.SwordRicochetCycle
                 ? sequence.SwordRicochetOrigin
                 : Vector3.zero;
-            float step = Mathf.Max(0.1f, attack.SwordThrustDistance);
-            float width = Mathf.Max(0.1f, attack.SwordZigZagWidth);
+            SwordAttackComponent sword = _swordStash.Get(weapon);
+            float step = Mathf.Max(0.1f, sword.ThrustDistance);
+            float width = Mathf.Max(0.1f, sword.ZigZagWidth);
             Vector3 initialOffset = sequence.SwordRicochetCycle
                 ? Vector3.zero
                 : forward * attack.DistanceFromSource;
-            Vector3 firstCorner = patternOrigin + initialOffset;
-            Vector3[] starts = new Vector3[projectiles.Length];
-            Vector3[] ends = new Vector3[projectiles.Length];
+            bool followOwner = !sequence.SwordRicochetCycle;
+            Vector3 end = patternOrigin + initialOffset;
             for (int index = 0; index < projectiles.Length; index++)
             {
-                starts[index] = index == 0 ? firstCorner : ends[index - 1];
+                Vector3 start = end;
                 float lateralStep = index == 0
                     ? -width
                     : (index % 2 == 1 ? 2f * width : -2f * width);
-                ends[index] = starts[index] + forward * step +
-                              lateral * lateralStep;
-            }
+                end = start + forward * step + lateral * lateralStep;
 
-            for (int index = 0; index < projectiles.Length; index++)
-            {
                 Entity projectileEntity = projectiles[index];
                 if (!_projectileStash.Has(projectileEntity) ||
                     !_positionStash.Has(projectileEntity) ||
                     !_hitBoxStash.Has(projectileEntity))
                     continue;
 
-                Vector3 segment = ends[index] - starts[index];
+                Vector3 segment = end - start;
                 Vector3 direction = segment.normalized;
                 float angle = Mathf.Atan2(direction.y, direction.x) *
                               Mathf.Rad2Deg;
@@ -95,13 +90,7 @@ namespace ECS.ProjectileSystems
                 if (startDelay > 0f)
                     projectile.CollisionEnabled = false;
 
-                bool followOwner = !sequence.SwordRicochetCycle;
-                Vector3 startPosition = followOwner
-                    ? playerPosition + starts[index]
-                    : starts[index];
-                Vector3 endPosition = followOwner
-                    ? playerPosition + ends[index]
-                    : ends[index];
+                Vector3 startPosition = followOwner ? playerPosition + start : start;
                 _positionStash.Get(projectileEntity).Position = startPosition;
                 _rotationStash.Set(projectileEntity,
                     new RotationComponent { Angle = angle });
@@ -109,8 +98,8 @@ namespace ECS.ProjectileSystems
                     new SwordThrustComponent
                     {
                         Owner = weapon,
-                        StartPosition = followOwner ? starts[index] : startPosition,
-                        EndPosition = followOwner ? ends[index] : endPosition,
+                        StartPosition = start,
+                        EndPosition = end,
                         FollowOwner = followOwner,
                         Duration = Mathf.Max(0.01f, attack.Trajectory.Duration),
                         CurrentTime = -startDelay

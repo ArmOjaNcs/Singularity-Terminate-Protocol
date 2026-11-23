@@ -11,7 +11,6 @@ namespace ECS.AttackComponents
         public int MaxCyclesPerAttack;
         public int MaxShotsPerCycle;
         public int Pierce;
-        public int EmpHitInterval;
         public int MaxRicochets;
 
         public float CycleInterval;
@@ -22,8 +21,6 @@ namespace ECS.AttackComponents
         public float TargetSearchRadius;
         public float DistanceFromSource;
         public float ProjectileScale;
-        public float SwordThrustDistance;
-        public float SwordZigZagWidth;
         public bool ScaleAttackGeometryWithProjectile;
         public TrajectoryComponent Trajectory;
         public AttackPatternComponent Pattern;

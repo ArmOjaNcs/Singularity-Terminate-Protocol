@@ -1,12 +1,10 @@
 using System;
-using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.PlayerComponents;
 using ECS.WeaponComponents;
 using ECS.WeaponSystems;
 using PlayerConfigs;
 using Scellecs.Morpeh;
-using UI;
 using UniRx;
 using UpgradeConfigs;
 
@@ -14,7 +12,11 @@ namespace ECS.PlayerSystems
 {
     public sealed class PlayerUpgradeSystem : ISystem
     {
-        private WeaponFactory _factory;
+        private readonly WeaponFactory _factory;
+
+        private WeaponStatUpgrades _weaponStatUpgrades;
+        private Filter _weaponFilter;
+        private Stash<WeaponComponent> _weaponStash;
 
         private Filter _eventFilter;
         private Filter _playerFilter;
@@ -22,7 +24,7 @@ namespace ECS.PlayerSystems
         private Stash<UpgradeSelectedEvent> _eventStash;
         private Stash<PlayerInventoryComponent> _inventoryStash;
 
-        public PlayerUpgradeSystem(WeaponFactory factory, EquipPanel equipPanel)
+        public PlayerUpgradeSystem(WeaponFactory factory)
         {
             _factory = factory;
         }
@@ -36,6 +38,9 @@ namespace ECS.PlayerSystems
 
             _eventStash = World.GetStash<UpgradeSelectedEvent>();
             _inventoryStash = World.GetStash<PlayerInventoryComponent>();
+            _weaponFilter = World.Filter.With<WeaponComponent>().Build();
+            _weaponStash = World.GetStash<WeaponComponent>();
+            _weaponStatUpgrades = new WeaponStatUpgrades(World);
         }
 
         public void OnUpdate(float deltaTime)
@@ -122,16 +127,13 @@ namespace ECS.PlayerSystems
             if (upgrade is not WeaponStatUpgradeConfig config || string.IsNullOrEmpty(baseWeaponId))
                 throw new ArgumentException("Неверный тип апгрейда");
 
-            var weaponStash = World.GetStash<WeaponComponent>();
-            var weaponFilter = World.Filter.With<WeaponComponent>().Build();
-
-            foreach (var weaponEntity in weaponFilter)
+            foreach (var weaponEntity in _weaponFilter)
             {
-                ref var weapon = ref weaponStash.Get(weaponEntity);
+                WeaponComponent weapon = _weaponStash.Get(weaponEntity);
 
                 if (weapon.Owner == playerEntity && weapon.Type == baseWeaponType)
                 {
-                    ApplyWeaponStatsUpgrade(weaponEntity, config);
+                    _weaponStatUpgrades.Apply(weaponEntity, config);
 
                     if (upgrade.UpgradeType == UpgradeType.WeaponStats)
                         IncreaseLevel(inventory.ActiveWeapons, baseWeaponId);
@@ -150,83 +152,6 @@ namespace ECS.PlayerSystems
                 dictionary[baseWeaponId] = currentLevel + 1;
             else
                 throw new ArgumentNullException("Не найдено значение базового оружия, укажите его первым в списке требуемых улучшений");
-        }
-
-        private void ApplyWeaponStatsUpgrade(Entity weaponEntity, WeaponStatUpgradeConfig config)
-        {
-            var attackStash = World.GetStash<AttackComponent>();
-            ref var attack = ref attackStash.Get(weaponEntity);
-            int amount = config.Amount;
-
-            switch (config.Stat)
-            {
-                case WeaponStats.CyclesPerAttack:
-                    attack.CyclesPerAttack = Math.Min(
-                        attack.MaxCyclesPerAttack,
-                        attack.CyclesPerAttack + amount);
-                    break;
-                case WeaponStats.ShotsPerCycle:
-                    attack.ShotsPerCycle = Math.Min(
-                        attack.MaxShotsPerCycle,
-                        attack.ShotsPerCycle + amount);
-                    break;
-                case WeaponStats.Pierce:
-                    attack.Pierce += amount;
-                    break;
-                case WeaponStats.AttackDuration:
-                    attack.Trajectory.Duration += (float)Math.Round(attack.Trajectory.Duration * (amount / 100f), 2);
-                    break;
-                case WeaponStats.CycleInterval:
-                    attack.CycleInterval += (float)Math.Round(attack.CycleInterval * (amount / 100f), 2);
-                    break;
-                case WeaponStats.Damage:
-                    attack.Damage += amount;
-                    break;
-                case WeaponStats.AttackCooldown:
-                    attack.AttackCooldown -= (float)Math.Round(attack.AttackCooldown * (amount / 100f), 2);
-                    break;
-                case WeaponStats.DistanceFromSource:
-                    attack.DistanceFromSource += (float)Math.Round(attack.DistanceFromSource * (amount / 100f), 2);
-                    break;
-                case WeaponStats.RicochetTargetSearchRadius:
-                    attack.RicochetTargetSearchRadius += (float)Math.Round(attack.RicochetTargetSearchRadius * (amount / 100f), 2);
-                    break;
-                case WeaponStats.TargetSearchRadius:
-                    attack.TargetSearchRadius += (float)Math.Round(attack.TargetSearchRadius * (amount / 100f), 2);
-                    break;
-                case WeaponStats.ProjectileSpeed:
-                    attack.ProjectileSpeed += (float)Math.Round(attack.ProjectileSpeed * (amount / 100f), 2);
-                    break;
-                case WeaponStats.ProjectileLifetime:
-                    attack.ProjectileLifetime += (float)Math.Round(attack.ProjectileLifetime * (amount / 100f), 2);
-                    break;
-                case WeaponStats.ProjectileScale:
-                {
-                    float previousScale = attack.ProjectileScale;
-                    attack.ProjectileScale += (float)Math.Round(
-                        attack.ProjectileScale * (amount / 100f), 2);
-                    if (attack.ScaleAttackGeometryWithProjectile &&
-                        previousScale > 0f)
-                    {
-                        float scaleRatio = attack.ProjectileScale / previousScale;
-                        attack.DistanceFromSource *= scaleRatio;
-                        attack.SwordThrustDistance *= scaleRatio;
-                        attack.SwordZigZagWidth *= scaleRatio;
-                        attack.Trajectory.FlightDistance *= scaleRatio;
-                        attack.Trajectory.ZigZagAmplitude *= scaleRatio;
-                    }
-
-                    break;
-                }
-
-                case WeaponStats.Homing:
-                    attack.HomingEnabled = true;
-                    break;
-                default:
-                    break;
-            }
-
-            attackStash.Set(weaponEntity, attack);
         }
 
         private void ApplySkillUpgrade(Entity playerEntity, ref PlayerInventoryComponent inventory, UpgradeConfig upgrade)

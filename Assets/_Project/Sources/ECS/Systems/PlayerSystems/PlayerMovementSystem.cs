@@ -61,10 +61,15 @@ namespace ECS.PlayerSystems
                 if (delta.sqrMagnitude <= 0f)
                     continue;
 
+                Vector3 previousPosition = position.Position;
                 _movementResolver.Move(
                     ref position.Position,
                     delta,
                     navigationBox.Collider);
+
+                Vector3 displacement = position.Position - previousPosition;
+                if (displacement.sqrMagnitude > 0.00000001f)
+                    movement.LastDirection = displacement.normalized;
             }
         }
 

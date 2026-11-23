@@ -10,8 +10,6 @@ namespace ECS.ProjectileSystems
 {
     public sealed class AxeProjectileCreator : IProjectileCreator
     {
-        public const int SectorCount = 4;
-
         private readonly ArcProjectileConfig _config;
 
         private readonly Stash<AttackComponent> _attackStash;
@@ -80,8 +78,8 @@ namespace ECS.ProjectileSystems
                 int cycleIndex = _projectileStash.Get(projectile).SwingIndex;
                 if (sequence.AssignedSectorCycle != cycleIndex)
                 {
-                    int preferredSector = GetCardinalSector(targetDirection);
-                    int sector = FindNextFreeSector(
+                    int preferredSector = CardinalSectors.FromDirection(targetDirection);
+                    int sector = CardinalSectors.FindAvailable(
                         preferredSector,
                         sequence.UsedSectorMask);
 
@@ -93,7 +91,7 @@ namespace ECS.ProjectileSystems
                     sequence.UsedSectorMask |= 1 << sector;
                 }
 
-                Vector3 direction = GetCardinalDirection(
+                Vector3 direction = CardinalSectors.ToDirection(
                     sequence.AssignedSectorIndex);
 
                 if (_positionStash.Has(weapon))
@@ -189,41 +187,6 @@ namespace ECS.ProjectileSystems
                     ColliderOffset = _config.ColliderOffset
                 });
             }
-        }
-
-        private static int GetCardinalSector(Vector3 targetDirection)
-        {
-            if (targetDirection.sqrMagnitude <= 0.0001f)
-                return 0;
-
-            if (Mathf.Abs(targetDirection.x) >= Mathf.Abs(targetDirection.y))
-                return targetDirection.x < 0f ? 2 : 0;
-
-            return targetDirection.y < 0f ? 3 : 1;
-        }
-
-        private static int FindNextFreeSector(int preferredSector, int usedMask)
-        {
-            for (int offset = 0; offset < SectorCount; offset++)
-            {
-                int sector = (preferredSector + offset) % SectorCount;
-                if ((usedMask & (1 << sector)) == 0)
-                    return sector;
-            }
-
-            return -1;
-        }
-
-        private static Vector3 GetCardinalDirection(int sector)
-        {
-            return sector switch
-            {
-                0 => Vector3.right,
-                1 => Vector3.up,
-                2 => Vector3.left,
-                3 => Vector3.down,
-                _ => Vector3.right
-            };
         }
     }
 }

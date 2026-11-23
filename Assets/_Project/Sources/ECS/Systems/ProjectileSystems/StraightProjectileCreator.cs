@@ -78,23 +78,18 @@ namespace ECS.ProjectileSystems
                     spreadAngle);
 
                 Vector3 direction = RotateDirection(baseDirection, angle);
-
-                ref ProjectileComponent projectileComponent =
-                    ref _projectileStash.Get(projectile);
-
-                projectileComponent.Direction = direction;
-
-                _trajectoryStash.Set(projectile, new StraightTrajectoryComponent());
-
-                _rotationStash.Set(
-                    projectile,
-                    new RotationComponent
-                    {
-                        Angle = Mathf.Atan2(direction.y, direction.x) *
-                                Mathf.Rad2Deg
-                    });
-
+                Launch(projectile, direction);
             }
+        }
+
+        internal void Launch(Entity projectile, Vector3 direction)
+        {
+            _projectileStash.Get(projectile).Direction = direction;
+            _trajectoryStash.Set(projectile, new StraightTrajectoryComponent());
+            _rotationStash.Set(projectile, new RotationComponent
+            {
+                Angle = Mathf.Atan2(direction.y, direction.x) * Mathf.Rad2Deg
+            });
         }
 
         private float GetSpreadAngle(

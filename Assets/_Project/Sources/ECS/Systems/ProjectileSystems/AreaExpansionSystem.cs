@@ -14,9 +14,8 @@ namespace ECS.ProjectileSystems
         private Filter _filter;
         private Stash<AreaExpansionComponent> _areaStash;
         private Stash<HitBoxComponent> _hitBoxStash;
-        private Stash<ProjectileComponent> _projectileStash;
         private Stash<ProjectileViewComponent> _viewStash;
-        private Stash<CleanupRequest> _cleanupStash;
+        private ProjectileCleanup _cleanup;
 
         public void OnAwake()
         {
@@ -28,9 +27,8 @@ namespace ECS.ProjectileSystems
 
             _areaStash = World.GetStash<AreaExpansionComponent>();
             _hitBoxStash = World.GetStash<HitBoxComponent>();
-            _projectileStash = World.GetStash<ProjectileComponent>();
             _viewStash = World.GetStash<ProjectileViewComponent>();
-            _cleanupStash = World.GetStash<CleanupRequest>();
+            _cleanup = new ProjectileCleanup(World);
         }
 
         public void OnUpdate(float deltaTime)
@@ -40,7 +38,7 @@ namespace ECS.ProjectileSystems
                 ref AreaExpansionComponent area = ref _areaStash.Get(entity);
                 if (area.ReachedMaximum)
                 {
-                    RequestCleanup(entity);
+                    _cleanup.Request(entity);
                     continue;
                 }
 
@@ -59,24 +57,6 @@ namespace ECS.ProjectileSystems
                 if (progress >= 1f)
                     area.ReachedMaximum = true;
             }
-        }
-
-        private void RequestCleanup(Entity entity)
-        {
-            ref ProjectileComponent projectile = ref _projectileStash.Get(entity);
-            if (projectile.CleanupRequested)
-                return;
-
-            projectile.CleanupRequested = true;
-            if (_viewStash.Has(entity))
-            {
-                AnimatedView view = _viewStash.Get(entity).View;
-                if (view != null)
-                    view.SetActive(false);
-            }
-
-            Entity request = World.CreateEntity();
-            _cleanupStash.Set(request, new CleanupRequest { Candidate = entity });
         }
 
         public void Dispose() { }

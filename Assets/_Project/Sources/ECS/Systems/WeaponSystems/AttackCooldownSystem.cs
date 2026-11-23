@@ -113,15 +113,16 @@ namespace ECS.WeaponSystems
                                           _enemyTagStash,
                                           _playerTagStash);
 
-                // A fallback weapon can start its attack cycle without a target.
+                // Movement-aimed and fallback weapons can attack without a target.
                 // TargetTypes is empty while a weapon is disabled in the test bench,
                 // so the fallback cannot accidentally re-enable it.
-                bool canUseRandomDirectionFallback =
-                    attack.Pattern.RandomDirectionFallback &&
+                bool canAttackWithoutTarget =
+                    (weaponComponent.Type == WeaponType.Volcano ||
+                     attack.Pattern.RandomDirectionFallback) &&
                     attack.TargetTypes != null &&
                     attack.TargetTypes.Length > 0;
 
-                if (!hasValidTarget && !canUseRandomDirectionFallback)
+                if (!hasValidTarget && !canAttackWithoutTarget)
                     continue;
 
                 _attackRequestStash.Set(weapon, new AttackRequest());

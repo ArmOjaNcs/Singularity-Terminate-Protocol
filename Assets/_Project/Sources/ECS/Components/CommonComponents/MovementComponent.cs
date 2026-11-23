@@ -7,5 +7,6 @@ namespace ECS.CommonComponents
     {
         public Vector3 Direction;
         public Vector3 ActualDisplacement;
+        public Vector3 LastDirection;
     }
 }

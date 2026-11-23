@@ -1,6 +1,4 @@
-using ECS.CommonComponents;
 using ECS.ProjectileComponents;
-using Gameplay.View;
 using Scellecs.Morpeh;
 
 namespace ECS.ProjectileSystems
@@ -12,8 +10,7 @@ namespace ECS.ProjectileSystems
         private Filter _filter;
 
         private Stash<ProjectileComponent> _projectileStash;
-        private Stash<ProjectileViewComponent> _projectileViewStash;
-        private Stash<CleanupRequest> _cleanupRequestStash;
+        private ProjectileCleanup _cleanup;
 
         public void OnAwake()
         {
@@ -22,8 +19,7 @@ namespace ECS.ProjectileSystems
                 .Build();
 
             _projectileStash = World.GetStash<ProjectileComponent>();
-            _projectileViewStash = World.GetStash<ProjectileViewComponent>();
-            _cleanupRequestStash = World.GetStash<CleanupRequest>();
+            _cleanup = new ProjectileCleanup(World);
         }
 
         public void OnUpdate(float deltaTime)
@@ -41,28 +37,8 @@ namespace ECS.ProjectileSystems
                     projectile.CurrentLifetime < projectile.Lifetime)
                     continue;
                 
-                projectile.CleanupRequested = true;
-
-                DisableView(entity);
-
-                Entity request = World.CreateEntity();
-
-                _cleanupRequestStash.Set(request, new CleanupRequest
-                {
-                    Candidate = entity
-                });
+                _cleanup.Request(entity);
             }
-        }
-
-        private void DisableView(Entity entity)
-        {
-            if (!_projectileViewStash.Has(entity))
-                return;
-   
-            AnimatedView view = _projectileViewStash.Get(entity).View;
-
-            if (view != null)
-                view.SetActive(false);
         }
 
         public void Dispose() { }

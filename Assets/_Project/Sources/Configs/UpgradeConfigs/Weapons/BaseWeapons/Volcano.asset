@@ -1,0 +1,22 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 91e02437c03b9434b923f41e050eefa3, type: 3}
+  m_Name: Volcano
+  m_EditorClassIdentifier:
+  UpgradeId: Volcano
+  Title: Volcano
+  Description: "Выпускает длинную очередь в направлении последнего движения. Пули плавно проходят по сектору шириной 40 градусов."
+  Icon: {fileID: 21300000, guid: c22aa2942a01c3d4f9c4d16a655db752, type: 3}
+  UpgradeType: 0
+  RequiredUpgradeIds: []
+  Type: 22
+  Config: {fileID: 11400000, guid: 56aea6f47e1308a6b125898a867a441f, type: 2}
