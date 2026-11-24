@@ -3,6 +3,7 @@ using ECS.AttackComponents;
 using ECS.CommonComponents;
 using ECS.ProjectileComponents;
 using ECS.WeaponComponents;
+using Gameplay.View;
 using ProjectileConfigs;
 using Scellecs.Morpeh;
 using UnityEngine;
@@ -22,6 +23,7 @@ namespace ECS.ProjectileSystems
         private readonly Stash<ProjectileCreationComponent> _creationStash;
         private readonly Stash<TargetComponent> _targetStash;
         private readonly Stash<DeathComponent> _deathStash;
+        private readonly Stash<TurretComponent> _turretStash;
 
         public ProjectileRelease(World world, ProjectileFactory factory)
         {
@@ -36,6 +38,7 @@ namespace ECS.ProjectileSystems
             _creationStash = world.GetStash<ProjectileCreationComponent>();
             _targetStash = world.GetStash<TargetComponent>();
             _deathStash = world.GetStash<DeathComponent>();
+            _turretStash = world.GetStash<TurretComponent>();
         }
 
         public bool TryCreate(Entity weapon)
@@ -83,7 +86,13 @@ namespace ECS.ProjectileSystems
                     : default;
             }
 
-            if (!TryGetDirection(weapon, target, out Vector3 direction))
+            TurretView turret = _turretStash.Has(weapon) ? _turretStash.Get(weapon).View : null;
+            Vector3 direction;
+            if (turret != null)
+            {
+                direction = turret.AimDirection;
+            }
+            else if (!TryGetDirection(weapon, target, out direction))
             {
                 if (attack.Pattern.RandomDirectionFallback)
                 {
@@ -135,6 +144,7 @@ namespace ECS.ProjectileSystems
                 sequence.LockedTarget = target;
             }
 
+            Vector3? origin = turret != null ? turret.ShotOrigin : null;
             for (int i = 0; i < projectiles.Length; i++)
             {
                 projectiles[i] = _factory.Create(
@@ -142,12 +152,21 @@ namespace ECS.ProjectileSystems
                     definition,
                     direction,
                     sequence.Id,
-                    sequence.ReleasesCreated);
+                    sequence.ReleasesCreated,
+                    origin);
             }
 
             definition.Creator?.Create(weapon, projectiles);
 
             float shotInterval = GetShotInterval(weaponType, attack);
+            if (turret != null)
+            {
+                if (weaponType == WeaponType.ElectricTurret)
+                    turret.PlayDischarge(attack.ProjectileLifetime);
+                else
+                    turret.PlayBurst(shotInterval, projectiles.Length);
+            }
+
             for (int i = 1; i < projectiles.Length; i++)
             {
                 float startDelay = shotInterval * i;

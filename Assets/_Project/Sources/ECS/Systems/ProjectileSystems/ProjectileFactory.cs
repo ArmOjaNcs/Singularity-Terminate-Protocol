@@ -57,6 +57,9 @@ namespace ECS.ProjectileSystems
 
         internal bool TryGetDefinition(WeaponType type, out Definition definition)
         {
+            if (type == WeaponType.Turret && !_definitions.ContainsKey(type))
+                type = WeaponType.AssaultRifle;
+
             return _definitions.TryGetValue(type, out definition) && definition.Config.Collider != null;
         }
 
@@ -70,13 +73,14 @@ namespace ECS.ProjectileSystems
             in Definition definition,
             Vector3 direction,
             int sequenceId,
-            int swingIndex)
+            int swingIndex,
+            Vector3? origin = null)
         {
             ref WeaponComponent weaponComponent = ref _weaponStash.Get(weapon);
             ref AttackComponent attack = ref _attackStash.Get(weapon);
 
             Vector3 spawnPosition =
-                _positionStash.Get(weapon).Position +
+                (origin ?? _positionStash.Get(weapon).Position) +
                 direction * attack.DistanceFromSource;
 
             var data = new ProjectileComponent
@@ -117,9 +121,11 @@ namespace ECS.ProjectileSystems
                 Center = colliderConfig.Center,
                 CapsuleOrientation = colliderConfig.CapsuleOrientation
             };
-            return Create(data, spawnPosition,
-                ColliderScaler.Scale(collider, attack.ProjectileScale),
-                attack.ProjectileScale, definition.Views);
+            ColliderComponent scaledCollider = ColliderScaler.Scale(collider, attack.ProjectileScale);
+            if (weaponComponent.Type == WeaponType.ElectricTurret && collider.Type == ColliderType.Sector)
+                scaledCollider.Size = collider.Size;
+
+            return Create(data, spawnPosition, scaledCollider, attack.ProjectileScale, definition.Views);
         }
 
         internal Entity Create(

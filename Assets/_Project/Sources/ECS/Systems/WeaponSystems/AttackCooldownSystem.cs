@@ -4,7 +4,9 @@ using ECS.EnemyComponents;
 using ECS.PlayerComponents;
 using ECS.WeaponComponents;
 using Gameplay;
+using Gameplay.View;
 using Scellecs.Morpeh;
+using UnityEngine;
 
 namespace ECS.WeaponSystems
 {
@@ -25,6 +27,8 @@ namespace ECS.WeaponSystems
         private Stash<EnemyTag> _enemyTagStash;
         private Stash<PlayerTag> _playerTagStash;
         private Stash<DamageableTag> _damageableTagStash;
+        private Stash<TurretComponent> _turretStash;
+        private Stash<PositionComponent> _positionStash;
 
         public void OnAwake()
         {
@@ -50,6 +54,8 @@ namespace ECS.WeaponSystems
             _enemyTagStash = World.GetStash<EnemyTag>();
             _playerTagStash = World.GetStash<PlayerTag>();
             _damageableTagStash = World.GetStash<DamageableTag>();
+            _turretStash = World.GetStash<TurretComponent>();
+            _positionStash = World.GetStash<PositionComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -125,9 +131,44 @@ namespace ECS.WeaponSystems
                 if (!hasValidTarget && !canAttackWithoutTarget)
                     continue;
 
+                if (_turretStash.Has(weapon) &&
+                    !CanTurretAttack(weapon, targetEntity, hasValidTarget, canAttackWithoutTarget))
+                    continue;
+
                 _attackRequestStash.Set(weapon, new AttackRequest());
                 attack.CurrentCooldown = attack.AttackCooldown;
             }
+        }
+
+        private bool CanTurretAttack(Entity weapon, Entity target, bool hasTarget, bool allowFallback)
+        {
+            ref TurretComponent turret = ref _turretStash.Get(weapon);
+            TurretView view = turret.View;
+            if (!turret.HasUpdatedAim || view == null)
+                return false;
+
+            Vector3 direction;
+            if (hasTarget && _positionStash.Has(target))
+            {
+                direction = _positionStash.Get(target).Position - view.AimOrigin;
+            }
+            else if (allowFallback)
+            {
+                if (turret.FallbackDirection == Vector3.zero)
+                    turret.FallbackDirection = TurretView.DirectionFor(Random.Range(0, TurretView.DirectionCount));
+
+                direction = turret.FallbackDirection;
+            }
+            else
+            {
+                return false;
+            }
+
+            if (!view.IsAimedAt(direction))
+                return false;
+
+            turret.FallbackDirection = Vector3.zero;
+            return true;
         }
 
         private bool HasLivingPlayer()

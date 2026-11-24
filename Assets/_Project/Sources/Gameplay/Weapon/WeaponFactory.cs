@@ -23,6 +23,7 @@ namespace ECS.WeaponSystems
         private readonly Stash<TargetComponent> _targetStash;
         private readonly Stash<PositionComponent> _positionStash;
         private readonly Stash<WeaponEffectsComponent> _weaponEffectsStash;
+        private readonly Stash<TurretDeploymentComponent> _turretDeploymentStash;
 
         public WeaponFactory(World world)
         {
@@ -36,6 +37,7 @@ namespace ECS.WeaponSystems
             _targetStash = world.GetStash<TargetComponent>();
             _positionStash = world.GetStash<PositionComponent>();
             _weaponEffectsStash = world.GetStash<WeaponEffectsComponent>();
+            _turretDeploymentStash = world.GetStash<TurretDeploymentComponent>();
         }
 
         public bool Create(WeaponConfig config, Entity owner)
@@ -58,6 +60,13 @@ namespace ECS.WeaponSystems
             {
                 Debug.LogError(
                     $"Cannot create weapon {config.Type}: its AttackConfig is missing.");
+                return false;
+            }
+
+            if (config.Type.IsTurret() &&
+                (config is not TurretWeaponConfig turret || !turret.HasViewSprites()))
+            {
+                Debug.LogError($"Cannot create {config.Type} without a base sprite and eight head sprites.", config);
                 return false;
             }
 
@@ -129,25 +138,21 @@ namespace ECS.WeaponSystems
                 RicochetPolicy = attackConfig.RicochetPolicy
             });
 
-            _attackStatusStash.Set(weapon, new AttackStatusComponent
+            _weaponEffectsStash.Set(weapon, new WeaponEffectsComponent
             {
-                IsAttacking = false,
-                AnimationFinished = true,
-                AttackPerformed = false,
-                CreationFinished = true
+                Effects = EffectRuntimeFactory.CreateCollection(config)
             });
 
-            _projectileCreationStash.Set(weapon, new ProjectileCreationComponent
-            {
-                ElapsedTime = 0f,
-                RemainingCount = 0,
-                IsInitialized = false
-            });
+            _positionStash.Set(weapon, new PositionComponent());
 
-            _world.GetStash<AttackSequenceComponent>().Set(weapon, new AttackSequenceComponent
+            if (config.Type.IsTurret() && config is TurretWeaponConfig deployment)
             {
-                VisitedTargets = new List<Entity>()
-            });
+                _attackStash.Get(weapon).CurrentCooldown = deployment.DeploymentCooldown;
+                _turretDeploymentStash.Set(weapon, new TurretDeploymentComponent { Config = deployment });
+                return true;
+            }
+
+            InitializeAttackState(weapon);
 
             if (config.Type.UsesRipperAttack())
                 _world.GetStash<RipperSequenceComponent>().Add(weapon);
@@ -169,14 +174,57 @@ namespace ECS.WeaponSystems
                 });
             }
 
-            _weaponEffectsStash.Set(weapon, new WeaponEffectsComponent
+            return true;
+        }
+
+        internal Entity CreateDeployedTurret(Entity deployment, Vector3 position)
+        {
+            // Copy before adding to the same stashes, which can grow during Set.
+            WeaponComponent weapon = _weaponStash.Get(deployment);
+            AttackComponent attack = _attackStash.Get(deployment);
+            WeaponEffectsComponent effects = _weaponEffectsStash.Get(deployment);
+            attack.CurrentCooldown = 0f;
+            attack.Pattern.SpreadAngle = 0f;
+
+            if (weapon.Type == WeaponType.ElectricTurret)
             {
-                Effects = EffectRuntimeFactory.CreateCollection(config)
+                attack.ProjectileSpeed = 0f;
+                attack.ProjectileLifetime = Mathf.Max(0.01f, attack.Trajectory.Duration);
+                attack.CompletionPolicy = AttackCompletionPolicy.AfterTrajectories;
+            }
+
+            Entity entity = _world.CreateEntity();
+            _weaponStash.Set(entity, weapon);
+            _attackStash.Set(entity, attack);
+            _weaponEffectsStash.Set(entity, effects);
+            _positionStash.Set(entity, new PositionComponent { Position = position });
+            InitializeAttackState(entity);
+            return entity;
+        }
+
+        private void InitializeAttackState(Entity weapon)
+        {
+            _attackStatusStash.Set(weapon, new AttackStatusComponent
+            {
+                IsAttacking = false,
+                AnimationFinished = true,
+                AttackPerformed = false,
+                CreationFinished = true
+            });
+
+            _projectileCreationStash.Set(weapon, new ProjectileCreationComponent
+            {
+                ElapsedTime = 0f,
+                RemainingCount = 0,
+                IsInitialized = false
+            });
+
+            _world.GetStash<AttackSequenceComponent>().Set(weapon, new AttackSequenceComponent
+            {
+                VisitedTargets = new List<Entity>()
             });
 
             _targetStash.Set(weapon, new TargetComponent());
-            _positionStash.Set(weapon, new PositionComponent());
-            return true;
         }
     }
 }

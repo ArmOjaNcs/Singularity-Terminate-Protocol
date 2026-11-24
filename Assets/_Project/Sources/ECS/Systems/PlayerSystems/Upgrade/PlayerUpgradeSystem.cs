@@ -38,7 +38,7 @@ namespace ECS.PlayerSystems
 
             _eventStash = World.GetStash<UpgradeSelectedEvent>();
             _inventoryStash = World.GetStash<PlayerInventoryComponent>();
-            _weaponFilter = World.Filter.With<WeaponComponent>().Build();
+            _weaponFilter = World.Filter.With<WeaponTag>().With<WeaponComponent>().Build();
             _weaponStash = World.GetStash<WeaponComponent>();
             _weaponStatUpgrades = new WeaponStatUpgrades(World);
         }

@@ -29,6 +29,11 @@ namespace ECS.WeaponComponents
 
     public static class WeaponTypeExtensions
     {
+        public static bool IsTurret(this WeaponType type)
+        {
+            return type == WeaponType.Turret || type == WeaponType.ElectricTurret;
+        }
+
         public static bool UsesRipperAttack(this WeaponType type)
         {
             return type == WeaponType.Ripper || type == WeaponType.OmegaRipper;

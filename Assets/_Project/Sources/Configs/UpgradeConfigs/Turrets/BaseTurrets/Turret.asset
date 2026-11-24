@@ -21,4 +21,4 @@ MonoBehaviour:
   UpgradeType: 3
   RequiredUpgradeIds: []
   Type: 8
-  Config: {fileID: 0}
+  Config: {fileID: 11400000, guid: aa22837a69604e6891a96f6582703be8, type: 2}

@@ -100,7 +100,7 @@ namespace Gameplay.WeaponTesting
             public int InitialHitsPerEmpWave;
             public List<IEffectRuntime> InitialEffects;
             public AttackTargetType[] EnabledTargetTypes;
-            public bool Enabled = true;
+            public bool Enabled;
         }
 
         private void Start()
@@ -139,7 +139,7 @@ namespace Gameplay.WeaponTesting
                 if (!factory.Create(config, _owner, out Entity weapon))
                     continue;
 
-                _weapons.Add(new WeaponEntry
+                var entry = new WeaponEntry
                 {
                     Config = config,
                     Entity = weapon,
@@ -147,7 +147,9 @@ namespace Gameplay.WeaponTesting
                     InitialSwordAttack = _swordAttackStash.Has(weapon) ? _swordAttackStash.Get(weapon) : default,
                     InitialHitsPerEmpWave = _voltAttackStash.Has(weapon) ? _voltAttackStash.Get(weapon).HitsPerEmpWave : 0,
                     InitialEffects = CloneEffects(_effectsStash.Get(weapon).Effects)
-                });
+                };
+                SetEnabled(entry, false);
+                _weapons.Add(entry);
             }
         }
 
@@ -295,17 +297,18 @@ namespace Gameplay.WeaponTesting
         private void SetupTestSystems()
         {
             SpatialGrid grid = new SpatialGrid(0.5f);
+            Gameplay.Navigation.NavigationGrid navigationGrid =
+                FindObjectOfType<Gameplay.Navigation.NavigationGrid>();
             var weaponCombat = new WeaponCombatSystems(
                 _world,
                 _projectileDatabase,
                 _projectileContainer,
-                grid);
+                grid,
+                navigationGrid);
             _releases = weaponCombat.Releases;
 
             _testSystems = _world.CreateSystemsGroup();
 
-            Gameplay.Navigation.NavigationGrid navigationGrid =
-                FindObjectOfType<Gameplay.Navigation.NavigationGrid>();
             if (navigationGrid != null)
             {
                 _testSystems.AddSystem(new PlayerInputSystem());
@@ -805,8 +808,12 @@ namespace Gameplay.WeaponTesting
 
         private void ResetWeaponCycles(bool restartImmediately)
         {
+            Stash<TurretDeploymentComponent> deployments = _world.GetStash<TurretDeploymentComponent>();
             foreach (WeaponEntry entry in _weapons)
             {
+                if (deployments.Has(entry.Entity))
+                    deployments.Get(entry.Entity).Generation++;
+
                 _releases?.Cancel(entry.Entity);
 
                 if (_requestStash.Has(entry.Entity))
@@ -825,7 +832,7 @@ namespace Gameplay.WeaponTesting
                 ref AttackComponent attack = ref _attackStash.Get(entry.Entity);
                 attack.CurrentCooldown = restartImmediately && entry.Enabled
                     ? 0f
-                    : attack.AttackCooldown;
+                    : entry.Config is TurretWeaponConfig turret ? turret.DeploymentCooldown : attack.AttackCooldown;
             }
         }
 

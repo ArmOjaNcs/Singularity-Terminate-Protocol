@@ -1,6 +1,7 @@
 using ECS.CommonSystems;
 using ECS.ProjectileSystems;
 using ECS.TrajectorySystems;
+using Gameplay.Navigation;
 using Gameplay.Spatial;
 using ProjectileConfigs;
 using Scellecs.Morpeh;
@@ -13,15 +14,18 @@ namespace ECS.WeaponSystems
         private readonly SpatialGrid _grid;
         private readonly ProjectileDatabase _database;
         private readonly Transform _container;
+        private readonly NavigationGrid _navigation;
         private readonly SecondaryProjectileSpawner _secondaryProjectiles;
 
         public ProjectileReleaseScheduler Releases { get; }
 
-        public WeaponCombatSystems(World world, ProjectileDatabase database, Transform container, SpatialGrid grid)
+        public WeaponCombatSystems(World world, ProjectileDatabase database, Transform container, SpatialGrid grid,
+            NavigationGrid navigation)
         {
             _grid = grid;
             _database = database;
             _container = container;
+            _navigation = navigation;
             var factory = new ProjectileFactory(world, database, container, grid);
             Releases = new ProjectileReleaseScheduler(world, factory);
             _secondaryProjectiles = new SecondaryProjectileSpawner(world, factory);
@@ -29,6 +33,7 @@ namespace ECS.WeaponSystems
 
         public void AddAttacks(SystemsGroup systems)
         {
+            systems.AddSystem(new TurretDeploymentSystem(_container, _navigation));
             systems.AddSystem(new AttackCooldownSystem());
             systems.AddSystem(new AttackSystem());
             systems.AddSystem(new AttackExecutionSystem(Releases));

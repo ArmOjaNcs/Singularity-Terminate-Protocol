@@ -183,6 +183,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 30a99991d8bb0671f0d1c60be0dcdd66, type: 2}
   - {fileID: 11400000, guid: c0f1d626ed03dd7442de14e317b6f668, type: 2}
   - {fileID: 11400000, guid: 56aea6f47e1308a6b125898a867a441f, type: 2}
+  - {fileID: 11400000, guid: aa22837a69604e6891a96f6582703be8, type: 2}
+  - {fileID: 11400000, guid: c4b9534c594b4888a7bd014f4ee601ba, type: 2}
   _playerConfig: {fileID: 11400000, guid: 8414f36279bd95547858f5b582b5ac65, type: 2}
   _dummyConfig: {fileID: 11400000, guid: 7387145dc7544aee94ee2404e5c13474, type: 2}
   _projectileDatabase: {fileID: 11400000, guid: 0c6afa97b5b16d448b2487bb4c1de857, type: 2}
@@ -747,7 +749,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 83a7988b58c449b7893b8c8b8b446d40, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Config: {fileID: 11400000, guid: af5013ba483edc842aa3b10124fa0f57, type: 2}
+  Config: {fileID: 11400000, guid: 5b5957a4643e45059767a8c149ee23c3, type: 2}
   PreviewDirection: {x: 1, y: 0}
   ShowCollider: 1
   ShowTrajectory: 0

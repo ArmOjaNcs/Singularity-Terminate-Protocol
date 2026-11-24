@@ -21,6 +21,7 @@ namespace ECS.CommonSystems
         private Stash<CleanupRequest> _cleanupRequestStash;
         private Stash<ProjectileComponent> _projectileStash;
         private Stash<WeaponComponent> _weaponStash;
+        private Stash<TurretComponent> _turretStash;
         private Stash<EnemyTag> _enemyTagStash;
         private Stash<DamageableTag> _damageableTagStash;
 
@@ -41,6 +42,7 @@ namespace ECS.CommonSystems
             _cleanupRequestStash = World.GetStash<CleanupRequest>();
             _projectileStash = World.GetStash<ProjectileComponent>();
             _weaponStash = World.GetStash<WeaponComponent>();
+            _turretStash = World.GetStash<TurretComponent>();
             _enemyTagStash = World.GetStash<EnemyTag>();
             _damageableTagStash = World.GetStash<DamageableTag>();
         }
@@ -80,6 +82,13 @@ namespace ECS.CommonSystems
                 {
                     _entitiesToRemove.Add(candidate);
                 }
+                else if (_turretStash.Has(candidate))
+                {
+                    if (HasLaunchedProjectiles(candidate))
+                        continue;
+
+                    _entitiesToRemove.Add(candidate);
+                }
 
                 if (_damageableTagStash.Has(candidate))
                     _entitiesToRemove.Add(candidate);
@@ -114,6 +123,21 @@ namespace ECS.CommonSystems
                     continue;
 
                 if (_weaponStash.Get(weapon).Owner == owner)
+                    return true;
+            }
+
+            return false;
+        }
+
+        private bool HasLaunchedProjectiles(Entity weapon)
+        {
+            foreach (Entity entity in _projectileFilter)
+            {
+                if (World.IsDisposed(entity))
+                    continue;
+
+                ref ProjectileComponent projectile = ref _projectileStash.Get(entity);
+                if (projectile.Weapon == weapon && !projectile.CleanupRequested)
                     return true;
             }
 

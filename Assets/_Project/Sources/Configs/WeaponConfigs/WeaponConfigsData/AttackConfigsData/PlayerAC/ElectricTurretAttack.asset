@@ -1,0 +1,47 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 53e4892c4eeb58b4c9097e58712adab9, type: 3}
+  m_Name: ElectricTurretAttack
+  m_EditorClassIdentifier:
+  CyclesPerAttack: 1
+  ShotsPerCycle: 1
+  MaxCyclesPerAttack: 1
+  MaxShotsPerCycle: 1
+  Pierce: 0
+  MaxRicochets: 0
+  CycleInterval: 0
+  ShotInterval: 0
+  Damage: 3
+  AttackCooldown: 3
+  DistanceFromSource: 0
+  ProjectileScale: 1
+  Trajectory:
+    Duration: 1.1
+    FlightDistance: 0
+    FlightDistanceTolerance: 0
+    ZigZagAmplitude: 0
+    ZigZagFrequency: 0
+  Pattern:
+    SpreadAngle: 0
+    RandomDirectionFallback: 1
+    SelectTargetPerCycle: 0
+  RicochetTargetSearchRadius: 0
+  TargetSearchRadius: 5
+  ProjectileSpeed: 0
+  ProjectileLifetime: 1.1
+  RicochetChance: 0
+  HitInterval: 0.2
+  TargetType: 0000000002000000
+  HitPolicy: 2
+  AnimationPolicy: 1
+  CompletionPolicy: 1
+  RicochetPolicy: 0

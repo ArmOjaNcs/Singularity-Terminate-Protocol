@@ -1,5 +1,6 @@
 using ECS.CommonComponents;
 using ECS.ProjectileComponents;
+using ECS.WeaponComponents;
 using Scellecs.Morpeh;
 using UnityEngine;
 
@@ -15,6 +16,7 @@ namespace ECS.TrajectorySystems
         private Stash<PositionComponent> _positionStash;
         private Stash<RotationComponent> _rotationStash;
         private Stash<HitBoxComponent> _hitBoxStash;
+        private Stash<TurretComponent> _turretStash;
 
         public void OnAwake()
         {
@@ -30,6 +32,7 @@ namespace ECS.TrajectorySystems
             _positionStash = World.GetStash<PositionComponent>();
             _rotationStash = World.GetStash<RotationComponent>();
             _hitBoxStash = World.GetStash<HitBoxComponent>();
+            _turretStash = World.GetStash<TurretComponent>();
         }
 
         public void OnUpdate(float deltaTime)
@@ -39,10 +42,22 @@ namespace ECS.TrajectorySystems
                 ref ProjectileComponent projectile =
                     ref _projectileStash.Get(entity);
 
+                bool isTurretShot = projectile.WeaponType.IsTurret();
+                if (isTurretShot && projectile.CleanupRequested)
+                    continue;
+
                 if (projectile.CurrentLifetime < 0f)
                 {
                     projectile.CollisionEnabled = false;
                     continue;
+                }
+
+                if (projectile.WeaponType == WeaponType.Turret && !projectile.CollisionEnabled &&
+                    _turretStash.Has(projectile.Weapon))
+                {
+                    var view = _turretStash.Get(projectile.Weapon).View;
+                    if (view != null)
+                        view.PlayShot();
                 }
 
                 projectile.CollisionEnabled = true;

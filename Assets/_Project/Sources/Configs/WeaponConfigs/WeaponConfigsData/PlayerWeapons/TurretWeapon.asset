@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2fa62d7347646024cbf3166a068d4a63, type: 3}
+  m_Name: TurretWeapon
+  m_EditorClassIdentifier:
+  Type: 8
+  AttackConfig: {fileID: 11400000, guid: f4c333dc65744493b4fb8c68f8f91bee, type: 2}
+  Effects: []
+  DeploymentCooldown: 4
+  Lifetime: 10
+  MaxActiveTurrets: 2
+  PlacementDistance: 1.35
+  TurnStepDuration: 0.085
+  BaseSprite: {fileID: 21100000, guid: e75d178b6cbe4cf5a00063c88c1719cd, type: 3}
+  HeadSprites:
+  - {fileID: 21100001, guid: e75d178b6cbe4cf5a00063c88c1719cd, type: 3}
+  - {fileID: 21100002, guid: e75d178b6cbe4cf5a00063c88c1719cd, type: 3}
+  - {fileID: 21100003, guid: e75d178b6cbe4cf5a00063c88c1719cd, type: 3}
+  - {fileID: 21100004, guid: e75d178b6cbe4cf5a00063c88c1719cd, type: 3}
+  - {fileID: 21100005, guid: e75d178b6cbe4cf5a00063c88c1719cd, type: 3}
+  - {fileID: 21100006, guid: e75d178b6cbe4cf5a00063c88c1719cd, type: 3}
+  - {fileID: 21100007, guid: e75d178b6cbe4cf5a00063c88c1719cd, type: 3}
+  - {fileID: 21100008, guid: e75d178b6cbe4cf5a00063c88c1719cd, type: 3}
+  HeadHeight: 0.408
+  AimHeight: 0.66

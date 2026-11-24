@@ -188,7 +188,8 @@ namespace Core.Game
                 _world,
                 _projectileDatabase,
                 _projectileContainer,
-                _spatialGrid);
+                _spatialGrid,
+                _navigationGrid);
 
             _damageableItemsFactory = new DamageableItemsFactory(
                 _world,

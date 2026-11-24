@@ -1,5 +1,6 @@
 using ECS.CommonComponents;
 using ECS.ProjectileComponents;
+using ECS.WeaponComponents;
 using Gameplay.View;
 using Scellecs.Morpeh;
 using UnityEngine;
@@ -92,7 +93,8 @@ namespace ECS.ProjectileSystems
                         _arcTrajectoryStash.Get(entity).CurrentTime < 0f;
                 }
 
-                bool reserveViewDuringDelay = isSwordThrust || view is ExplosiveProjectileView ||
+                bool reserveViewDuringDelay = projectile.WeaponType.IsTurret() ||
+                                              isSwordThrust || view is ExplosiveProjectileView ||
                                               _ripperTrajectoryStash.Has(entity);
                 if (trajectoryNotStarted)
                 {
